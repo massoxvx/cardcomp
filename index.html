@@ -1,0 +1,3292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#080b0f">
+<title>CardComp — TCG Comps & Portfolio</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Instrument+Sans:wght@400;500;600;700&family=Instrument+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#080b0f;--surface:#0f1318;--surface2:#161c23;--surface3:#1d2530;
+  --border:#1e2730;--border2:#2a3540;
+  --accent:#00d4ff;--accent2:#ff6b35;--green:#00e87a;--red:#ff4757;
+  --gold:#ffd700;--purple:#7b8fff;
+  --text:#dde4ec;--muted:#526070;--muted2:#3a4a58;
+  --nav-h:64px;--bottom-nav-h:68px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:'Instrument Sans',sans-serif;min-height:100vh;overflow-x:hidden;padding-bottom:var(--bottom-nav-h);}
+body::before{content:'';position:fixed;top:-150px;left:50%;transform:translateX(-50%);width:700px;height:500px;background:radial-gradient(ellipse,rgba(0,212,255,0.05) 0%,transparent 70%);pointer-events:none;z-index:0;}
+
+/* ━━━ TOP HEADER ━━━ */
+header{position:sticky;top:0;z-index:200;background:rgba(8,11,15,0.95);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-bottom:1px solid var(--border);height:var(--nav-h);display:flex;align-items:center;justify-content:space-between;padding:0 20px;gap:10px;}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:3px;cursor:pointer;display:flex;align-items:center;gap:3px;flex-shrink:0;}
+.logo span{color:var(--accent);}
+.header-actions{display:flex;align-items:center;gap:6px;}
+.hdr-btn{display:flex;align-items:center;gap:5px;font-family:'Instrument Mono',monospace;font-size:10px;letter-spacing:1px;color:var(--muted);background:var(--surface);border:1px solid var(--border2);padding:6px 10px;border-radius:6px;cursor:pointer;transition:all 0.18s;white-space:nowrap;}
+.hdr-btn:hover{border-color:var(--accent);color:var(--accent);}
+.hdr-btn.gold:hover{border-color:var(--gold);color:var(--gold);}
+.status-dot{width:6px;height:6px;border-radius:50%;background:var(--muted2);flex-shrink:0;}
+.status-dot.live{background:var(--green);box-shadow:0 0 5px var(--green);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.35}}
+
+/* ━━━ BOTTOM NAV (mobile-first) ━━━ */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:200;background:rgba(8,11,15,0.97);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-top:1px solid var(--border);height:var(--bottom-nav-h);display:flex;align-items:center;padding:0 8px;padding-bottom:env(safe-area-inset-bottom);}
+.bnav-tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:8px 4px;cursor:pointer;border-radius:10px;transition:all 0.18s;border:none;background:transparent;color:var(--muted);}
+.bnav-tab:hover{color:var(--text);}
+.bnav-tab.active{color:var(--accent);}
+.bnav-tab.active.port{color:var(--green);}
+.bnav-tab.active.pricer{color:var(--accent2);}
+.bnav-icon{font-size:20px;line-height:1;}
+.bnav-label{font-family:'Instrument Mono',monospace;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;}
+.bnav-badge{position:absolute;top:-2px;right:-4px;background:var(--green);color:var(--bg);font-family:'Instrument Mono',monospace;font-size:9px;font-weight:700;padding:1px 5px;border-radius:8px;min-width:16px;text-align:center;}
+.bnav-icon-wrap{position:relative;display:inline-block;}
+
+/* ━━━ PAGES ━━━ */
+.page{display:none;min-height:calc(100vh - var(--nav-h) - var(--bottom-nav-h));animation:pageIn 0.22s ease;}
+.page.active{display:block;}
+@keyframes pageIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.page-inner{max-width:860px;margin:0 auto;padding:24px 20px 40px;}
+
+/* ━━━ MODALS ━━━ */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(16px);z-index:500;display:flex;align-items:flex-end;justify-content:center;}
+.modal-overlay.hidden{display:none;}
+.modal{background:var(--surface);border:1px solid var(--border2);border-radius:20px 20px 0 0;padding:28px 24px 40px;width:100%;max-width:580px;max-height:92vh;overflow-y:auto;animation:sheetUp 0.28s cubic-bezier(0.34,1.1,0.64,1);}
+@keyframes sheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-drag{width:40px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 20px;}
+.modal-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1.5px;margin-bottom:6px;}
+.modal-title.cyan{color:var(--accent);}
+.modal-title.gold{color:var(--gold);}
+.modal-title.green{color:var(--green);}
+.modal-desc{font-size:13px;color:var(--muted);line-height:1.65;margin-bottom:16px;}
+.modal-desc a{color:var(--accent);}
+.field-label{font-family:'Instrument Mono',monospace;font-size:9px;letter-spacing:2.5px;color:var(--muted);text-transform:uppercase;margin-bottom:5px;display:block;}
+.modal-input{width:100%;background:var(--bg);border:1px solid var(--border2);color:var(--text);font-family:'Instrument Mono',monospace;font-size:13px;padding:12px 14px;border-radius:10px;outline:none;margin-bottom:10px;transition:border-color 0.2s;}
+.modal-input:focus{border-color:var(--accent);}
+.modal-select{width:100%;background:var(--bg);border:1px solid var(--border2);color:var(--text);font-family:'Instrument Sans',sans-serif;font-size:13px;padding:12px 14px;border-radius:10px;outline:none;cursor:pointer;margin-bottom:10px;transition:border-color 0.2s;}
+.modal-select:focus{border-color:var(--gold);}
+.modal-select option{background:var(--surface2);}
+.modal-btns{display:flex;gap:8px;margin-top:4px;}
+.btn-primary{flex:1;border:none;font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;padding:14px;border-radius:10px;cursor:pointer;transition:all 0.15s;}
+.btn-primary.cyan{background:var(--accent);color:var(--bg);}
+.btn-primary.cyan:hover{background:#33ddff;}
+.btn-primary.gold{background:var(--gold);color:var(--bg);}
+.btn-primary.gold:hover{background:#ffe533;}
+.btn-primary.green{background:var(--green);color:var(--bg);}
+.btn-primary.green:hover{background:#33ffaa;}
+.btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border2);font-family:'Instrument Sans',sans-serif;font-size:13px;padding:14px 18px;border-radius:10px;cursor:pointer;}
+.modal-note{margin-top:12px;border-radius:10px;padding:12px 14px;font-size:11px;color:var(--muted);line-height:1.6;}
+.modal-note.cyan{background:rgba(0,212,255,0.05);border:1px solid rgba(0,212,255,0.15);}
+.modal-note.gold{background:rgba(255,215,0,0.05);border:1px solid rgba(255,215,0,0.15);}
+.modal-note strong{color:var(--text);}
+.province-row{display:none;flex-direction:column;margin-bottom:10px;}
+.province-row.visible{display:flex;}
+.tax-strip{display:flex;align-items:center;justify-content:space-between;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px 14px;margin-bottom:10px;}
+.tax-strip-label{font-size:12px;color:var(--muted);}
+.tax-strip-val{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--gold);}
+
+/* ━━━ COMPS PAGE ━━━ */
+.search-hero{padding:28px 20px 20px;max-width:860px;margin:0 auto;}
+.search-eyebrow{font-family:'Instrument Mono',monospace;font-size:9px;letter-spacing:4px;color:var(--accent);text-transform:uppercase;margin-bottom:10px;opacity:0.8;}
+.search-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(40px,8vw,72px);line-height:0.92;letter-spacing:1px;margin-bottom:12px;}
+.search-title .hl{color:var(--accent);}
+.search-title .gh{-webkit-text-stroke:1px rgba(221,228,236,0.2);color:transparent;}
+.search-sub{color:var(--muted);font-size:13px;line-height:1.4;margin-bottom:22px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.search-box{background:var(--surface);border:1px solid var(--border2);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px;transition:border-color 0.2s,box-shadow 0.2s;}
+.search-box:focus-within{border-color:rgba(0,212,255,0.45);box-shadow:0 0 0 1px rgba(0,212,255,0.1),0 8px 40px rgba(0,0,0,0.5);}
+.search-row{display:flex;gap:8px;}
+.search-input{flex:1;background:var(--bg);border:1px solid var(--border2);color:var(--text);font-family:'Instrument Sans',sans-serif;font-size:15px;padding:12px 15px;border-radius:9px;outline:none;transition:border-color 0.2s;}
+.search-input::placeholder{color:var(--muted2);}
+.search-input:focus{border-color:rgba(0,212,255,0.5);}
+.search-btn{background:var(--accent);color:var(--bg);border:none;font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:2px;padding:12px 24px;border-radius:9px;cursor:pointer;transition:all 0.15s;white-space:nowrap;flex-shrink:0;}
+.search-btn:hover{background:#33ddff;transform:translateY(-1px);box-shadow:0 4px 20px rgba(0,212,255,0.3);}
+.search-btn:active{transform:translateY(0);}
+.search-btn:disabled{background:var(--muted2);cursor:not-allowed;transform:none;box-shadow:none;}
+.game-chips{display:flex;gap:6px;flex-wrap:wrap;}
+.game-chip{font-family:'Instrument Mono',monospace;font-size:10px;letter-spacing:0.5px;padding:6px 12px;border-radius:20px;border:1px solid var(--border2);background:transparent;color:var(--muted);cursor:pointer;transition:all 0.15s;white-space:nowrap;}
+.game-chip:hover{border-color:var(--accent);color:var(--accent);}
+.game-chip.active{background:rgba(0,212,255,0.1);border-color:var(--accent);color:var(--accent);}
+
+/* ━━━ RESULTS ━━━ */
+.results-wrap{max-width:860px;margin:0 auto;padding:0 20px 20px;}
+.empty-state{text-align:center;padding:60px 20px;}
+.empty-icon{font-size:48px;margin-bottom:14px;opacity:0.25;}
+.empty-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;opacity:0.35;margin-bottom:6px;}
+.empty-sub{font-size:13px;color:var(--muted);}
+.loader-wrap{display:flex;flex-direction:column;align-items:center;padding:60px 20px;gap:14px;}
+.loader{width:36px;height:36px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin 0.65s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loader-label{font-family:'Instrument Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;}
+.error-bar{background:rgba(255,71,87,0.08);border:1px solid rgba(255,71,87,0.25);border-radius:10px;padding:12px 16px;font-size:13px;color:var(--red);margin-bottom:14px;}
+.upgrade-bar{display:flex;align-items:center;gap:8px;background:rgba(255,215,0,0.06);border:1px solid rgba(255,215,0,0.2);border-radius:10px;padding:10px 14px;font-size:12px;color:var(--gold);margin-bottom:14px;}
+.upgrade-bar a{color:var(--gold);font-weight:600;}
+
+/* ━━━ SEARCH RESULTS LIST ━━━ */
+.card-list{background:var(--surface);border:1px solid var(--border2);border-radius:14px;overflow:hidden;margin-bottom:16px;}
+.card-list-head{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border);}
+.card-list-title{font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:2px;}
+.card-list-badge{font-family:'Instrument Mono',monospace;font-size:10px;color:var(--muted);background:var(--surface2);border:1px solid var(--border2);padding:2px 8px;border-radius:4px;}
+.card-list-item{display:flex;align-items:center;gap:14px;padding:13px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.12s;}
+.card-list-item:hover{background:var(--surface2);}
+.card-list-item:last-child{border-bottom:none;}
+.cli-img{width:56px;height:78px;border-radius:7px;object-fit:cover;background:var(--surface2);border:1px solid var(--border2);flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,0.4);}
+.cli-img-ph{width:56px;height:78px;border-radius:7px;background:var(--surface2);border:1px solid var(--border2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:20px;opacity:0.35;}
+.cli-info{flex:1;min-width:0;}
+.cli-name{font-size:14px;font-weight:600;color:var(--text);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.cli-meta{font-family:'Instrument Mono',monospace;font-size:10px;color:var(--muted);}
+.cli-price{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--accent);flex-shrink:0;}
+.cli-arrow{color:var(--muted2);font-size:16px;flex-shrink:0;}
+
+/* ━━━ CARD DETAIL ━━━ */
+.detail-back{display:inline-flex;align-items:center;gap:6px;font-family:'Instrument Mono',monospace;font-size:10px;letter-spacing:1px;color:var(--muted);cursor:pointer;padding:6px 0;margin-bottom:14px;transition:color 0.15s;}
+.detail-back:hover{color:var(--accent);}
+
+/* Big card hero */
+.card-hero{display:flex;gap:20px;align-items:flex-start;margin-bottom:20px;}
+.card-hero-img-wrap{flex-shrink:0;position:relative;}
+.card-hero-img{width:120px;height:168px;border-radius:10px;object-fit:cover;border:1px solid var(--border2);box-shadow:0 8px 32px rgba(0,0,0,0.5);}
+.card-hero-img-ph{width:120px;height:168px;border-radius:10px;background:var(--surface2);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:40px;opacity:0.25;}
+.card-hero-info{flex:1;min-width:0;padding-top:4px;}
+.card-hero-game{font-family:'Instrument Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--accent);text-transform:uppercase;margin-bottom:6px;}
+.card-hero-name{font-family:'Bebas Neue',sans-serif;font-size:clamp(26px,5vw,40px);line-height:1;letter-spacing:0.5px;margin-bottom:4px;}
+.card-hero-set{font-family:'Instrument Mono',monospace;font-size:11px;color:var(--muted);margin-bottom:12px;}
+.card-tags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:14px;}
+.ctag{font-family:'Instrument Mono',monospace;font-size:9px;padding:3px 8px;border-radius:4px;}
+.ctag-rarity{background:rgba(255,215,0,0.08);color:var(--gold);border:1px solid rgba(255,215,0,0.2);}
+.ctag-variant{background:rgba(255,255,255,0.04);color:var(--muted);border:1px solid var(--border2);}
+.card-price-hero{display:flex;gap:10px;flex-wrap:wrap;}
+.cph-item{background:var(--surface2);border-radius:8px;padding:10px 14px;}
+.cph-label{font-family:'Instrument Mono',monospace;font-size:8px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:3px;}
+.cph-value{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:0.5px;line-height:1;}
+.cph-value.tcg{color:var(--accent2);}
+.cph-value.ebay{color:var(--purple);}
+.cph-value.psa10{color:var(--green);}
+.updated-line{font-family:'Instrument Mono',monospace;font-size:9px;color:var(--muted2);display:flex;align-items:center;gap:4px;margin-top:8px;}
+.live-dot{width:5px;height:5px;border-radius:50%;background:var(--green);box-shadow:0 0 4px var(--green);}
+
+/* Quick add bar */
+.quick-add{background:rgba(0,232,122,0.06);border:1px solid rgba(0,232,122,0.22);border-radius:12px;padding:12px 14px;margin-bottom:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.qa-label{font-family:'Instrument Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--green);text-transform:uppercase;flex-shrink:0;}
+.qa-context{font-size:12px;color:var(--muted);flex:1;min-width:100px;}
+.qa-context strong{color:var(--text);}
+.qa-inputs{display:flex;align-items:flex-end;gap:7px;flex-shrink:0;}
+.qa-field{display:flex;flex-direction:column;gap:3px;}
+.qa-field-label{font-family:'Instrument Mono',monospace;font-size:8px;letter-spacing:1.5px;color:var(--muted2);text-transform:uppercase;}
+.qa-input{background:var(--bg);border:1px solid var(--border2);color:var(--text);font-family:'Instrument Mono',monospace;font-size:12px;padding:7px 9px;border-radius:7px;outline:none;width:82px;transition:border-color 0.2s;}
+.qa-input::placeholder{color:var(--muted2);font-size:10px;}
+.qa-input:focus{border-color:var(--green);}
+.qa-input[type=number]::-webkit-inner-spin-button,.qa-input[type=number]::-webkit-outer-spin-button{opacity:0.35;}
+.qa-qty{width:48px;}
+.qa-btn{background:var(--green);color:var(--bg);border:none;font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1.5px;padding:8px 14px;border-radius:7px;cursor:pointer;transition:all 0.15s;white-space:nowrap;align-self:flex-end;}
+.qa-btn:hover{background:#33ffaa;transform:translateY(-1px);}
+.qa-btn.done{background:transparent;color:var(--green);border:1px solid rgba(0,232,122,0.3);pointer-events:none;}
+
+/* Source tabs */
+.source-tabs{display:flex;gap:6px;margin-bottom:16px;overflow-x:auto;padding-bottom:2px;-ms-overflow-style:none;scrollbar-width:none;}
+.source-tabs::-webkit-scrollbar{display:none;}
+.stab{font-family:'Instrument Mono',monospace;font-size:10px;letter-spacing:1px;padding:8px 14px;border-radius:8px;border:1px solid var(--border2);background:var(--surface);color:var(--muted);cursor:pointer;transition:all 0.15s;white-space:nowrap;flex-shrink:0;}
+.stab:hover{color:var(--text);}
+.stab.active.tcg{background:rgba(255,107,53,0.1);border-color:var(--accent2);color:var(--accent2);}
+.stab.active.ebay{background:rgba(123,143,255,0.1);border-color:var(--purple);color:var(--purple);}
+.stab.active.graded{background:rgba(0,212,255,0.1);border-color:var(--accent);color:var(--accent);}
+.stab.active.roi{background:rgba(0,232,122,0.1);border-color:var(--green);color:var(--green);}
+.price-panel{display:none;}
+.price-panel.active{display:block;animation:fadeUp 0.2s ease both;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+/* Condition chips (inside panels) */
+.cond-chips{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px;}
+.cond-chip{font-family:'Instrument Mono',monospace;font-size:10px;padding:5px 11px;border-radius:20px;border:1px solid var(--border2);background:transparent;color:var(--muted);cursor:pointer;transition:all 0.15s;white-space:nowrap;}
+.cond-chip.active{background:rgba(255,107,53,0.1);border-color:var(--accent2);color:var(--accent2);}
+
+/* Price grid */
+.price-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;}
+.pg-card{background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:14px 15px;position:relative;overflow:hidden;}
+.pg-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:2px 2px 0 0;}
+.pg-tcg::before{background:var(--accent2);}
+.pg-e7::before{background:var(--purple);}
+.pg-e30::before{background:rgba(123,143,255,0.45);}
+.pg-low::before{background:var(--red);}
+.pg-high::before{background:var(--gold);}
+.pg-neutral::before{background:var(--muted);}
+.pg-label{font-family:'Instrument Mono',monospace;font-size:8px;letter-spacing:2.5px;color:var(--muted);text-transform:uppercase;margin-bottom:5px;}
+.pg-value{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:0.5px;line-height:1;}
+.pg-tcg .pg-value{color:var(--accent2);}
+.pg-e7 .pg-value{color:var(--purple);}
+.pg-e30 .pg-value{color:rgba(123,143,255,0.65);}
+.pg-low .pg-value{color:var(--red);}
+.pg-high .pg-value{color:var(--gold);}
+.pg-neutral .pg-value{color:var(--muted);}
+.pg-sub{font-size:10px;color:var(--muted);margin-top:3px;font-family:'Instrument Mono',monospace;}
+
+/* Fee breakdown */
+.fee-card{background:var(--surface2);border:1px solid var(--border2);border-radius:12px;padding:14px 16px;margin-bottom:14px;}
+.fee-card-title{font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:2px;color:var(--muted);margin-bottom:10px;}
+.fee-row{display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(30,39,48,0.6);font-size:12px;}
+.fee-row:last-child{border-bottom:none;padding-top:8px;margin-top:3px;}
+.fee-row-label{color:var(--muted);}
+.fee-row-val{font-family:'Instrument Mono',monospace;color:var(--text);}
+.fee-row.deduct .fee-row-val{color:var(--red);}
+.fee-row.total .fee-row-label{font-weight:600;color:var(--text);}
+.fee-row.total .fee-row-val{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--green);letter-spacing:0.5px;}
+
+/* Chart */
+.chart-card{background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:16px 18px;margin-bottom:14px;}
+.chart-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:8px;flex-wrap:wrap;}
+.chart-title{font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:1.5px;}
+.period-chips{display:flex;gap:4px;}
+.period-chip{font-family:'Instrument Mono',monospace;font-size:9px;letter-spacing:1px;padding:4px 9px;border-radius:5px;border:1px solid var(--border2);background:var(--surface2);color:var(--muted);cursor:pointer;transition:all 0.12s;}
+.period-chip.active{border-color:var(--accent);color:var(--accent);}
+.chart-wrap{position:relative;height:170px;}
+.chart-locked{display:flex;flex-direction:column;align-items:center;justify-content:center;height:170px;gap:6px;}
+.chart-locked-icon{font-size:22px;opacity:0.3;}
+.chart-locked-text{font-size:12px;color:var(--muted);text-align:center;}
+.chart-locked-text a{color:var(--accent);}
+
+/* Grade table */
+.grader-chips{display:flex;gap:5px;margin-bottom:10px;}
+.grader-chip{font-family:'Instrument Mono',monospace;font-size:10px;letter-spacing:1px;padding:6px 14px;border-radius:20px;border:1px solid var(--border2);background:transparent;color:var(--muted);cursor:pointer;transition:all 0.15s;}
+.grader-chip.active{background:rgba(0,212,255,0.1);border-color:var(--accent);color:var(--accent);}
+.grade-table{background:var(--surface);border:1px solid var(--border2);border-radius:12px;overflow:hidden;margin-bottom:14px;}
+.gt-head{display:grid;grid-template-columns:88px 1fr 1fr 80px;gap:6px;padding:8px 14px;border-bottom:1px solid var(--border);}
+.gt-hcell{font-family:'Instrument Mono',monospace;font-size:8px;letter-spacing:2px;color:var(--muted2);text-transform:uppercase;}
+.gt-row{display:grid;grid-template-columns:88px 1fr 1fr 80px;gap:6px;align-items:center;padding:10px 14px;border-bottom:1px solid rgba(30,39,48,0.5);transition:background 0.12s;}
+.gt-row:last-child{border-bottom:none;}
+.gt-row:hover{background:var(--surface2);}
+.gpill{font-family:'Instrument Mono',monospace;font-size:10px;font-weight:500;padding:3px 8px;border-radius:4px;display:inline-block;}
+.gpill-psa{background:rgba(0,212,255,0.08);color:var(--accent);border:1px solid rgba(0,212,255,0.2);}
+.gpill-bgs{background:rgba(123,143,255,0.08);color:var(--purple);border:1px solid rgba(123,143,255,0.2);}
+.gpill-cgc{background:rgba(255,107,53,0.08);color:var(--accent2);border:1px solid rgba(255,107,53,0.2);}
+.gt-val{font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--green);letter-spacing:0.5px;}
+.gt-val.na{font-family:'Instrument Mono',monospace;font-size:11px;color:var(--muted2);}
+.gt-delta{font-family:'Instrument Mono',monospace;font-size:10px;color:var(--muted);}
+.gt-delta.up{color:var(--green);}
+.gt-delta.down{color:var(--red);}
+
+/* ROI panel */
+.roi-wrap{background:var(--surface);border:1px solid rgba(0,232,122,0.2);border-radius:12px;overflow:hidden;margin-bottom:14px;}
+.roi-head{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.roi-head-title{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1.5px;color:var(--green);}
+.roi-head-loc{font-family:'Instrument Mono',monospace;font-size:9px;color:var(--muted);background:var(--surface2);border:1px solid var(--border2);padding:3px 8px;border-radius:4px;}
+.roi-body{padding:16px;}
+.roi-inputs{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.roi-field label{font-family:'Instrument Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;display:block;margin-bottom:5px;}
+.roi-input{width:100%;background:var(--bg);border:1px solid var(--border2);color:var(--text);font-family:'Instrument Mono',monospace;font-size:13px;padding:10px 12px;border-radius:8px;outline:none;transition:border-color 0.2s;}
+.roi-input:focus{border-color:var(--green);}
+.roi-select{width:100%;background:var(--bg);border:1px solid var(--border2);color:var(--text);font-family:'Instrument Sans',sans-serif;font-size:13px;padding:10px 12px;border-radius:8px;outline:none;cursor:pointer;}
+.roi-calc-btn{width:100%;background:var(--green);color:var(--bg);border:none;font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:2px;padding:13px;border-radius:10px;cursor:pointer;margin-bottom:14px;transition:all 0.15s;}
+.roi-calc-btn:hover{background:#33ffaa;}
+.roi-results{display:none;}
+.roi-results.on{display:block;animation:fadeUp 0.22s ease both;}
+.verdict-box{border-radius:10px;padding:14px 16px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.verdict-box.strong{background:rgba(0,232,122,0.09);border:1px solid rgba(0,232,122,0.28);}
+.verdict-box.good{background:rgba(0,212,255,0.07);border:1px solid rgba(0,212,255,0.22);}
+.verdict-box.marginal{background:rgba(255,215,0,0.07);border:1px solid rgba(255,215,0,0.22);}
+.verdict-box.skip{background:rgba(255,71,87,0.07);border:1px solid rgba(255,71,87,0.22);}
+.verdict-badge{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;}
+.verdict-box.strong .verdict-badge{color:var(--green);}
+.verdict-box.good .verdict-badge{color:var(--accent);}
+.verdict-box.marginal .verdict-badge{color:var(--gold);}
+.verdict-box.skip .verdict-badge{color:var(--red);}
+.verdict-msg{font-size:12px;color:var(--muted);flex:1;line-height:1.5;}
+.verdict-pct{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:0.5px;flex-shrink:0;}
+.verdict-box.strong .verdict-pct{color:var(--green);}
+.verdict-box.good .verdict-pct{color:var(--accent);}
+.verdict-box.marginal .verdict-pct{color:var(--gold);}
+.verdict-box.skip .verdict-pct{color:var(--red);}
+.roi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.roi-gc{background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;}
+.roi-gc-label{font-family:'Instrument Mono',monospace;font-size:8px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:3px;}
+.roi-gc-val{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:0.5px;}
+.roi-gc-val.profit{color:var(--green);}
+.roi-gc-val.loss{color:var(--red);}
+.roi-gc-val.neutral{color:var(--text);}
+
+/* Snap + Pro */
+.snap-bar{background:linear-gradient(135deg,rgba(0,212,255,0.04),rgba(255,107,53,0.02));border:1px solid rgba(0,212,255,0.17);border-radius:12px;padding:13px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;}
+.snap-info{font-size:12px;color:var(--muted);line-height:1.5;}
+.snap-info strong{color:var(--text);font-weight:500;}
+.snap-btn{background:var(--surface2);border:1px solid var(--border2);color:var(--text);font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:1.5px;padding:8px 14px;border-radius:7px;cursor:pointer;white-space:nowrap;transition:all 0.15s;flex-shrink:0;}
+.snap-btn:hover{border-color:var(--accent);color:var(--accent);}
+.snap-btn.copied{border-color:var(--green);color:var(--green);}
+.pro-bar{background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:16px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.pro-bar-info h3{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1px;color:var(--gold);margin-bottom:3px;}
+.pro-bar-info p{font-size:11px;color:var(--muted);}
+.pro-chip{font-family:'Instrument Mono',monospace;font-size:8px;letter-spacing:1px;padding:2px 6px;background:rgba(255,215,0,0.08);border:1px solid rgba(255,215,0,0.2);color:var(--gold);border-radius:3px;margin-left:6px;vertical-align:middle;}
+.pro-btn{background:transparent;border:1px solid rgba(255,215,0,0.35);color:var(--gold);font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:1.5px;padding:8px 14px;border-radius:7px;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all 0.15s;}
+.pro-btn:hover{background:rgba(255,215,0,0.07);}
+
+/* ━━━ PORTFOLIO PAGE ━━━ */
+/* Portfolio hero — shown when cards exist */
+.port-hero{background:linear-gradient(135deg,var(--surface),var(--surface2));border:1px solid var(--border2);border-radius:16px;padding:22px;margin-bottom:18px;position:relative;overflow:hidden;}
+.port-hero::before{content:'';position:absolute;top:-60px;right:-60px;width:200px;height:200px;background:radial-gradient(circle,rgba(0,232,122,0.08),transparent 70%);pointer-events:none;}
+.port-hero-label{font-family:'Instrument Mono',monospace;font-size:9px;letter-spacing:3px;color:var(--green);text-transform:uppercase;margin-bottom:8px;opacity:0.8;}
+.port-hero-value{font-family:'Bebas Neue',sans-serif;font-size:clamp(44px,10vw,72px);letter-spacing:0.5px;line-height:1;color:var(--green);margin-bottom:4px;}
+.port-hero-sub{font-family:'Instrument Mono',monospace;font-size:11px;color:var(--muted);margin-bottom:16px;}
+.port-hero-row{display:flex;gap:10px;flex-wrap:wrap;}
+.port-hero-stat{flex:1;min-width:100px;background:rgba(0,0,0,0.25);border-radius:8px;padding:10px 12px;}
+.port-hero-stat-label{font-family:'Instrument Mono',monospace;font-size:8px;letter-spacing:2px;color:var(--muted2);text-transform:uppercase;margin-bottom:4px;}
+.port-hero-stat-val{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:0.5px;}
+.port-hero-stat-val.green{color:var(--green);}
+.port-hero-stat-val.blue{color:var(--accent);}
+.port-hero-stat-val.profit{color:var(--green);}
+.port-hero-stat-val.loss{color:var(--red);}
+.port-hero-stat-val.neutral{color:var(--text);}
+
+/* Portfolio toolbar */
+.port-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
+.port-toolbar-title{font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:2px;}
+.port-toolbar-right{display:flex;gap:7px;align-items:center;flex-wrap:wrap;}
+.port-select{background:var(--surface);border:1px solid var(--border2);color:var(--text);font-family:'Instrument Sans',sans-serif;font-size:12px;padding:7px 10px;border-radius:7px;outline:none;cursor:pointer;}
+.port-select option{background:var(--surface2);}
+.add-card-btn{background:var(--green);color:var(--bg);border:none;font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1.5px;padding:8px 16px;border-radius:7px;cursor:pointer;transition:all 0.15s;white-space:nowrap;}
+.add-card-btn:hover{background:#33ffaa;}
+
+/* Portfolio grid */
+.port-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;}
+.pc{background:var(--surface);border:1px solid var(--border2);border-radius:14px;overflow:hidden;transition:border-color 0.15s,transform 0.15s;}
+.pc:hover{border-color:var(--border2);transform:translateY(-2px);}
+
+/* Card image area — prominent */
+.pc-img-area{position:relative;height:0;padding-bottom:70%;background:var(--surface2);overflow:hidden;}
+.pc-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+.pc-img-ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:48px;opacity:0.15;}
+.pc-img-overlay{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(8,11,15,0.92));padding:20px 12px 10px;}
+.pc-img-name{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:0.5px;line-height:1.1;color:#fff;margin-bottom:2px;}
+.pc-img-set{font-family:'Instrument Mono',monospace;font-size:9px;color:rgba(255,255,255,0.55);}
+.pc-badges-overlay{position:absolute;top:8px;left:8px;display:flex;gap:4px;flex-wrap:wrap;}
+.pcb{font-family:'Instrument Mono',monospace;font-size:8px;padding:3px 7px;border-radius:4px;backdrop-filter:blur(6px);}
+.pcb-raw{background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.8);border:1px solid rgba(255,255,255,0.15);}
+.pcb-graded{background:rgba(0,212,255,0.2);color:var(--accent);border:1px solid rgba(0,212,255,0.3);}
+.pcb-game{background:rgba(255,215,0,0.15);color:var(--gold);border:1px solid rgba(255,215,0,0.25);}
+
+/* Card data area */
+.pc-data{padding:12px;}
+.pc-prices{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:10px;}
+.pcd-item{background:var(--surface2);border-radius:6px;padding:7px 8px;}
+.pcd-label{font-family:'Instrument Mono',monospace;font-size:7px;letter-spacing:2px;color:var(--muted2);text-transform:uppercase;margin-bottom:3px;}
+.pcd-val{font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:0.5px;}
+.pcd-val.green{color:var(--green);}
+.pcd-val.blue{color:var(--accent);}
+.pcd-val.profit{color:var(--green);}
+.pcd-val.loss{color:var(--red);}
+.pcd-val.neutral{color:var(--text);}
+.pc-pnl{background:var(--surface2);border-radius:6px;padding:8px 10px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;}
+.pc-pnl-label{font-family:'Instrument Mono',monospace;font-size:8px;letter-spacing:2px;color:var(--muted2);text-transform:uppercase;}
+.pc-pnl-val{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:0.5px;}
+.pc-pnl-val.profit{color:var(--green);}
+.pc-pnl-val.loss{color:var(--red);}
+.pc-pnl-val.neutral{color:var(--muted);}
+.pc-refresh-line{font-family:'Instrument Mono',monospace;font-size:8px;color:var(--muted2);margin-bottom:8px;}
+.pc-actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;}
+.pc-action{font-family:'Instrument Mono',monospace;font-size:9px;letter-spacing:0.5px;padding:7px 4px;border-radius:6px;border:1px solid var(--border2);background:transparent;color:var(--muted);cursor:pointer;transition:all 0.12s;text-align:center;}
+.pc-action:hover{border-color:var(--accent);color:var(--accent);}
+.pc-action.danger:hover{border-color:var(--red);color:var(--red);}
+.pc-action.comp:hover{border-color:var(--accent2);color:var(--accent2);}
+.refreshing{opacity:0.45;pointer-events:none;}
+
+/* Empty portfolio */
+.port-empty{text-align:center;padding:60px 20px;}
+.port-empty-icon{font-size:52px;margin-bottom:14px;opacity:0.2;}
+.port-empty-title{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:1px;opacity:0.35;margin-bottom:8px;}
+.port-empty-sub{font-size:13px;color:var(--muted);margin-bottom:22px;}
+
+/* ━━━ ADD CARD MODAL ━━━ */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+.form-field{display:flex;flex-direction:column;gap:4px;}
+
+/* ━━━ WELCOME MODAL ━━━ */
+.welcome-feat{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);}
+.welcome-feat:last-child{border-bottom:none;}
+.welcome-feat-icon{font-size:18px;flex-shrink:0;margin-top:1px;}
+.welcome-feat-text{font-size:13px;color:var(--muted);line-height:1.5;}
+.welcome-feat-text strong{color:var(--text);}
+
+/* ━━━ FEEDBACK MODAL ━━━ */
+.fb-textarea{width:100%;background:var(--bg);border:1px solid var(--border2);color:var(--text);font-family:'Instrument Sans',sans-serif;font-size:13px;padding:12px 14px;border-radius:10px;outline:none;resize:vertical;min-height:100px;line-height:1.6;margin-bottom:10px;}
+.fb-textarea:focus{border-color:var(--accent2);}
+
+/* ━━━ UTILITIES ━━━ */
+.hidden{display:none!important;}
+@media(max-width:480px){.search-sub{white-space:normal;font-size:12px;}
+
+  .price-grid{grid-template-columns:1fr 1fr;}
+  .price-grid .pg-card:nth-child(3){grid-column:1/-1;}
+  .roi-inputs{grid-template-columns:1fr;}
+  .form-grid{grid-template-columns:1fr;}
+  .gt-head,.gt-row{grid-template-columns:76px 1fr 1fr;}
+  .gt-head .gt-hcell:last-child,.gt-row>:last-child{display:none;}
+  .port-grid{grid-template-columns:1fr 1fr;}
+  .snap-bar{flex-direction:column;align-items:flex-start;}
+  .pro-bar{flex-direction:column;align-items:flex-start;}
+}
+
+/* ── PAGINATION ── */
+.pagination{display:flex;align-items:center;justify-content:center;gap:8px;padding:16px 0 4px;}
+.page-btn{font-family:'Instrument Mono',monospace;font-size:11px;letter-spacing:1px;padding:8px 16px;border-radius:8px;border:1px solid var(--border2);background:var(--surface);color:var(--muted);cursor:pointer;transition:all 0.15s;}
+.page-btn:hover{border-color:var(--accent);color:var(--accent);}
+.page-btn:disabled{opacity:0.3;cursor:not-allowed;border-color:var(--border);}
+.page-btn.active{background:rgba(0,212,255,0.1);border-color:var(--accent);color:var(--accent);}
+.page-info{font-family:'Instrument Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:1px;}
+.results-count{font-family:'Instrument Mono',monospace;font-size:10px;color:var(--muted);padding:0 4px 8px;letter-spacing:1px;}
+
+/* ── RECENT SEARCHES ── */
+.recent-searches{padding:2px 0 4px;}
+.recent-label{font-family:'Instrument Mono',monospace;font-size:9px;letter-spacing:2.5px;color:var(--muted2);text-transform:uppercase;margin-bottom:7px;}
+.recent-chips{display:flex;gap:6px;flex-wrap:wrap;}
+.recent-chip{display:inline-flex;align-items:center;gap:5px;font-family:'Instrument Mono',monospace;font-size:10px;padding:5px 10px;border-radius:20px;border:1px solid var(--border2);background:var(--surface2);color:var(--muted);cursor:pointer;transition:all 0.15s;max-width:180px;}
+.recent-chip:hover{border-color:var(--accent);color:var(--accent);}
+.recent-chip-text{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.recent-chip-x{color:var(--muted2);flex-shrink:0;font-size:11px;padding:0 0 0 2px;line-height:1;background:none;border:none;cursor:pointer;color:inherit;opacity:0.6;}
+.recent-chip-x:hover{opacity:1;}
+
+/* ── SUGGESTIONS DROPDOWN ── */
+.search-wrap{position:relative;}
+.suggestions{position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--surface);border:1px solid var(--border2);border-radius:12px;overflow:hidden;z-index:300;box-shadow:0 8px 32px rgba(0,0,0,0.5);display:none;}
+.suggestions.visible{display:block;animation:fadeUp 0.15s ease both;}
+.suggestion-item{display:flex;align-items:center;gap:12px;padding:10px 14px;cursor:pointer;transition:background 0.12s;border-bottom:1px solid rgba(30,39,48,0.5);}
+.suggestion-item:last-child{border-bottom:none;}
+.suggestion-item:hover,.suggestion-item.focused{background:var(--surface2);}
+.sug-img{width:32px;height:45px;border-radius:4px;object-fit:cover;background:var(--surface2);border:1px solid var(--border2);flex-shrink:0;}
+.sug-img-ph{width:32px;height:45px;border-radius:4px;background:var(--surface2);border:1px solid var(--border2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px;opacity:0.3;}
+.sug-info{flex:1;min-width:0;}
+.sug-name{font-size:13px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sug-meta{font-family:'Instrument Mono',monospace;font-size:9px;color:var(--muted);margin-top:1px;}
+.sug-price{font-family:'Bebas Neue',sans-serif;font-size:17px;color:var(--accent);flex-shrink:0;}
+.sug-loading{padding:14px 16px;font-family:'Instrument Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;display:flex;align-items:center;gap:8px;}
+.sug-loader{width:12px;height:12px;border:1.5px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin 0.65s linear infinite;}
+.sug-empty{padding:14px 16px;font-size:12px;color:var(--muted);}
+
+/* ── SEARCH INPUT CLEAR BTN ── */
+.search-row{position:relative;}
+.search-clear{position:absolute;right:120px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted2);cursor:pointer;font-size:16px;padding:4px 8px;line-height:1;display:none;}
+.search-clear.visible{display:block;}
+.search-clear:hover{color:var(--text);}
+
+
+/* ━━━ COLLECTION PRICER ━━━ */
+.pricer-wrap{max-width:900px;margin:0 auto;padding:24px 20px 40px;}
+
+/* Offer summary bar — always visible at top */
+.offer-bar{background:linear-gradient(135deg,rgba(255,107,53,0.08),rgba(255,107,53,0.04));border:1px solid rgba(255,107,53,0.25);border-radius:14px;padding:18px 20px;margin-bottom:18px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+.offer-bar-item{display:flex;flex-direction:column;gap:4px;}
+.offer-bar-label{font-family:'Instrument Mono',monospace;font-size:8px;letter-spacing:2.5px;color:var(--muted);text-transform:uppercase;}
+.offer-bar-val{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:0.5px;line-height:1;}
+.offer-bar-val.market{color:var(--text);}
+.offer-bar-val.offer{color:var(--accent2);}
+.offer-bar-val.count{color:var(--muted);}
+
+/* Offer slider section */
+.offer-slider-section{background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:16px 18px;margin-bottom:16px;}
+.offer-slider-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;}
+.offer-slider-title{font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:1.5px;}
+.offer-pct-display{font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--accent2);letter-spacing:0.5px;}
+.offer-slider{width:100%;-webkit-appearance:none;appearance:none;height:4px;background:var(--border2);border-radius:2px;outline:none;margin-bottom:10px;}
+.offer-slider::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--accent2);cursor:pointer;box-shadow:0 0 8px rgba(255,107,53,0.4);}
+.offer-slider::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:var(--accent2);cursor:pointer;border:none;}
+.offer-presets{display:flex;gap:6px;flex-wrap:wrap;}
+.offer-preset{font-family:'Instrument Mono',monospace;font-size:10px;letter-spacing:1px;padding:5px 12px;border-radius:20px;border:1px solid var(--border2);background:transparent;color:var(--muted);cursor:pointer;transition:all 0.15s;}
+.offer-preset:hover{border-color:var(--accent2);color:var(--accent2);}
+.offer-preset.active{background:rgba(255,107,53,0.1);border-color:var(--accent2);color:var(--accent2);}
+
+/* Add card section */
+.pricer-add-section{background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:16px 18px;margin-bottom:16px;}
+.pricer-add-title{font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:1.5px;margin-bottom:12px;}
+.pricer-search-row{display:flex;gap:8px;margin-bottom:10px;position:relative;}
+.pricer-search-input{flex:1;background:var(--bg);border:1px solid var(--border2);color:var(--text);font-family:'Instrument Sans',sans-serif;font-size:14px;padding:11px 14px;border-radius:9px;outline:none;transition:border-color 0.2s;}
+.pricer-search-input::placeholder{color:var(--muted2);}
+.pricer-search-input:focus{border-color:rgba(255,107,53,0.5);}
+.pricer-search-btn{background:var(--accent2);color:#fff;border:none;font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1.5px;padding:11px 20px;border-radius:9px;cursor:pointer;white-space:nowrap;transition:all 0.15s;}
+.pricer-search-btn:hover{background:#ff8555;}
+.pricer-search-btn:disabled{background:var(--muted2);cursor:not-allowed;}
+.pricer-suggestions{position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--surface);border:1px solid var(--border2);border-radius:12px;overflow:hidden;z-index:300;box-shadow:0 8px 32px rgba(0,0,0,0.5);display:none;}
+.pricer-suggestions.visible{display:block;}
+.pricer-sug-item{display:flex;align-items:center;gap:11px;padding:10px 14px;cursor:pointer;transition:background 0.12s;border-bottom:1px solid var(--border);}
+.pricer-sug-item:hover{background:var(--surface2);}
+.pricer-sug-item:last-child{border-bottom:none;}
+.pricer-sug-img{width:30px;height:42px;border-radius:4px;object-fit:cover;background:var(--surface2);border:1px solid var(--border2);flex-shrink:0;}
+.pricer-sug-ph{width:30px;height:42px;border-radius:4px;background:var(--surface2);border:1px solid var(--border2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;opacity:0.3;}
+.pricer-sug-name{font-size:13px;font-weight:500;color:var(--text);}
+.pricer-sug-meta{font-family:'Instrument Mono',monospace;font-size:9px;color:var(--muted);}
+.pricer-sug-price{font-family:'Bebas Neue',sans-serif;font-size:16px;color:var(--accent2);flex-shrink:0;margin-left:auto;}
+
+/* Quick add row for selected card */
+.pricer-selected{display:none;background:var(--surface2);border:1px solid rgba(255,107,53,0.2);border-radius:10px;padding:12px 14px;margin-bottom:10px;animation:fadeUp 0.2s ease both;}
+.pricer-selected.visible{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.pricer-sel-img{width:36px;height:50px;border-radius:5px;object-fit:cover;border:1px solid var(--border2);flex-shrink:0;}
+.pricer-sel-ph{width:36px;height:50px;border-radius:5px;background:var(--surface2);border:1px solid var(--border2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:16px;opacity:0.3;}
+.pricer-sel-info{flex:1;min-width:120px;}
+.pricer-sel-name{font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px;}
+.pricer-sel-meta{font-family:'Instrument Mono',monospace;font-size:9px;color:var(--muted);}
+.pricer-sel-controls{display:flex;align-items:flex-end;gap:8px;flex-wrap:wrap;}
+.pricer-sel-field{display:flex;flex-direction:column;gap:3px;}
+.pricer-sel-label{font-family:'Instrument Mono',monospace;font-size:8px;letter-spacing:1.5px;color:var(--muted2);text-transform:uppercase;}
+.pricer-sel-input{background:var(--bg);border:1px solid var(--border2);color:var(--text);font-family:'Instrument Mono',monospace;font-size:12px;padding:7px 9px;border-radius:7px;outline:none;width:80px;}
+.pricer-sel-input:focus{border-color:var(--accent2);}
+.pricer-sel-select{background:var(--bg);border:1px solid var(--border2);color:var(--text);font-family:'Instrument Sans',sans-serif;font-size:12px;padding:7px 9px;border-radius:7px;outline:none;cursor:pointer;min-width:110px;}
+.pricer-sel-price{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--green);letter-spacing:0.5px;align-self:flex-end;margin-left:4px;}
+.pricer-add-btn{background:var(--accent2);color:#fff;border:none;font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:1.5px;padding:9px 18px;border-radius:8px;cursor:pointer;align-self:flex-end;white-space:nowrap;transition:all 0.15s;}
+.pricer-add-btn:hover{background:#ff8555;}
+
+/* Bulk section */
+.bulk-section{background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:16px 18px;margin-bottom:16px;}
+.bulk-title{font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:1.5px;margin-bottom:4px;}
+.bulk-sub{font-size:12px;color:var(--muted);margin-bottom:12px;}
+.bulk-row{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;}
+.bulk-field{display:flex;flex-direction:column;gap:4px;flex:1;min-width:100px;}
+.bulk-field label{font-family:'Instrument Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;}
+.bulk-input{background:var(--bg);border:1px solid var(--border2);color:var(--text);font-family:'Instrument Mono',monospace;font-size:14px;padding:10px 12px;border-radius:8px;outline:none;width:100%;}
+.bulk-input:focus{border-color:var(--accent2);}
+.bulk-add-btn{background:var(--surface2);color:var(--text);border:1px solid var(--border2);font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1.5px;padding:10px 18px;border-radius:8px;cursor:pointer;white-space:nowrap;transition:all 0.15s;}
+.bulk-add-btn:hover{border-color:var(--accent2);color:var(--accent2);}
+.bulk-total{font-family:'Instrument Mono',monospace;font-size:11px;color:var(--green);align-self:flex-end;padding-bottom:10px;}
+
+/* Items list */
+.pricer-items-section{background:var(--surface);border:1px solid var(--border2);border-radius:12px;overflow:hidden;margin-bottom:16px;}
+.pricer-items-head{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border);}
+.pricer-items-title{font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:1.5px;}
+.pricer-clear-btn{font-family:'Instrument Mono',monospace;font-size:10px;letter-spacing:1px;color:var(--muted);background:transparent;border:1px solid var(--border2);padding:5px 10px;border-radius:5px;cursor:pointer;transition:all 0.15s;}
+.pricer-clear-btn:hover{border-color:var(--red);color:var(--red);}
+.pricer-item{display:grid;grid-template-columns:40px 1fr auto auto auto;gap:10px;align-items:center;padding:11px 16px;border-bottom:1px solid rgba(30,39,48,0.5);transition:background 0.12s;}
+.pricer-item:last-child{border-bottom:none;}
+.pricer-item:hover{background:var(--surface2);}
+.pricer-item-img{width:36px;height:50px;border-radius:4px;object-fit:cover;border:1px solid var(--border2);}
+.pricer-item-img-ph{width:36px;height:50px;border-radius:4px;background:var(--surface2);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:14px;opacity:0.3;}
+.pricer-item-info{min-width:0;}
+.pricer-item-name{font-size:13px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.pricer-item-meta{font-family:'Instrument Mono',monospace;font-size:9px;color:var(--muted);margin-top:1px;}
+.pricer-item-qty{font-family:'Instrument Mono',monospace;font-size:11px;color:var(--muted);white-space:nowrap;}
+.pricer-item-market{font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--text);letter-spacing:0.5px;white-space:nowrap;}
+.pricer-item-offer{font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--accent2);letter-spacing:0.5px;white-space:nowrap;}
+.pricer-item-remove{background:none;border:none;color:var(--muted2);cursor:pointer;font-size:14px;padding:4px;transition:color 0.15s;flex-shrink:0;}
+.pricer-item-remove:hover{color:var(--red);}
+.pricer-empty{text-align:center;padding:40px 20px;color:var(--muted);font-size:13px;}
+
+/* Print / share */
+.pricer-actions{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
+.pricer-action-btn{display:flex;align-items:center;gap:7px;font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1.5px;padding:11px 20px;border-radius:9px;cursor:pointer;transition:all 0.15s;border:1px solid var(--border2);background:var(--surface);color:var(--text);}
+.pricer-action-btn:hover{border-color:var(--accent2);color:var(--accent2);}
+.pricer-action-btn.primary{background:var(--accent2);color:#fff;border-color:var(--accent2);}
+.pricer-action-btn.primary:hover{background:#ff8555;}
+
+/* Print styles */
+@media print {
+  body > *:not(#printSheet){display:none!important;}
+  #printSheet{display:block!important;position:fixed;inset:0;background:#fff;color:#000;z-index:99999;padding:32px;font-family:'Helvetica Neue',Arial,sans-serif;}
+  .print-hide{display:none!important;}
+}
+#printSheet{display:none;}
+
+@media(max-width:580px){
+  .offer-bar{grid-template-columns:1fr 1fr;}
+  .offer-bar .offer-bar-item:last-child{grid-column:1/-1;}
+  .pricer-item{grid-template-columns:36px 1fr auto auto;}
+  .pricer-item-offer{display:none;}
+}
+
+
+/* ── PRICER SEARCH MODAL ── */
+.psm-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.88);backdrop-filter:blur(14px);z-index:600;display:flex;flex-direction:column;}
+.psm-overlay.hidden{display:none;}
+.psm-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0;background:var(--surface);}
+.psm-title{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:var(--accent2);flex-shrink:0;}
+.psm-search-input{flex:1;background:var(--bg);border:1px solid var(--border2);color:var(--text);font-family:'Instrument Sans',sans-serif;font-size:15px;padding:10px 14px;border-radius:9px;outline:none;transition:border-color 0.2s;}
+.psm-search-input:focus{border-color:rgba(255,107,53,0.5);}
+.psm-search-input::placeholder{color:var(--muted2);}
+.psm-search-btn{background:var(--accent2);color:#fff;border:none;font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1.5px;padding:10px 20px;border-radius:9px;cursor:pointer;white-space:nowrap;transition:all 0.15s;flex-shrink:0;}
+.psm-search-btn:hover{background:#ff8555;}
+.psm-search-btn:disabled{background:var(--muted2);cursor:not-allowed;}
+.psm-close{background:none;border:1px solid var(--border2);color:var(--muted);font-size:18px;width:38px;height:38px;border-radius:8px;cursor:pointer;flex-shrink:0;transition:all 0.15s;display:flex;align-items:center;justify-content:center;}
+.psm-close:hover{border-color:var(--red);color:var(--red);}
+
+/* Filters row */
+.psm-filters{padding:10px 20px;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0;display:flex;flex-direction:column;gap:8px;}
+.psm-filter-row{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;}
+.psm-filter-field{display:flex;flex-direction:column;gap:3px;}
+.psm-filter-label{font-family:'Instrument Mono',monospace;font-size:8px;letter-spacing:2px;color:var(--muted2);text-transform:uppercase;}
+.psm-filter-input{background:var(--bg);border:1px solid var(--border2);color:var(--text);font-family:'Instrument Sans',sans-serif;font-size:12px;padding:7px 11px;border-radius:7px;outline:none;transition:border-color 0.2s;}
+.psm-filter-input:focus{border-color:rgba(255,107,53,0.4);}
+.psm-filter-input::placeholder{color:var(--muted2);}
+.psm-game-chips{display:flex;gap:5px;flex-wrap:wrap;}
+.psm-chip{font-family:'Instrument Mono',monospace;font-size:10px;padding:5px 11px;border-radius:20px;border:1px solid var(--border2);background:transparent;color:var(--muted);cursor:pointer;transition:all 0.15s;white-space:nowrap;}
+.psm-chip:hover{border-color:var(--accent2);color:var(--accent2);}
+.psm-chip.active{background:rgba(255,107,53,0.1);border-color:var(--accent2);color:var(--accent2);}
+
+/* Results area */
+.psm-results{flex:1;overflow-y:auto;padding:12px 20px;}
+.psm-results-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.psm-results-count{font-family:'Instrument Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:1px;}
+.psm-results-page{font-family:'Instrument Mono',monospace;font-size:10px;color:var(--muted);}
+.psm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:16px;}
+.psm-card{background:var(--surface);border:1px solid var(--border2);border-radius:10px;overflow:hidden;cursor:pointer;transition:all 0.15s;}
+.psm-card:hover{border-color:var(--accent2);transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,0,0,0.4);}
+.psm-card-img-wrap{position:relative;padding-bottom:70%;background:var(--surface2);}
+.psm-card-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+.psm-card-img-ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:32px;opacity:0.15;}
+.psm-card-info{padding:8px 10px;}
+.psm-card-name{font-size:12px;font-weight:600;color:var(--text);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.psm-card-set{font-family:'Instrument Mono',monospace;font-size:9px;color:var(--muted);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.psm-card-price{font-family:'Bebas Neue',sans-serif;font-size:16px;color:var(--accent2);letter-spacing:0.5px;}
+.psm-card-no-price{font-family:'Instrument Mono',monospace;font-size:9px;color:var(--muted2);}
+.psm-pagination{display:flex;align-items:center;justify-content:center;gap:8px;padding:8px 0 4px;}
+.psm-page-btn{font-family:'Instrument Mono',monospace;font-size:11px;letter-spacing:1px;padding:8px 16px;border-radius:8px;border:1px solid var(--border2);background:var(--surface);color:var(--muted);cursor:pointer;transition:all 0.15s;}
+.psm-page-btn:hover:not(:disabled){border-color:var(--accent2);color:var(--accent2);}
+.psm-page-btn:disabled{opacity:0.3;cursor:not-allowed;}
+.psm-page-btn.active{background:rgba(255,107,53,0.1);border-color:var(--accent2);color:var(--accent2);}
+.psm-page-info{font-family:'Instrument Mono',monospace;font-size:10px;color:var(--muted);}
+.psm-empty{text-align:center;padding:48px 20px;color:var(--muted);font-size:13px;}
+.psm-loader{display:flex;flex-direction:column;align-items:center;padding:48px 20px;gap:12px;}
+
+</style>
+</head>
+<body>
+
+<!-- TOP HEADER -->
+<header>
+  <div class="logo" onclick="goHome()">CARD<span>COMP</span></div>
+  <div class="header-actions">
+    <button class="hdr-btn hidden" id="currencyToggleBtn" onclick="toggleCurrency()" title="Toggle currency" style="font-family:'Instrument Mono',monospace;font-size:10px;letter-spacing:1px;border-color:rgba(255,215,0,0.3);color:var(--gold);">CA$ CAD</button>
+    <button class="hdr-btn gold" onclick="openCountryModal()" id="countryBtn">
+      <span id="countryFlag">🇨🇦</span>
+      <span id="countryLabel">Canada · ON</span>
+    </button>
+    <button class="hdr-btn" onclick="openFeedbackModal()" style="border-color:rgba(255,107,53,0.3);color:var(--accent2);">💬</button>
+    <button class="hdr-btn" id="apiBtnEl" style="cursor:default;">
+      <span class="status-dot" id="statusDot"></span>
+      <span id="apiBtnLabel">API</span>
+    </button>
+  </div>
+</header>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <button class="bnav-tab active" id="bnavComps" onclick="switchPage('comps')">
+    <span class="bnav-icon">🔍</span>
+    <span class="bnav-label">Comps</span>
+  </button>
+  <button class="bnav-tab port" id="bnavPortfolio" onclick="switchPage('portfolio')">
+    <span class="bnav-icon-wrap">
+      <span class="bnav-icon">📦</span>
+      <span class="bnav-badge hidden" id="portBadge">0</span>
+    </span>
+    <span class="bnav-label">Portfolio</span>
+  </button>
+  <button class="bnav-tab" id="bnavPricer" onclick="switchPage('pricer')" style="color:var(--muted);">
+    <span class="bnav-icon-wrap">
+      <span class="bnav-icon">🧾</span>
+      <span class="bnav-badge hidden" id="pricerBadge" style="background:var(--accent2);">0</span>
+    </span>
+    <span class="bnav-label">Pricer</span>
+  </button>
+</nav>
+
+<!-- ══ WELCOME MODAL ══ -->
+<div class="modal-overlay hidden" id="welcomeModal">
+  <div class="modal">
+    <div class="modal-drag"></div>
+    <div style="font-size:36px;margin-bottom:10px;">🃏</div>
+    <div class="modal-title cyan">Welcome to CardComp</div>
+    <p class="modal-desc">The comps tool built for serious collectors and flippers.</p>
+    <div style="margin-bottom:18px;">
+      <div class="welcome-feat"><div class="welcome-feat-icon">🔍</div><div class="welcome-feat-text"><strong>Search any TCG card</strong> — Pokémon, MTG, Yu-Gi-Oh!, Lorcana and more</div></div>
+      <div class="welcome-feat"><div class="welcome-feat-icon">📊</div><div class="welcome-feat-text"><strong>Live eBay sold averages</strong> — 7-day and 30-day, every condition</div></div>
+      <div class="welcome-feat"><div class="welcome-feat-icon">🏅</div><div class="welcome-feat-text"><strong>PSA / BGS / CGC graded prices</strong> — with vs-raw premium breakdown</div></div>
+      <div class="welcome-feat"><div class="welcome-feat-icon">🧮</div><div class="welcome-feat-text"><strong>Grade ROI Calculator</strong> — know if grading is worth it before you submit</div></div>
+      <div class="welcome-feat"><div class="welcome-feat-icon">🌍</div><div class="welcome-feat-text"><strong>Accurate seller fees</strong> — all Canadian provinces and all 50 US states</div></div>
+      <div class="welcome-feat"><div class="welcome-feat-icon">📦</div><div class="welcome-feat-text"><strong>Portfolio tracker</strong> — real market value and after-fee liquidation value</div></div>
+    </div>
+    <button class="btn-primary cyan" style="width:100%;font-size:18px;padding:15px;" onclick="dismissWelcome()">LET'S GO →</button>
+    <div class="modal-note cyan" style="margin-top:12px;text-align:center;">This is a beta — your feedback shapes what gets built next 🇨🇦</div>
+  </div>
+</div>
+
+<!-- ══ API KEY MODAL ══ -->
+<div class="modal-overlay hidden" id="apiModal">
+  <div class="modal">
+    <div class="modal-drag"></div>
+    <div class="modal-title cyan">Connect API Key</div>
+    <p class="modal-desc">Get a free key at <a href="https://tcgpricelookup.com/tcg-api" target="_blank">tcgpricelookup.com/tcg-api</a> — 200 calls/day free, no card. eBay sold + graded data requires Trader plan ($14.99/mo).</p>
+    <label class="field-label">Your API Key</label>
+    <input class="modal-input" type="password" id="apiKeyInput" placeholder="tcg_live_...">
+    <div class="modal-btns">
+      <button class="btn-primary cyan" onclick="saveApiKey()">Save & Connect</button>
+      <button class="btn-ghost" onclick="closeApiModal()">Cancel</button>
+    </div>
+    <div class="modal-note cyan"><strong>🔒 Private:</strong> Stored only in your browser. Never shared except directly to TCG Price Lookup API.</div>
+  </div>
+</div>
+
+<!-- ══ COUNTRY MODAL ══ -->
+<div class="modal-overlay hidden" id="countryModal">
+  <div class="modal">
+    <div class="modal-drag"></div>
+    <div class="modal-title gold">Seller Location</div>
+    <p class="modal-desc">Sets eBay fee rates and GST/HST/sales tax on your seller fees. Affects all ROI and take-home calculations.</p>
+    <label class="field-label">Country</label>
+    <select class="modal-select" id="countrySelect" onchange="onCountryChange()">
+      <option value="CA">🇨🇦 Canada</option>
+      <option value="US">🇺🇸 United States</option>
+      <option value="UK">🇬🇧 United Kingdom</option>
+      <option value="AU">🇦🇺 Australia</option>
+    </select>
+    <div class="province-row" id="provinceRow">
+      <label class="field-label" id="provinceLabel">Province / Territory</label>
+      <select class="modal-select" id="provinceSelect" onchange="onProvinceChange()"></select>
+    </div>
+    <div class="tax-strip" id="taxInfoStrip">
+      <div class="tax-strip-label">Tax on your eBay seller fees</div>
+      <div class="tax-strip-val" id="taxInfoValue">13% HST</div>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-primary gold" onclick="saveCountry()">Save Location</button>
+      <button class="btn-ghost" onclick="closeCountryModal()">Cancel</button>
+    </div>
+    <div class="modal-note gold"><strong>How it works:</strong> eBay charges GST/HST on your seller fees based on your province or state. For example in Ontario, a $13.25 fee on a $100 sale becomes $14.97 after 13% HST. CardComp accounts for this automatically.</div>
+  </div>
+</div>
+
+<!-- ══ ADD CARD MODAL ══ -->
+<div class="modal-overlay hidden" id="addCardModal">
+  <div class="modal">
+    <div class="modal-drag"></div>
+    <div class="modal-title green">Add to Portfolio</div>
+    <p class="modal-desc">Track raw and graded cards. CardComp shows live market value vs what you paid.</p>
+    <div class="form-grid">
+      <div class="form-field">
+        <label class="field-label">Card Name *</label>
+        <input class="modal-input" style="margin-bottom:0;" type="text" id="pcName" placeholder="e.g. Charizard">
+      </div>
+      <div class="form-field">
+        <label class="field-label">Set / Series</label>
+        <input class="modal-input" style="margin-bottom:0;" type="text" id="pcSet" placeholder="e.g. Base Set">
+      </div>
+    </div>
+    <div class="form-grid">
+      <div class="form-field">
+        <label class="field-label">Type</label>
+        <select class="modal-select" style="margin-bottom:0;" id="pcType" onchange="toggleGradeFields()">
+          <option value="raw">Raw / Ungraded</option>
+          <option value="graded">Graded Slab</option>
+        </select>
+      </div>
+      <div id="pcConditionWrap" class="form-field">
+        <label class="field-label">Condition</label>
+        <select class="modal-select" style="margin-bottom:0;" id="pcCondition">
+          <option value="near_mint">Near Mint</option>
+          <option value="lightly_played">Lightly Played</option>
+          <option value="moderately_played">Moderately Played</option>
+          <option value="heavily_played">Heavily Played</option>
+          <option value="damaged">Damaged</option>
+        </select>
+      </div>
+      <div id="pcGradeWrap" class="form-field" style="display:none;">
+        <label class="field-label">Grade</label>
+        <select class="modal-select" style="margin-bottom:0;" id="pcGrade">
+          <option value="psa_10">PSA 10</option>
+          <option value="psa_9">PSA 9</option>
+          <option value="psa_8.5">PSA 8.5</option>
+          <option value="psa_8">PSA 8</option>
+          <option value="psa_7">PSA 7</option>
+          <option value="bgs_10">BGS 10</option>
+          <option value="bgs_9.5">BGS 9.5</option>
+          <option value="bgs_9">BGS 9</option>
+          <option value="cgc_10">CGC 10</option>
+          <option value="cgc_9.5">CGC 9.5</option>
+          <option value="cgc_9">CGC 9</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-grid">
+      <div class="form-field">
+        <label class="field-label">Purchase Price ($)</label>
+        <input class="modal-input" style="margin-bottom:0;" type="number" id="pcCost" placeholder="0.00" min="0" step="0.01">
+      </div>
+      <div class="form-field">
+        <label class="field-label">Quantity</label>
+        <input class="modal-input" style="margin-bottom:0;" type="number" id="pcQty" placeholder="1" min="1" value="1">
+      </div>
+    </div>
+    <div class="form-grid" style="margin-bottom:14px;">
+      <div class="form-field">
+        <label class="field-label">Game</label>
+        <select class="modal-select" style="margin-bottom:0;" id="pcGame">
+          <option value="pokemon">Pokémon</option>
+          <option value="mtg">Magic: The Gathering</option>
+          <option value="yugioh">Yu-Gi-Oh!</option>
+          <option value="onepiece">One Piece</option>
+          <option value="lorcana">Disney Lorcana</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label class="field-label">Notes</label>
+        <input class="modal-input" style="margin-bottom:0;" type="text" id="pcNotes" placeholder="e.g. Shadowless">
+      </div>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-primary green" onclick="savePortfolioCard()">ADD TO PORTFOLIO</button>
+      <button class="btn-ghost" onclick="closeAddCardModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ FEEDBACK MODAL ══ -->
+<div class="modal-overlay hidden" id="feedbackModal">
+  <div class="modal">
+    <div class="modal-drag"></div>
+    <div class="modal-title" style="color:var(--accent2);">Beta Feedback</div>
+
+    <!-- Form state -->
+    <div id="feedbackForm">
+      <p class="modal-desc">What's working? What's missing? What would make you use this every day?</p>
+      <select class="modal-select" id="feedbackType">
+        <option value="general">💬 General feedback</option>
+        <option value="bug">🐛 Something's broken</option>
+        <option value="feature">✨ Feature request</option>
+        <option value="data">📊 Data seems wrong</option>
+        <option value="ux">🤔 Hard to use</option>
+      </select>
+      <textarea class="fb-textarea" id="feedbackText" placeholder="Your honest thoughts — anything goes..."></textarea>
+      <input class="modal-input" type="email" id="feedbackEmail" placeholder="Email (optional — if you want a reply)">
+      <div id="feedbackError" class="hidden" style="font-size:12px;color:var(--red);margin-bottom:10px;padding:8px 12px;background:rgba(255,71,87,0.08);border:1px solid rgba(255,71,87,0.2);border-radius:8px;"></div>
+      <div class="modal-btns">
+        <button class="btn-primary" id="feedbackSendBtn" style="background:var(--accent2);color:#fff;" onclick="submitFeedback()">SEND FEEDBACK</button>
+        <button class="btn-ghost" onclick="closeFeedbackModal()">Cancel</button>
+      </div>
+    </div>
+
+    <!-- Success state -->
+    <div id="feedbackSuccess" class="hidden" style="text-align:center;padding:20px 0;">
+      <div style="font-size:48px;margin-bottom:14px;">🙏</div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:1px;color:var(--green);margin-bottom:8px;">Thanks for the feedback!</div>
+      <p style="font-size:13px;color:var(--muted);line-height:1.6;">This goes directly to the builder. Every piece of feedback shapes what gets built next.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ══ COMPS PAGE ══ -->
+<div class="page active" id="pageComps">
+  <!-- Search hero -->
+  <div class="search-hero">
+    <div class="search-eyebrow">// Live eBay Sold · PSA · BGS · CGC · ROI</div>
+    <h1 class="search-title"><div>REAL</div><div class="hl">COMPS.</div><div class="gh">REAL PROFIT.</div></h1>
+    <p class="search-sub">Live eBay sold data, graded prices, and Grade ROI for Pokémon, MTG, Yu-Gi-Oh! and more.</p>
+    <div class="search-box">
+      <div class="search-wrap" id="searchWrap">
+        <div class="search-row">
+          <input class="search-input" type="text" id="searchInput"
+            placeholder="Search by card name, set, or number..."
+            autocomplete="off"
+            onkeydown="onSearchKeyDown(event)"
+            oninput="onSearchInput(this.value)">
+          <button class="search-clear" id="searchClear" onclick="clearSearch()" title="Clear">✕</button>
+          <button class="search-btn" id="searchBtn" onclick="doSearch()">SEARCH</button>
+        </div>
+        <div class="suggestions hidden" id="suggestions"></div>
+      </div>
+      <div class="game-chips" id="gameChips">
+        <button class="game-chip active" data-game="" onclick="selectGame(this)">All</button>
+        <button class="game-chip" data-game="pokemon" onclick="selectGame(this)">Pokémon</button>
+        <button class="game-chip" data-game="pokemon-japan" onclick="selectGame(this)">JP Pokémon</button>
+        <button class="game-chip" data-game="mtg" onclick="selectGame(this)">MTG</button>
+        <button class="game-chip" data-game="yugioh" onclick="selectGame(this)">Yu-Gi-Oh!</button>
+        <button class="game-chip" data-game="onepiece" onclick="selectGame(this)">One Piece</button>
+        <button class="game-chip" data-game="lorcana" onclick="selectGame(this)">Lorcana</button>
+      </div>
+      <div id="recentSearchesWrap" class="recent-searches hidden">
+        <div class="recent-label">Recent</div>
+        <div class="recent-chips" id="recentChips"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Results -->
+  <div class="results-wrap">
+    <div id="emptyState" class="empty-state">
+      <div class="empty-icon">🃏</div>
+      <div class="empty-title">Search Any Card Above</div>
+      <p class="empty-sub">eBay sold averages · All conditions · PSA/BGS/CGC · Grade ROI</p>
+    </div>
+    <div id="loadingState" class="loader-wrap hidden"><div class="loader"></div><div class="loader-label">Pulling comps...</div></div>
+    <div id="errorBox" class="error-bar hidden">⚠️ <span id="errorMsg"></span></div>
+
+    <!-- Search results -->
+    <div id="searchSection" class="hidden">
+      <div class="card-list" id="searchList"></div>
+    </div>
+
+    <!-- Card detail -->
+    <div id="detailSection" class="hidden">
+      <div class="detail-back" onclick="goBack()">← Back to results</div>
+      <div id="upgradeBar" class="upgrade-bar hidden">🔒 eBay sold & graded data requires <a href="https://tcgpricelookup.com/pricing" target="_blank">Trader plan ($14.99/mo)</a></div>
+
+      <!-- Big card hero -->
+      <div class="card-hero" id="cardHero"></div>
+
+      <!-- Quick add -->
+      <div class="quick-add" id="quickAdd">
+        <span class="qa-label">+ Portfolio</span>
+        <div class="qa-context" id="qaContext">—</div>
+        <div class="qa-inputs">
+          <div class="qa-field">
+            <div class="qa-field-label">I Paid ($)</div>
+            <input class="qa-input" type="number" id="qaCost" placeholder="optional" min="0" step="0.01">
+          </div>
+          <div class="qa-field">
+            <div class="qa-field-label">Qty</div>
+            <input class="qa-input qa-qty" type="number" id="qaQty" value="1" min="1">
+          </div>
+          <button class="qa-btn" onclick="quickAddToPortfolio()">+ ADD</button>
+        </div>
+      </div>
+
+      <!-- Source tabs -->
+      <div class="source-tabs">
+        <button class="stab tcg active" onclick="switchTab('tcg',this)">TCGPlayer</button>
+        <button class="stab ebay" onclick="switchTab('ebay',this)">eBay Sold</button>
+        <button class="stab graded" onclick="switchTab('graded',this)">Graded</button>
+        <button class="stab roi" onclick="switchTab('roi',this)">🧮 ROI</button>
+      </div>
+
+      <!-- TCG Panel -->
+      <div class="price-panel active" id="panel-tcg">
+        <div class="cond-chips" id="tcgCondChips"></div>
+        <div class="price-grid" id="tcgPriceGrid"></div>
+        <div class="chart-card">
+          <div class="chart-head">
+            <div class="chart-title">Price History</div>
+            <div class="period-chips">
+              <button class="period-chip active" onclick="switchPeriod('7d',this)">7D</button>
+              <button class="period-chip" onclick="switchPeriod('30d',this)">30D</button>
+              <button class="period-chip" onclick="switchPeriod('90d',this)">90D</button>
+              <button class="period-chip" onclick="switchPeriod('1y',this)">1Y</button>
+            </div>
+          </div>
+          <div class="chart-wrap" id="chartWrap"><canvas id="priceChart"></canvas></div>
+        </div>
+      </div>
+
+      <!-- eBay Panel -->
+      <div class="price-panel" id="panel-ebay">
+        <div class="cond-chips" id="ebayCondChips"></div>
+        <div class="price-grid" id="ebayPriceGrid"></div>
+        <div id="ebayFeeCard"></div>
+      </div>
+
+      <!-- Graded Panel -->
+      <div class="price-panel" id="panel-graded">
+        <div class="grader-chips" id="graderChips"></div>
+        <div class="grade-table" id="gradeTable"></div>
+      </div>
+
+      <!-- ROI Panel -->
+      <div class="price-panel" id="panel-roi">
+        <div class="roi-wrap">
+          <div class="roi-head">
+            <div class="roi-head-title">🧮 Grade ROI Calculator</div>
+            <div class="roi-head-loc" id="roiLocBadge">🇨🇦 ON · 13% HST</div>
+          </div>
+          <div class="roi-body">
+            <div class="roi-inputs">
+              <div class="roi-field"><label>Raw Cost Paid ($)</label><input class="roi-input" type="number" id="roiRawCost" placeholder="e.g. 45.00" oninput="calcROI()"></div>
+              <div class="roi-field"><label>Grading Company</label>
+                <select class="roi-select" id="roiGrader" onchange="calcROI()">
+                  <option value="psa_economy">PSA Economy ($18)</option>
+                  <option value="psa_value" selected>PSA Value ($32.99)</option>
+                  <option value="psa_regular">PSA Regular ($75)</option>
+                  <option value="bgs_economy">BGS Economy ($22)</option>
+                  <option value="bgs_standard">BGS Standard ($75)</option>
+                  <option value="cgc_economy">CGC Economy ($18)</option>
+                  <option value="cgc_standard">CGC Standard ($35)</option>
+                </select>
+              </div>
+              <div class="roi-field"><label>Expected Grade</label>
+                <select class="roi-select" id="roiGrade" onchange="calcROI()">
+                  <option value="10">10 / Gem Mint</option>
+                  <option value="9.5">9.5</option>
+                  <option value="9" selected>9 / Mint</option>
+                  <option value="8.5">8.5</option>
+                  <option value="8">8 / NM-MT</option>
+                  <option value="7">7</option>
+                </select>
+              </div>
+              <div class="roi-field"><label>Shipping to Grader ($)</label><input class="roi-input" type="number" id="roiShipping" value="12" oninput="calcROI()"></div>
+              <div class="roi-field"><label>Expected Sale Price ($)</label><input class="roi-input" type="number" id="roiSalePrice" placeholder="Auto from comps" oninput="calcROI()"></div>
+              <div class="roi-field"><label>Promoted Listing (%)</label><input class="roi-input" type="number" id="roiPromo" value="0" min="0" max="100" oninput="calcROI()"></div>
+            </div>
+            <div class="roi-results" id="roiResults">
+              <div class="verdict-box" id="roiVerdict">
+                <div><div class="verdict-badge" id="verdictBadge">—</div><div class="verdict-msg" id="verdictMsg"></div></div>
+                <div class="verdict-pct" id="verdictRoi">—</div>
+              </div>
+              <div class="roi-grid" style="margin-bottom:12px;">
+                <div class="roi-gc"><div class="roi-gc-label">Net Profit</div><div class="roi-gc-val" id="roiNetProfit">—</div></div>
+                <div class="roi-gc"><div class="roi-gc-label">Total Costs</div><div class="roi-gc-val neutral" id="roiTotalCosts">—</div></div>
+                <div class="roi-gc"><div class="roi-gc-label">Break Even</div><div class="roi-gc-val neutral" id="roiBreakEven">—</div></div>
+              </div>
+              <div class="fee-card"><div class="fee-card-title">Fee Breakdown</div><div id="roiFeeLines"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Snap + Pro -->
+      <div class="snap-bar">
+        <div class="snap-info"><strong>Copy Comp Snapshot</strong><br>Paste into Discord, DMs, or group chats instantly.</div>
+        <button class="snap-btn" id="copyBtn" onclick="copySnap()">📋 COPY</button>
+      </div>
+      <div class="pro-bar">
+        <div class="pro-bar-info">
+          <h3>CardComp Pro <span class="pro-chip">COMING SOON</span></h3>
+          <p>Price alerts · Portfolio sync · CSV export · Sports cards · Pop report data</p>
+        </div>
+        <button class="pro-btn" onclick="alert('Waitlist coming soon!')">JOIN WAITLIST</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PORTFOLIO PAGE ══ -->
+<div class="page" id="pagePortfolio">
+  <div class="page-inner">
+    <!-- Portfolio hero (shown when cards exist) -->
+    <div id="portHero" class="port-hero hidden">
+      <div class="port-hero-label">Total Collection Value</div>
+      <div class="port-hero-value" id="heroMarket">$0.00</div>
+      <div class="port-hero-sub" id="heroSub">— cards in collection</div>
+      <div class="port-hero-row">
+        <div class="port-hero-stat"><div class="port-hero-stat-label">Cost Basis</div><div class="port-hero-stat-val neutral" id="heroCost">—</div></div>
+        <div class="port-hero-stat"><div class="port-hero-stat-label">After-Fee Value</div><div class="port-hero-stat-val blue" id="heroAfterFee">—</div></div>
+        <div class="port-hero-stat"><div class="port-hero-stat-label">Unrealized P&L</div><div class="port-hero-stat-val" id="heroPnl">—</div></div>
+      </div>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="port-toolbar">
+      <div class="port-toolbar-title">My Collection</div>
+      <div class="port-toolbar-right">
+        <select class="port-select" id="portFilter" onchange="renderPortfolio()">
+          <option value="all">All Games</option>
+          <option value="pokemon">Pokémon</option>
+          <option value="mtg">MTG</option>
+          <option value="yugioh">Yu-Gi-Oh!</option>
+          <option value="other">Other</option>
+        </select>
+        <select class="port-select" id="portSort" onchange="renderPortfolio()">
+          <option value="added">Recently Added</option>
+          <option value="value_desc">Value: High → Low</option>
+          <option value="pnl_desc">Best P&L First</option>
+          <option value="pnl_asc">Worst P&L First</option>
+          <option value="name">Name A–Z</option>
+        </select>
+        <button class="add-card-btn" onclick="openAddCardModal()">+ ADD CARD</button>
+      </div>
+    </div>
+
+    <!-- Empty state -->
+    <div id="portEmpty" class="port-empty">
+      <div class="port-empty-icon">📦</div>
+      <div class="port-empty-title">Portfolio is Empty</div>
+      <p class="port-empty-sub">Add your first card to start tracking value and P&L.</p>
+      <button class="add-card-btn" onclick="openAddCardModal()">+ ADD YOUR FIRST CARD</button>
+    </div>
+
+    <!-- Grid -->
+    <div id="portGrid" class="port-grid hidden"></div>
+
+    <!-- Pro upsell -->
+    <div id="portProBanner" class="pro-bar hidden" style="margin-top:14px;">
+      <div class="pro-bar-info">
+        <h3>CardComp Pro <span class="pro-chip">COMING SOON</span></h3>
+        <p>Price alerts · Daily auto-refresh · CSV export · Cross-device sync</p>
+      </div>
+      <button class="pro-btn" onclick="alert('Waitlist coming soon!')">JOIN WAITLIST</button>
+    </div>
+  </div>
+</div>
+
+<script>
+
+let selectedGame = '';
+
+// ─── RECENT SEARCHES ─────────────────────────────────
+const MAX_RECENT = 8;
+
+function loadRecentSearches() {
+  try { return JSON.parse(localStorage.getItem('cc_recent') || '[]'); }
+  catch(e) { return []; }
+}
+function saveRecentSearch(q) {
+  let recent = loadRecentSearches().filter(r => r.toLowerCase() !== q.toLowerCase());
+  recent.unshift(q);
+  if (recent.length > MAX_RECENT) recent = recent.slice(0, MAX_RECENT);
+  localStorage.setItem('cc_recent', JSON.stringify(recent));
+}
+function removeRecentSearch(q) {
+  const recent = loadRecentSearches().filter(r => r !== q);
+  localStorage.setItem('cc_recent', JSON.stringify(recent));
+  renderRecentSearches();
+}
+function renderRecentSearches() {
+  const recent = loadRecentSearches();
+  const wrap = document.getElementById('recentSearchesWrap');
+  const chips = document.getElementById('recentChips');
+  if (!wrap || !chips) return;
+  if (!recent.length) { wrap.classList.add('hidden'); return; }
+  wrap.classList.remove('hidden');
+  chips.innerHTML = recent.map(r => `
+    <div class="recent-chip" onclick="runRecentSearch('${esc(r)}')">
+      <span class="recent-chip-text">🕐 ${esc(r)}</span>
+      <button class="recent-chip-x" onclick="event.stopPropagation();removeRecentSearch('${esc(r)}')">✕</button>
+    </div>`).join('');
+}
+function runRecentSearch(q) {
+  document.getElementById('searchInput').value = q;
+  hideSuggestions();
+  doSearch();
+}
+
+// ─── LIVE SUGGESTIONS ────────────────────────────────
+let suggestTimeout = null;
+let suggestFocusIndex = -1;
+let lastSuggestQuery = '';
+
+function onSearchInput(val) {
+  // Show/hide clear button
+  const clearBtn = document.getElementById('searchClear');
+  clearBtn.classList.toggle('visible', val.length > 0);
+
+  // Show recent searches when empty
+  if (!val.trim()) {
+    hideSuggestions();
+    renderRecentSearches();
+    return;
+  }
+
+  // Hide recent when typing
+  document.getElementById('recentSearchesWrap').classList.add('hidden');
+
+  // Debounce suggestions — fire after 350ms of no typing
+  // Auto-detect game from what's typed
+  const lower = val.toLowerCase();
+  const gameKeywords = {
+    pokemon: ['pikachu','charizard','mewtwo','eevee','bulbasaur','squirtle','pokemon','pokémon','psa','bgs','base set','jungle','fossil','neo','ex ','gx ','vmax','vstar'],
+    mtg: ['black lotus','mox','ancestral','time walk','magic','mtg','force of will','sol ring','fetchland','dual land'],
+    yugioh: ['blue-eyes','dark magician','exodia','yugioh','yu-gi-oh','blue eyes'],
+    onepiece: ['luffy','zoro','nami','one piece','sanji','shanks'],
+    lorcana: ['lorcana','stitch','elsa','simba','moana'],
+  };
+  let detected = '';
+  for (const [game, keywords] of Object.entries(gameKeywords)) {
+    if (keywords.some(kw => lower.includes(kw))) { detected = game; break; }
+  }
+  if (detected && detected !== selectedGame) {
+    const chip = document.querySelector(`.game-chip[data-game="${detected}"]`);
+    if (chip) selectGame(chip);
+  }
+
+  clearTimeout(suggestTimeout);
+  if (val.trim().length < 2) { hideSuggestions(); return; }
+  suggestTimeout = setTimeout(() => fetchSuggestions(val.trim()), 350);
+}
+
+async function fetchSuggestions(q) {
+  if (!apiKey || q === lastSuggestQuery) return;
+  lastSuggestQuery = q;
+  const box = document.getElementById('suggestions');
+
+  // Show loading state
+  box.innerHTML = `<div class="sug-loading"><div class="sug-loader"></div> Searching...</div>`;
+  box.classList.remove('hidden');
+  box.classList.add('visible');
+
+  try {
+    const game = selectedGame || '';
+    let url = `${WORKER_URL}/v1/cards/search?q=${encodeURIComponent(q)}&limit=6`;
+    if (game) url += `&game=${game}`;
+    const res = await fetch(url);
+    if (!res.ok) { hideSuggestions(); return; }
+    const data = await res.json();
+    const cards = data.data || [];
+
+    if (!cards.length) {
+      box.innerHTML = `<div class="sug-empty">No results for "${esc(q)}" — try a different spelling</div>`;
+      return;
+    }
+
+    suggestFocusIndex = -1;
+    box.innerHTML = cards.map((c, i) => {
+      const price = c.prices?.raw?.near_mint?.tcgplayer?.market;
+      const img = c.image_url
+        ? `<img class="sug-img" src="${esc(c.image_url)}" onerror="this.outerHTML='<div class=sug-img-ph>🃏</div>'">`
+        : `<div class="sug-img-ph">🃏</div>`;
+      return `<div class="suggestion-item" data-id="${esc(c.id)}" data-index="${i}" onclick="selectSuggestion('${esc(c.id)}')">
+        ${img}
+        <div class="sug-info">
+          <div class="sug-name">${esc(c.name)}</div>
+          <div class="sug-meta">${esc(c.set?.name||'')} · ${esc(c.game?.name||'')}${c.number?' · #'+esc(c.number):''}</div>
+        </div>
+        ${price ? `<div class="sug-price">${fmt(price)}</div>` : ''}
+      </div>`;
+    }).join('');
+  } catch(e) {
+    hideSuggestions();
+  }
+}
+
+function selectSuggestion(cardId) {
+  hideSuggestions();
+  const input = document.getElementById('searchInput');
+  saveRecentSearch(input.value.trim());
+  loadCard(cardId);
+}
+
+function hideSuggestions() {
+  const box = document.getElementById('suggestions');
+  box.classList.add('hidden');
+  box.classList.remove('visible');
+  suggestFocusIndex = -1;
+  lastSuggestQuery = '';
+}
+
+function clearSearch() {
+  const input = document.getElementById('searchInput');
+  input.value = '';
+  hideSuggestions();
+  renderRecentSearches();
+  document.getElementById('searchClear').classList.remove('visible');
+  input.focus();
+}
+
+// Keyboard navigation through suggestions
+function onSearchKeyDown(e) {
+  const box = document.getElementById('suggestions');
+  const items = box.querySelectorAll('.suggestion-item');
+
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    suggestFocusIndex = Math.min(suggestFocusIndex + 1, items.length - 1);
+    items.forEach((el, i) => el.classList.toggle('focused', i === suggestFocusIndex));
+    return;
+  }
+  if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    suggestFocusIndex = Math.max(suggestFocusIndex - 1, -1);
+    items.forEach((el, i) => el.classList.toggle('focused', i === suggestFocusIndex));
+    return;
+  }
+  if (e.key === 'Enter') {
+    if (suggestFocusIndex >= 0 && items[suggestFocusIndex]) {
+      const id = items[suggestFocusIndex].dataset.id;
+      if (id) { selectSuggestion(id); return; }
+    }
+    hideSuggestions();
+    doSearch();
+    return;
+  }
+  if (e.key === 'Escape') {
+    hideSuggestions();
+    return;
+  }
+}
+
+// Close suggestions when clicking outside
+document.addEventListener('click', (e) => {
+  if (!document.getElementById('searchWrap')?.contains(e.target)) {
+    hideSuggestions();
+  }
+});
+
+function selectGame(el) {
+  document.querySelectorAll('.game-chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  selectedGame = el.dataset.game || '';
+}
+// ─── COUNTRY / TAX DATA ──────────────────────────────
+const TAX_RATES = {
+  CA: {
+    ON:0.13, BC:0.12, AB:0.05, QC:0.14975, NS:0.15,
+    NB:0.15, MB:0.12, SK:0.11, PE:0.15, NL:0.15,
+    YT:0.05, NT:0.05, NU:0.05
+  },
+  US: {
+    AL:0.04, AK:0.0, AZ:0.056, AR:0.065, CA:0.0725,
+    CO:0.029, CT:0.0635, DE:0.0, FL:0.06, GA:0.04,
+    HI:0.04, ID:0.06, IL:0.0625, IN:0.07, IA:0.06,
+    KS:0.065, KY:0.06, LA:0.0445, ME:0.055, MD:0.06,
+    MA:0.0625, MI:0.06, MN:0.06875, MS:0.07, MO:0.04225,
+    MT:0.0, NE:0.055, NV:0.0685, NH:0.0, NJ:0.06625,
+    NM:0.05125, NY:0.04, NC:0.0475, ND:0.05, OH:0.0575,
+    OK:0.045, OR:0.0, PA:0.06, RI:0.07, SC:0.06,
+    SD:0.045, TN:0.07, TX:0.0625, UT:0.0485, VT:0.06,
+    VA:0.053, WA:0.065, WV:0.06, WI:0.05, WY:0.04,
+    DC:0.06
+  },
+  UK:0.20, AU:0.10
+};
+const US_STATE_NAMES = {
+  AL:'Alabama',AK:'Alaska',AZ:'Arizona',AR:'Arkansas',CA:'California',
+  CO:'Colorado',CT:'Connecticut',DE:'Delaware',FL:'Florida',GA:'Georgia',
+  HI:'Hawaii',ID:'Idaho',IL:'Illinois',IN:'Indiana',IA:'Iowa',
+  KS:'Kansas',KY:'Kentucky',LA:'Louisiana',ME:'Maine',MD:'Maryland',
+  MA:'Massachusetts',MI:'Michigan',MN:'Minnesota',MS:'Mississippi',MO:'Missouri',
+  MT:'Montana',NE:'Nebraska',NV:'Nevada',NH:'New Hampshire',NJ:'New Jersey',
+  NM:'New Mexico',NY:'New York',NC:'North Carolina',ND:'North Dakota',OH:'Ohio',
+  OK:'Oklahoma',OR:'Oregon',PA:'Pennsylvania',RI:'Rhode Island',SC:'South Carolina',
+  SD:'South Dakota',TN:'Tennessee',TX:'Texas',UT:'Utah',VT:'Vermont',
+  VA:'Virginia',WA:'Washington',WV:'West Virginia',WI:'Wisconsin',WY:'Wyoming',
+  DC:'Washington D.C.'
+};
+const CA_PROVINCE_NAMES = {
+  ON:'Ontario',BC:'British Columbia',AB:'Alberta',QC:'Quebec',
+  NS:'Nova Scotia',NB:'New Brunswick',MB:'Manitoba',SK:'Saskatchewan',
+  PE:'Prince Edward Island',NL:'Newfoundland',YT:'Yukon',NT:'Northwest Territories',NU:'Nunavut'
+};
+const TAX_LABELS = {
+  CA:{ON:'13% HST',BC:'12% GST+PST',AB:'5% GST',QC:'14.975% GST+QST',NS:'15% HST',NB:'15% HST',MB:'12% GST+PST',SK:'11% GST+PST',PE:'15% HST',NL:'15% HST',YT:'5% GST',NT:'5% GST',NU:'5% GST'},
+  UK:'20% VAT',AU:'10% GST'
+};
+const COUNTRY_FLAGS = {CA:'🇨🇦',US:'🇺🇸',UK:'🇬🇧',AU:'🇦🇺'};
+const EBAY_FVF = {CA:0.1325, US:0.1325, UK:0.125, AU:0.129};
+const EBAY_FIXED = {CA:0.40, US:0.40, UK:0.30, AU:0.35};
+// Grading fees
+const GRADING_FEES = {
+  psa_economy:18, psa_value:32.99, psa_regular:75,
+  bgs_economy:22, bgs_standard:75,
+  cgc_economy:18, cgc_standard:35
+};
+
+// ─── STATE ───────────────────────────────────────────
+// API key lives in Cloudflare Worker — never exposed in frontend
+const WORKER_URL = 'https://cardcomp-api.romantinimassimo.workers.dev';
+let apiKey = 'connected'; // auth handled by Worker
+let sellerCountry = localStorage.getItem('cc_country') || 'CA';
+let sellerProvince = localStorage.getItem('cc_province') || 'ON';
+let fxRate = 1.0; // USD to local currency rate
+let currencySymbol = 'US$';
+let showingLocalCurrency = sellerCountry === 'CA'; // default CAD on for Canadian users
+let currentCard = null;
+let currentTab = 'tcg';
+let currentTcgCond = 'near_mint';
+let currentEbayCond = 'near_mint';
+let currentGrader = 'psa';
+let currentPeriod = '30d';
+let chartInstance = null;
+let historyCache = {};
+let searchResults = [];
+let allSearchResults = []; // full unfiltered list
+let currentPage = 1;
+const PAGE_SIZE = 12;
+let snapshotText = '';
+
+const CONDITIONS = [
+  {key:'near_mint',label:'Near Mint'},
+  {key:'lightly_played',label:'Lightly Played'},
+  {key:'moderately_played',label:'Moderately Played'},
+  {key:'heavily_played',label:'Heavily Played'},
+  {key:'damaged',label:'Damaged'},
+];
+const GRADES = ['10','9.5','9','8.5','8','7','6','5'];
+const GRADERS = {psa:'PSA',bgs:'BGS',cgc:'CGC'};
+
+// ─── TAX HELPERS ─────────────────────────────────────
+function getTaxRate() {
+  if (sellerCountry === 'CA') return TAX_RATES.CA[sellerProvince] || 0.13;
+  if (sellerCountry === 'US') return TAX_RATES.US[sellerProvince] || 0;
+  return TAX_RATES[sellerCountry] || 0;
+}
+function getTaxLabel() {
+  if (sellerCountry === 'CA') return TAX_LABELS.CA[sellerProvince] || '13% HST';
+  if (sellerCountry === 'US') {
+    const rate = TAX_RATES.US[sellerProvince] || 0;
+    return rate === 0 ? 'No sales tax' : (rate*100).toFixed(2).replace(/\.?0+$/,'') + '% sales tax';
+  }
+  return TAX_LABELS[sellerCountry] || '0%';
+}
+function getFVF() { return EBAY_FVF[sellerCountry] || 0.1325; }
+function getFixed() { return EBAY_FIXED[sellerCountry] || 0.40; }
+
+// Calculate eBay net payout for a given sale price
+function calcEbayPayout(salePrice, promoRate=0) {
+  const tax = getTaxRate();
+  const fvf = getFVF();
+  const fixed = getFixed();
+  const fvfAmount = salePrice * fvf;
+  const taxOnFees = fvfAmount * tax;
+  const promoFee = salePrice * (promoRate/100);
+  const totalFees = fvfAmount + taxOnFees + fixed + promoFee;
+  const netPayout = salePrice - totalFees;
+  return {fvfAmount, taxOnFees, promoFee, fixed, totalFees, netPayout};
+}
+
+// ─── COUNTRY UI ──────────────────────────────────────
+function refreshCountryUI() {
+  const flag = COUNTRY_FLAGS[sellerCountry] || '🌍';
+  document.getElementById('countryFlag').textContent = flag;
+  let lbl = sellerCountry;
+  if (sellerCountry === 'CA') lbl = `Canada · ${sellerProvince}`;
+  else if (sellerCountry === 'US') lbl = `US · ${sellerProvince}`;
+  else if (sellerCountry === 'UK') lbl = 'United Kingdom';
+  else if (sellerCountry === 'AU') lbl = 'Australia';
+  document.getElementById('countryLabel').textContent = lbl;
+  const roiBadge = document.getElementById('roiCountryBadge');
+  if (roiBadge) roiBadge.textContent = `${flag} ${sellerProvince||sellerCountry} · ${getTaxLabel()}`;
+}
+
+function openCountryModal() {
+  document.getElementById('countrySelect').value = sellerCountry;
+  document.getElementById('provinceSelect').value = sellerProvince;
+  onCountryChange();
+  document.getElementById('countryModal').classList.remove('hidden');
+}
+function closeCountryModal() { document.getElementById('countryModal').classList.add('hidden'); }
+function onCountryChange() {
+  const c = document.getElementById('countrySelect').value;
+  const pr = document.getElementById('provinceRow');
+  const hasSubregion = c === 'CA' || c === 'US';
+  pr.classList.toggle('visible', hasSubregion);
+  if (hasSubregion) {
+    const sel = document.getElementById('provinceSelect');
+    sel.innerHTML = '';
+    const regions = c === 'CA' ? CA_PROVINCE_NAMES : US_STATE_NAMES;
+    Object.entries(regions).forEach(([code, name]) => {
+      const rate = c === 'CA' ? TAX_RATES.CA[code] : TAX_RATES.US[code];
+      const pct = rate === 0 ? 'No tax' : (rate*100).toFixed(2).replace(/\.?0+$/,'')+'%';
+      const opt = document.createElement('option');
+      opt.value = code;
+      opt.textContent = `${name} (${pct})`;
+      if (code === sellerProvince) opt.selected = true;
+      sel.appendChild(opt);
+    });
+  }
+  onProvinceChange();
+}
+function onProvinceChange() {
+  const c = document.getElementById('countrySelect').value;
+  const p = document.getElementById('provinceSelect').value;
+  let label;
+  if (c === 'CA') label = TAX_LABELS.CA[p] || '5% GST';
+  else label = TAX_LABELS[c] || '0%';
+  document.getElementById('taxInfoValue').textContent = label;
+}
+function saveCountry() {
+  sellerCountry = document.getElementById('countrySelect').value;
+  sellerProvince = document.getElementById('provinceSelect').value;
+  localStorage.setItem('cc_country', sellerCountry);
+  localStorage.setItem('cc_province', sellerProvince);
+  // Reset currency to local when country changes
+  showingLocalCurrency = sellerCountry !== 'US';
+  refreshCountryUI();
+  closeCountryModal();
+  fetchFxRate().then(() => {
+    if (currentCard) renderDetail(currentCard);
+    renderPortfolio();
+  });
+  calcROI();
+}
+
+// ─── API KEY ─────────────────────────────────────────
+function refreshApiStatus() {
+  const dot = document.getElementById('statusDot');
+  const lbl = document.getElementById('apiBtnLabel');
+  // Worker is always connected — key lives in Cloudflare
+  dot.classList.add('live');
+  lbl.textContent = 'Live';
+}
+function openApiModal() { document.getElementById('apiKeyInput').value=''; document.getElementById('apiModal').classList.remove('hidden'); }
+function closeApiModal() { document.getElementById('apiModal').classList.add('hidden'); }
+function saveApiKey() {
+  const v = document.getElementById('apiKeyInput').value.trim();
+  if (!v) return;
+  apiKey = v; localStorage.setItem('cc_api_key', v);
+  refreshApiStatus(); closeApiModal();
+}
+document.getElementById('countryModal').addEventListener('click', e => { if(e.target===document.getElementById('countryModal')) closeCountryModal(); });
+document.getElementById('apiModal').addEventListener('click', e => { if(e.target===document.getElementById('apiModal')) closeApiModal(); });
+
+// ─── SEARCH ──────────────────────────────────────────
+async function doSearch() {
+  const q = document.getElementById('searchInput').value.trim();
+  if (!q) return;
+  // Worker handles auth — no key check needed
+  hideSuggestions();
+  saveRecentSearch(q);
+  const game = selectedGame || '';
+  setLoading(true); hideError();
+  show('emptyState',false); show('searchSection',false); show('detailSection',false);
+  try {
+    let url = `${WORKER_URL}/v1/cards/search?q=${encodeURIComponent(q)}&limit=50`;
+    if (game) url += `&game=${game}`;
+    const res = await fetch(url);
+    if (res.status===401) throw new Error('Invalid API key — click the top-right button to update it.');
+    if (res.status===429) throw new Error('Rate limit reached. Wait a moment and try again.');
+    if (!res.ok) throw new Error(`API error ${res.status}.`);
+    const data = await res.json();
+    allSearchResults = data.data || [];
+    searchResults = allSearchResults;
+    currentPage = 1;
+    if (!allSearchResults.length) throw new Error(`No cards found for "${q}". Try a broader search.`);
+    if (allSearchResults.length === 1) { await loadCard(allSearchResults[0].id); return; }
+    history.pushState({ view: 'search', query: q }, '', `#search`);
+    renderSearchList(searchResults, currentPage);
+  } catch(e) { showError(e.message); }
+  finally { setLoading(false); }
+}
+
+function renderSearchList(cards, page) {
+  page = page || 1;
+  const list = document.getElementById('searchList');
+  const totalPages = Math.ceil(cards.length / PAGE_SIZE);
+  const start = (page - 1) * PAGE_SIZE;
+  const end = start + PAGE_SIZE;
+  const pageCards = cards.slice(start, end);
+
+  list.innerHTML = `<div class="card-list-head">
+    <div class="card-list-title">SELECT A CARD</div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <div class="results-count">${cards.length} results</div>
+      ${totalPages > 1 ? `<div class="card-list-badge">Page ${page} of ${totalPages}</div>` : ''}
+    </div>
+  </div>`;
+
+  pageCards.forEach(c => {
+    const el = document.createElement('div'); el.className = 'card-list-item';
+    el.onclick = () => loadCard(c.id);
+    const nm = c.prices?.raw?.near_mint?.tcgplayer?.market;
+    const thumb = c.image_url ? `<img class="cli-img" src="${esc(c.image_url)}" onerror="this.outerHTML='<div class=cli-img-ph>🃏</div>'">` : `<div class="cli-img-ph">🃏</div>`;
+    el.innerHTML = `${thumb}<div class="cli-info"><div class="cli-name">${esc(c.name)}</div><div class="cli-meta">${esc(c.set?.name||'')} · ${esc(c.game?.name||'')}${c.number?' · #'+esc(c.number):''}</div></div>${nm?`<div class="cli-price">${fmt(nm)}</div>`:''}<div class="cli-arrow">›</div>`;
+    list.appendChild(el);
+  });
+
+  // Pagination controls
+  if (totalPages > 1) {
+    const pag = document.createElement('div');
+    pag.className = 'pagination';
+    pag.innerHTML = `
+      <button class="page-btn" onclick="goToPage(${page - 1})" ${page <= 1 ? 'disabled' : ''}>← Prev</button>
+      ${Array.from({length: Math.min(totalPages, 5)}, (_, i) => {
+        // Show pages around current
+        let p;
+        if (totalPages <= 5) p = i + 1;
+        else if (page <= 3) p = i + 1;
+        else if (page >= totalPages - 2) p = totalPages - 4 + i;
+        else p = page - 2 + i;
+        return `<button class="page-btn ${p === page ? 'active' : ''}" onclick="goToPage(${p})">${p}</button>`;
+      }).join('')}
+      <button class="page-btn" onclick="goToPage(${page + 1})" ${page >= totalPages ? 'disabled' : ''}>Next →</button>
+    `;
+    list.appendChild(pag);
+  }
+
+  show('searchSection', true);
+}
+
+function goToPage(page) {
+  if (page < 1 || page > Math.ceil(searchResults.length / PAGE_SIZE)) return;
+  currentPage = page;
+  renderSearchList(searchResults, page);
+  // Scroll to top of list
+  document.getElementById('searchList').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ─── CARD DETAIL ─────────────────────────────────────
+async function loadCard(id) {
+  show('searchSection',false); setLoading(true); hideError();
+  try {
+    const res = await fetch(`${WORKER_URL}/v1/cards/${id}`);
+    if (!res.ok) throw new Error(`Could not load card (${res.status})`);
+    currentCard = await res.json();
+    historyCache = {};
+    history.pushState({ view: 'detail', cardId: id, cardName: currentCard.name }, '', `#card`);
+    renderDetail(currentCard);
+    loadHistory(id, currentPeriod);
+  } catch(e) { showError(e.message); }
+  finally { setLoading(false); }
+}
+
+function goBack() {
+  show('detailSection', false);
+  show('searchSection', true);
+  history.pushState({ view: 'search' }, '', '#search');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function renderDetail(card) {
+  renderHeader(card);
+  checkUpgrade(card);
+  switchTab('tcg', document.querySelector('.source-tab.tcg'));
+  renderTcgPanel(card);
+  renderEbayPanel(card);
+  renderGradedPanel(card);
+  prefillROI(card);
+  buildSnapshot(card);
+  updateQuickAddBar(card);
+  show('detailSection', true);
+}
+
+function renderHeader(card) {
+  const updated = card.updated_at ? new Date(card.updated_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : null;
+  // Get dominant price for hero display
+  const nm = card.prices?.raw?.near_mint;
+  const tcgPrice = nm?.tcgplayer?.market;
+  const ebayPrice = nm?.ebay?.avg_7d;
+  const psa10 = card.prices?.graded?.psa?.['10']?.ebay?.avg_7d;
+  const img = card.image_url
+    ? `<img class="card-hero-img" src="${esc(card.image_url)}" onerror="this.outerHTML='<div class=card-hero-img-ph>🃏</div>'">`
+    : `<div class="card-hero-img-ph">🃏</div>`;
+  document.getElementById('cardHero').innerHTML = `
+    <div class="card-hero-img-wrap">${img}</div>
+    <div class="card-hero-info">
+      <div class="card-hero-game">${esc(card.game?.name||'')}</div>
+      <div class="card-hero-name">${esc(card.name)}</div>
+      <div class="card-hero-set">${esc(card.set?.name||'')}${card.number?' · #'+esc(card.number):''}</div>
+      <div class="card-tags">
+        ${card.rarity?`<span class="ctag ctag-rarity">${esc(card.rarity)}</span>`:''}
+        ${card.variant&&card.variant!=='Standard'?`<span class="ctag ctag-variant">${esc(card.variant)}</span>`:''}
+      </div>
+      <div class="card-price-hero">
+        ${tcgPrice?`<div class="cph-item"><div class="cph-label">TCGPlayer</div><div class="cph-value tcg">${fmt(tcgPrice)}</div></div>`:''}
+        ${ebayPrice?`<div class="cph-item"><div class="cph-label">eBay 7D</div><div class="cph-value ebay">${fmt(ebayPrice)}</div></div>`:''}
+        ${psa10?`<div class="cph-item"><div class="cph-label">PSA 10</div><div class="cph-value psa10">${fmt(psa10)}</div></div>`:''}
+      </div>
+      ${updated?`<div class="updated-line"><span class="live-dot"></span>Updated ${updated}</div>`:''}
+    </div>`;
+}
+
+function checkUpgrade(card) {
+  const hasEbay = card.prices?.raw?.near_mint?.ebay?.avg_7d;
+  const hasGraded = card.prices?.graded?.psa?.['10']?.ebay?.avg_7d;
+  const needsUpgrade = !hasEbay && !hasGraded;
+  show('upgradeBar', needsUpgrade);
+}
+
+// ─── TCG PANEL ───────────────────────────────────────
+function renderTcgPanel(card) {
+  const tabs = document.getElementById('tcgCondChips');
+  tabs.innerHTML = '';
+  CONDITIONS.forEach(c => {
+    const val = card.prices?.raw?.[c.key]?.tcgplayer?.market;
+    if (val===undefined && c.key!=='near_mint') return;
+    const btn = document.createElement('button');
+    btn.className = 'cond-chip' + (c.key===currentTcgCond?' active':'');
+    btn.textContent = `${c.label}${val?' ('+fmt(val)+')':' (—)'}`;
+    btn.onclick = () => {
+      currentTcgCond = c.key;
+      tabs.querySelectorAll('.cond-chip').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      renderTcgPrices(card, c.key);
+      updateQuickAddBar(card);
+    };
+    tabs.appendChild(btn);
+  });
+  renderTcgPrices(card, currentTcgCond);
+}
+function renderTcgPrices(card, cond) {
+  const d = card.prices?.raw?.[cond]?.tcgplayer;
+  document.getElementById('tcgPriceGrid').innerHTML = `
+    <div class="price-big-card pbc-tcg"><div class="pbl-label">Market</div><div class="pbl-value">${fmt(d?.market)}</div><div class="pbl-sub">TCGPlayer market</div></div>
+    <div class="price-big-card pbc-low"><div class="pbl-label">Low</div><div class="pbl-value">${fmt(d?.low)}</div><div class="pbl-sub">Lowest listed</div></div>
+    <div class="price-big-card pbc-high"><div class="pbl-label">High</div><div class="pbl-value">${fmt(d?.high)}</div><div class="pbl-sub">Highest listed</div></div>`;
+}
+
+// ─── EBAY PANEL ──────────────────────────────────────
+function renderEbayPanel(card) {
+  const tabs = document.getElementById('ebayCondChips');
+  tabs.innerHTML = '';
+  CONDITIONS.forEach(c => {
+    const val = card.prices?.raw?.[c.key]?.ebay?.avg_7d;
+    if (val===undefined && c.key!=='near_mint') return;
+    const btn = document.createElement('button');
+    btn.className = 'cond-chip' + (c.key===currentEbayCond?' active':'');
+    btn.textContent = `${c.label}${val?' ('+fmt(val)+')':' (—)'}`;
+    btn.onclick = () => {
+      currentEbayCond = c.key;
+      tabs.querySelectorAll('.cond-chip').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      renderEbayPrices(card, c.key);
+      updateQuickAddBar(card);
+    };
+    tabs.appendChild(btn);
+  });
+  renderEbayPrices(card, currentEbayCond);
+}
+function renderEbayPrices(card, cond) {
+  const d = card.prices?.raw?.[cond]?.ebay;
+  const row = document.getElementById('ebayPriceGrid');
+  if (!d?.avg_7d) {
+    row.innerHTML = '<div class="upgrade-bar" style="grid-column:1/-1">🔒 eBay sold data requires <a href="https://tcgpricelookup.com/pricing" target="_blank">Trader plan ($14.99/mo)</a></div>';
+    document.getElementById('ebayFeeCard').innerHTML = '';
+    return;
+  }
+  row.innerHTML = `
+    <div class="price-big-card pbc-ebay7"><div class="pbl-label">eBay 7-Day Avg</div><div class="pbl-value">${fmt(d.avg_7d)}</div><div class="pbl-sub">Sold listings avg</div></div>
+    <div class="price-big-card pbc-ebay30"><div class="pbl-label">eBay 30-Day Avg</div><div class="pbl-value">${fmt(d.avg_30d)}</div><div class="pbl-sub">Sold listings avg</div></div>
+    <div class="price-big-card pbc-low"><div class="pbl-label">Recent Low</div><div class="pbl-value">${fmt(d.low)}</div><div class="pbl-sub">Lowest sale</div></div>
+    <div class="price-big-card pbc-avg"><div class="pbl-label">Recent High</div><div class="pbl-value">${fmt(d.high)}</div><div class="pbl-sub">Highest sale</div></div>`;
+  // Fee breakdown for eBay 7d avg
+  renderEbayFees(d.avg_7d);
+}
+
+function renderEbayFees(salePrice) {
+  if (!salePrice) return;
+  const {fvfAmount, taxOnFees, promoFee, fixed, totalFees, netPayout} = calcEbayPayout(salePrice);
+  const taxLbl = getTaxLabel();
+  const flag = COUNTRY_FLAGS[sellerCountry]||'🌍';
+  const prov = sellerCountry==='CA'?` · ${sellerProvince}`:'';
+  document.getElementById('ebayFeeCard').innerHTML = `
+    <div class="fee-card-title">Seller Take-Home ${flag}${prov} <span style="font-size:10px;font-family:'Instrument Mono',monospace;color:var(--muted)">(on ${fmt(salePrice)} sale)</span></div>
+    <div class="fee-row deduct"><span class="fee-row-label">eBay Final Value Fee (${(getFVF()*100).toFixed(2)}%)</span><span class="fee-row-val">−${fmt(fvfAmount)}</span></div>
+    <div class="fee-row deduct"><span class="fee-row-label">Tax on Fees (${taxLbl})</span><span class="fee-row-val">−${fmt(taxOnFees)}</span></div>
+    <div class="fee-row deduct"><span class="fee-row-label">Per-Order Fee</span><span class="fee-row-val">−${fmt(fixed)}</span></div>
+    <div class="fee-row total"><span class="fee-row-label">Your Take-Home</span><span class="fee-row-val">${fmt(netPayout)}</span></div>`;
+}
+
+// ─── GRADED PANEL ────────────────────────────────────
+function renderGradedPanel(card) {
+  const graders = Object.keys(GRADERS).filter(g => card.prices?.graded?.[g]);
+  const tabs = document.getElementById('graderChips');
+  tabs.innerHTML = '';
+  if (!graders.length) {
+    document.getElementById('gradeTable').innerHTML = `<div style="padding:18px;font-size:13px;color:var(--muted)">No graded data available${card.prices?.graded?'. Requires <a href="https://tcgpricelookup.com/pricing" target="_blank" style="color:var(--accent)">Trader plan</a>.':' for this card.'}</div>`;
+    return;
+  }
+  if (!graders.includes(currentGrader)) currentGrader = graders[0];
+  graders.forEach(g => {
+    const btn = document.createElement('button');
+    btn.className = 'grader-chip' + (g===currentGrader?' active':'');
+    btn.textContent = GRADERS[g];
+    btn.onclick = () => { currentGrader=g; tabs.querySelectorAll('.grader-chip').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); renderGradeRows(card,g); updateQuickAddBar(card); };
+    tabs.appendChild(btn);
+  });
+  renderGradeRows(card, currentGrader);
+}
+function renderGradeRows(card, grader) {
+  const gdata = card.prices?.graded?.[grader];
+  const rawRef = card.prices?.raw?.near_mint?.ebay?.avg_7d || card.prices?.raw?.near_mint?.tcgplayer?.market;
+  const table = document.getElementById('gradeTable');
+  if (!gdata) { table.innerHTML=`<div style="padding:18px;font-size:13px;color:var(--muted)">No ${GRADERS[grader]} data.</div>`; return; }
+  let html = `<div class="grade-table-head"><span class="gth">Grade</span><span class="gth">eBay 7D</span><span class="gth">eBay 30D</span><span class="gth">vs Raw</span><span class="gth">TCGPlayer</span></div>`;
+  GRADES.forEach(g => {
+    const gd = gdata[g];
+    const e7=gd?.ebay?.avg_7d, e30=gd?.ebay?.avg_30d, tcg=gd?.tcgplayer?.market;
+    let deltaHtml = '<span class="gdelta">—</span>';
+    if (e7 && rawRef) { const pct=((e7-rawRef)/rawRef*100).toFixed(0); deltaHtml=`<span class="gdelta ${pct>=0?'up':'down'}">${pct>=0?'+':''}${pct}%</span>`; }
+    html += `<div class="grade-row"><span><span class="gpill gpill-${grader}">${GRADERS[grader]} ${g}</span></span><span class="gval ${e7?'':'na'}">${e7?fmt(e7):'—'}</span><span class="gval ${e30?'':'na'}" style="font-size:16px">${e30?fmt(e30):'—'}</span>${deltaHtml}<span class="gval ${tcg?'':'na'}" style="color:var(--accent2);font-size:16px">${tcg?fmt(tcg):'—'}</span></div>`;
+  });
+  table.innerHTML = html;
+}
+
+// ─── PRICE HISTORY CHART ─────────────────────────────
+async function loadHistory(cardId, period) {
+  const key = `${cardId}_${period}`;
+  const wrap = document.getElementById('chartWrap');
+  if (historyCache[key]) { renderChart(historyCache[key]); return; }
+  wrap.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:175px"><div class="loader"></div></div>';
+  try {
+    const res = await fetch(`${WORKER_URL}/v1/cards/${cardId}/history?period=${period}`);
+    if (res.status===403||res.status===401) { wrap.innerHTML=`<div class="chart-locked"><div class="chart-locked-icon">🔒</div><div class="chart-locked-text">Price history requires <a href="https://tcgpricelookup.com/pricing" target="_blank">Trader plan ($14.99/mo)</a></div></div>`; return; }
+    if (!res.ok) throw new Error('unavailable');
+    const data = await res.json();
+    historyCache[key] = data;
+    wrap.innerHTML = '<canvas id="priceChart"></canvas>';
+    renderChart(data);
+  } catch(e) { wrap.innerHTML=`<div class="chart-locked"><div class="chart-locked-icon">📊</div><div class="chart-locked-text">Price history not available for this card</div></div>`; }
+}
+function renderChart(data) {
+  const canvas = document.getElementById('priceChart');
+  if (!canvas) return;
+  if (chartInstance) { chartInstance.destroy(); chartInstance=null; }
+  const points = data.data||[];
+  if (!points.length) { canvas.parentElement.innerHTML=`<div class="chart-locked"><div class="chart-locked-icon">📊</div><div class="chart-locked-text">No history data for this period</div></div>`; return; }
+  const labels = points.map(p=>p.date);
+  const tcgData = points.map(p=>p.prices?.tcgplayer?.market??null);
+  const ebayData = points.map(p=>p.prices?.ebay?.avg??null);
+  const datasets = [{label:'TCGPlayer',data:tcgData,borderColor:'#ff6b35',backgroundColor:'rgba(255,107,53,0.06)',borderWidth:2,pointRadius:0,tension:0.4,fill:true,spanGaps:true}];
+  if (ebayData.some(v=>v!==null)) datasets.push({label:'eBay',data:ebayData,borderColor:'#7b8fff',backgroundColor:'rgba(123,143,255,0.06)',borderWidth:2,pointRadius:0,tension:0.4,fill:true,spanGaps:true});
+  chartInstance = new Chart(canvas, {
+    type:'line', data:{labels,datasets},
+    options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+      plugins:{legend:{display:datasets.length>1,labels:{color:'#526070',font:{family:'Instrument Mono',size:10},boxWidth:10,usePointStyle:true}},
+        tooltip:{backgroundColor:'#161c23',borderColor:'#2a3540',borderWidth:1,titleColor:'#dde4ec',bodyColor:'#526070',callbacks:{label:ctx=>` ${ctx.dataset.label}: ${ctx.parsed.y?'$'+ctx.parsed.y.toFixed(2):'—'}`}}},
+      scales:{x:{ticks:{color:'#3a4a58',font:{family:'Instrument Mono',size:9},maxRotation:0,maxTicksLimit:8},grid:{color:'rgba(30,39,48,0.8)'}},y:{ticks:{color:'#3a4a58',font:{family:'Instrument Mono',size:9},callback:v=>'$'+v},grid:{color:'rgba(30,39,48,0.8)'}}}}
+  });
+}
+
+// ─── ROI CALCULATOR ──────────────────────────────────
+function prefillROI(card) {
+  // Try to auto-fill sale price from PSA 9 eBay 7d if available
+  const psa9 = card.prices?.graded?.psa?.['9']?.ebay?.avg_7d;
+  const psa10 = card.prices?.graded?.psa?.['10']?.ebay?.avg_7d;
+  if (psa9) {
+    document.getElementById('roiSalePrice').value = psa9.toFixed(2);
+    document.getElementById('roiSalePrice').placeholder = fmt(psa9) + ' (PSA 9 avg)';
+  } else if (psa10) {
+    document.getElementById('roiSalePrice').value = psa10.toFixed(2);
+    document.getElementById('roiSalePrice').placeholder = fmt(psa10) + ' (PSA 10 avg)';
+    document.getElementById('roiGrade').value = '10';
+  }
+  document.getElementById('roiResults').classList.remove('visible');
+  calcROI();
+}
+
+function calcROI() {
+  const rawCost = parseFloat(document.getElementById('roiRawCost').value) || 0;
+  const graderKey = document.getElementById('roiGrader').value;
+  const gradingFee = GRADING_FEES[graderKey] || 32.99;
+  const shipping = parseFloat(document.getElementById('roiShipping').value) || 0;
+  const salePrice = parseFloat(document.getElementById('roiSalePrice').value) || 0;
+  const promoRate = parseFloat(document.getElementById('roiPromo').value) || 0;
+
+  if (!salePrice && !rawCost) { document.getElementById('roiResults').classList.remove('visible'); return; }
+
+  const totalCosts = rawCost + gradingFee + shipping;
+  const {fvfAmount, taxOnFees, promoFee, fixed, totalFees, netPayout} = calcEbayPayout(salePrice, promoRate);
+  const netProfit = netPayout - totalCosts;
+  const roi = totalCosts > 0 ? (netProfit / totalCosts) * 100 : 0;
+  const breakEven = calcBreakEven(totalCosts, promoRate);
+
+  // Verdict
+  let verdict, cls;
+  if (roi >= 50) { verdict='STRONG GRADE'; cls='strong'; }
+  else if (roi >= 20) { verdict='GRADE IT'; cls='good'; }
+  else if (roi >= 0) { verdict='MARGINAL'; cls='marginal'; }
+  else { verdict='SKIP IT'; cls='skip'; }
+
+  const msgs = {
+    strong:`${roi.toFixed(0)}% ROI — strong play. Even if you grade down one level, you likely still profit.`,
+    good:`${roi.toFixed(0)}% ROI — solid submission. Covers costs with meaningful upside.`,
+    marginal:`${roi.toFixed(0)}% ROI — tight. A grade lower than expected could put you in the red.`,
+    skip:`${roi.toFixed(0)}% ROI — submission costs exceed projected sale price. Hold raw or find a better price.`
+  };
+
+  const el = document.getElementById('roiResults');
+  const v = document.getElementById('roiVerdict');
+  v.className = `roi-verdict ${cls}`;
+  document.getElementById('verdictBadge').textContent = verdict;
+  document.getElementById('verdictMsg').textContent = msgs[cls];
+  document.getElementById('verdictRoi').textContent = roi.toFixed(0)+'%';
+
+  const profitCls = netProfit >= 0 ? 'profit' : 'loss';
+  document.getElementById('roiNetProfit').className = `roi-bc-val ${profitCls}`;
+  document.getElementById('roiNetProfit').textContent = fmt(netProfit);
+  document.getElementById('roiTotalCosts').textContent = fmt(totalCosts);
+  document.getElementById('roiBreakEven').textContent = fmt(breakEven);
+
+  const taxLbl = getTaxLabel();
+  const flag = COUNTRY_FLAGS[sellerCountry]||'🌍';
+  document.getElementById('roiFeeLines').innerHTML = `
+    <div class="fee-row deduct"><span class="fee-row-label">Raw card cost</span><span class="fee-row-val">−${fmt(rawCost)}</span></div>
+    <div class="fee-row deduct"><span class="fee-row-label">Grading fee (${graderKey.replace('_',' ').toUpperCase()})</span><span class="fee-row-val">−${fmt(gradingFee)}</span></div>
+    <div class="fee-row deduct"><span class="fee-row-label">Shipping to grader</span><span class="fee-row-val">−${fmt(shipping)}</span></div>
+    <div class="fee-row deduct"><span class="fee-row-label">eBay FVF (${(getFVF()*100).toFixed(2)}%)</span><span class="fee-row-val">−${fmt(fvfAmount)}</span></div>
+    <div class="fee-row deduct"><span class="fee-row-label">Tax on fees ${flag} (${taxLbl})</span><span class="fee-row-val">−${fmt(taxOnFees)}</span></div>
+    ${promoFee>0?`<div class="fee-row deduct"><span class="fee-row-label">Promoted listing (${promoRate}%)</span><span class="fee-row-val">−${fmt(promoFee)}</span></div>`:''}
+    <div class="fee-row deduct"><span class="fee-row-label">Per-order fee</span><span class="fee-row-val">−${fmt(fixed)}</span></div>
+    <div class="fee-row total"><span class="fee-row-label">Net Profit</span><span class="fee-row-val">${fmt(netProfit)}</span></div>`;
+
+  el.classList.add('visible');
+  // Update country badge
+  document.getElementById('roiCountryBadge').textContent = `${flag} ${sellerCountry==='CA'?sellerProvince:sellerCountry} · ${taxLbl}`;
+}
+
+function calcBreakEven(totalCosts, promoRate=0) {
+  // Solve: salePrice - (salePrice * fvf) - (salePrice * fvf * tax) - (salePrice * promo/100) - fixed = totalCosts
+  const fvf = getFVF();
+  const tax = getTaxRate();
+  const promo = promoRate/100;
+  const fixed = getFixed();
+  const denom = 1 - fvf - (fvf*tax) - promo;
+  return (totalCosts + fixed) / denom;
+}
+
+// ─── TABS ────────────────────────────────────────────
+function switchTab(tab, el) {
+  currentTab = tab;
+  document.querySelectorAll('.stab').forEach(t=>t.classList.remove('active'));
+  if (el) el.classList.add('active');
+  document.querySelectorAll('.price-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+tab).classList.add('active');
+  if (currentCard) updateQuickAddBar(currentCard);
+}
+function switchPeriod(period, el) {
+  currentPeriod = period;
+  document.querySelectorAll('.period-chip').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  if (currentCard) loadHistory(currentCard.id, period);
+}
+
+// ─── SNAPSHOT ────────────────────────────────────────
+function buildSnapshot(card) {
+  const nm = card.prices?.raw?.near_mint;
+  const tcg = nm?.tcgplayer?.market;
+  const e7 = nm?.ebay?.avg_7d;
+  const psa10 = card.prices?.graded?.psa?.['10']?.ebay?.avg_7d;
+  const psa9 = card.prices?.graded?.psa?.['9']?.ebay?.avg_7d;
+  const flag = COUNTRY_FLAGS[sellerCountry]||'';
+  const loc = sellerCountry==='CA'?`${sellerCountry} · ${sellerProvince}`:sellerCountry;
+  snapshotText = `📊 CARDCOMP — ${card.name}
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+Set:       ${card.set?.name||'—'}${card.number?' #'+card.number:''}
+Game:      ${card.game?.name||'—'}
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+TCGPlayer: ${tcg?fmt(tcg):'—'}
+eBay 7D:   ${e7?fmt(e7):'—'}
+PSA 10:    ${psa10?fmt(psa10):'—'}
+PSA 9:     ${psa9?fmt(psa9):'—'}
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+${flag} Fees: ${loc} · ${getTaxLabel()}
+CardComp — cardcomp.io`;
+}
+function copySnap() {
+  if (!snapshotText) return;
+  navigator.clipboard.writeText(snapshotText).then(() => {
+    const btn = document.getElementById('copyBtn');
+    btn.textContent = '✓ COPIED!'; btn.classList.add('copied');
+    setTimeout(() => { btn.textContent='📋 COPY SNAP'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+// ─── UTILS ───────────────────────────────────────────
+function esc2(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function fmt(v) {
+  if(!v && v!==0) return '—';
+  const converted = v * (fxRate || 1);
+  const sym = currencySymbol || 'US$';
+  return sym + converted.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function show(id,v) { document.getElementById(id)?.classList.toggle('hidden',!v); }
+function setLoading(v) { show('loadingState',v); document.getElementById('searchBtn').disabled=v; }
+function showError(msg) { const el=document.getElementById('errorBox'); document.getElementById('errorMsg').textContent=msg; el.classList.remove('hidden'); }
+function hideError() { document.getElementById('errorBox').classList.add('hidden'); }
+
+// ─── HOME / NAVIGATION ───────────────────────────────
+function goHome() {
+  show('detailSection', false);
+  show('searchSection', false);
+  show('emptyState', true);
+  show('errorBox', false);
+  switchPage('comps');
+  history.pushState({ view: 'home' }, '', window.location.pathname);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ─── QUICK ADD TO PORTFOLIO ──────────────────────────
+function updateQuickAddBar(card) {
+  const isGraded = currentTab === 'graded';
+  const condLabel = {near_mint:'NM',lightly_played:'LP',moderately_played:'MP',heavily_played:'HP',damaged:'DMG'};
+  const graderLabels = {psa:'PSA',bgs:'BGS',cgc:'CGC'};
+
+  // Use the condition relevant to whichever tab is active
+  const activeCond = currentTab === 'ebay' ? currentEbayCond : currentTcgCond;
+
+  let type = 'raw';
+  let condition = null;
+  let grade = null;
+  let condDisplay = '';
+
+  if (isGraded) {
+    type = 'graded';
+    grade = currentGrader + '_10';
+    condDisplay = `${graderLabels[currentGrader] || 'PSA'} 10`;
+  } else {
+    condition = activeCond;
+    condDisplay = condLabel[activeCond] || 'NM';
+  }
+
+  // Get the relevant price for this condition to show in quick-add
+  let condPrice = null;
+  if (!isGraded) {
+    condPrice = card.prices?.raw?.[activeCond]?.tcgplayer?.market
+      || card.prices?.raw?.[activeCond]?.ebay?.avg_7d;
+  }
+
+  document.getElementById('qaContext').innerHTML =
+    `<strong>${esc2(card.name||'—')}</strong> · <span style="color:var(--accent2)">${condDisplay}</span> · ${esc2(card.set?.name||'')}${condPrice ? ` · <span style="color:var(--green);font-family:sans-serif;font-size:14px;">${fmt(condPrice)}</span>` : ''}`;
+
+  // Store context for when user hits + ADD
+  document._qaContext = { type, condition, grade };
+}
+
+function quickAddToPortfolio() {
+  if (!currentCard) return;
+  const cost = parseFloat(document.getElementById('qaCost').value) || 0;
+  const qty = parseInt(document.getElementById('qaQty').value) || 1;
+  const ctx = document._qaContext || {type:'raw', condition:'near_mint', grade:null};
+
+  // ── Extract market value directly from currentCard (no extra API call needed) ──
+  let marketValue = null;
+  if (ctx.type === 'graded' && ctx.grade) {
+    const parts = ctx.grade.split('_');
+    const grader = parts[0];
+    const grade = parts.slice(1).join('.');
+    marketValue = currentCard.prices?.graded?.[grader]?.[grade]?.ebay?.avg_7d
+      || currentCard.prices?.graded?.[grader]?.[grade]?.tcgplayer?.market;
+  } else {
+    const cond = ctx.condition || 'near_mint';
+    marketValue = currentCard.prices?.raw?.[cond]?.tcgplayer?.market
+      || currentCard.prices?.raw?.[cond]?.ebay?.avg_7d;
+  }
+  if (marketValue) marketValue *= qty;
+
+  let afterFeeValue = null;
+  if (marketValue) {
+    const perCard = marketValue / qty;
+    const {netPayout} = calcEbayPayout(perCard);
+    afterFeeValue = netPayout * qty;
+  }
+
+  const card = {
+    id: Date.now().toString(),
+    name: currentCard.name,
+    set: currentCard.set?.name || '',
+    game: mapGame(currentCard.game?.name || ''),
+    type: ctx.type,
+    condition: ctx.condition,
+    grade: ctx.grade,
+    cost,
+    qty,
+    notes: currentCard.number ? '#' + currentCard.number : '',
+    addedAt: new Date().toISOString(),
+    marketValue,
+    afterFeeValue,
+    lastRefreshed: marketValue ? new Date().toISOString() : null,
+    image: currentCard.image_url || null,
+    apiId: currentCard.id,
+  };
+
+  const portfolio = loadPortfolio();
+  portfolio.unshift(card);
+  savePortfolioData(portfolio);
+  updatePortCount();
+
+  // Show success state on button
+  const btn = document.querySelector('.quick-add-btn');
+  if (btn) {
+    btn.textContent = '✓ ADDED';
+    btn.classList.add('success');
+    setTimeout(() => {
+      btn.textContent = '+ ADD';
+      btn.classList.remove('success');
+    }, 2500);
+  }
+
+  // Switch to portfolio so user can see it immediately
+  switchPage('portfolio');
+}
+
+function mapGame(gameName) {
+  const g = (gameName || '').toLowerCase();
+  if (g.includes('pokemon') || g.includes('pokémon')) return 'pokemon';
+  if (g.includes('magic')) return 'mtg';
+  if (g.includes('yu-gi') || g.includes('yugi')) return 'yugioh';
+  if (g.includes('one piece')) return 'onepiece';
+  if (g.includes('lorcana')) return 'lorcana';
+  return 'other';
+}
+
+// ─── PAGE SWITCHING ──────────────────────────────────
+function switchPage(page) {
+  ['comps','portfolio','pricer'].forEach(p => {
+    const pageEl = document.getElementById('page' + p.charAt(0).toUpperCase() + p.slice(1));
+    const navEl = document.getElementById('bnav' + p.charAt(0).toUpperCase() + p.slice(1));
+    if (pageEl) pageEl.classList.toggle('active', p === page);
+    if (navEl) navEl.classList.toggle('active', p === page);
+  });
+  // Active colour for pricer tab
+  const pt = document.getElementById('bnavPricer');
+  if (pt) pt.classList.toggle('pricer', page === 'pricer');
+  updatePortCount();
+  if (page === 'portfolio') renderPortfolio();
+  if (page === 'pricer') renderPricerItems();
+}
+
+function updatePortCount() {
+  const count = loadPortfolio().length;
+  const el = document.getElementById('portBadge');
+  if (el) {
+    el.textContent = count;
+    el.classList.toggle('hidden', count === 0);
+  }
+  const portTab = document.getElementById('bnavPortfolio');
+  if (portTab) portTab.style.borderColor = count > 0 ? 'var(--green)' : '';
+}
+
+// ─── PORTFOLIO DATA ───────────────────────────────────
+function loadPortfolio() {
+  try { return JSON.parse(localStorage.getItem('cc_portfolio') || '[]'); } catch(e) { return []; }
+}
+function savePortfolioData(data) {
+  localStorage.setItem('cc_portfolio', JSON.stringify(data));
+}
+
+// ─── ADD CARD MODAL ───────────────────────────────────
+function openAddCardModal() {
+  document.getElementById('pcName').value = '';
+  document.getElementById('pcSet').value = '';
+  document.getElementById('pcCost').value = '';
+  document.getElementById('pcQty').value = '1';
+  document.getElementById('pcNotes').value = '';
+  document.getElementById('pcType').value = 'raw';
+  toggleGradeFields();
+  document.getElementById('addCardModal').classList.remove('hidden');
+  setTimeout(() => document.getElementById('pcName').focus(), 100);
+}
+function closeAddCardModal() {
+  document.getElementById('addCardModal').classList.add('hidden');
+}
+document.getElementById('addCardModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('addCardModal')) closeAddCardModal();
+});
+
+function toggleGradeFields() {
+  const isGraded = document.getElementById('pcType').value === 'graded';
+  document.getElementById('pcConditionWrap').style.display = isGraded ? 'none' : 'block';
+  document.getElementById('pcGradeWrap').style.display = isGraded ? 'block' : 'none';
+}
+
+function savePortfolioCard() {
+  const name = document.getElementById('pcName').value.trim();
+  const cost = parseFloat(document.getElementById('pcCost').value);
+  if (!name) { document.getElementById('pcName').focus(); return; }
+  if (!cost && cost !== 0) { document.getElementById('pcCost').focus(); return; }
+  const isGraded = document.getElementById('pcType').value === 'graded';
+  const card = {
+    id: Date.now().toString(),
+    name,
+    set: document.getElementById('pcSet').value.trim(),
+    game: document.getElementById('pcGame').value,
+    type: document.getElementById('pcType').value,
+    condition: isGraded ? null : document.getElementById('pcCondition').value,
+    grade: isGraded ? document.getElementById('pcGrade').value : null,
+    cost: cost,
+    qty: parseInt(document.getElementById('pcQty').value) || 1,
+    notes: document.getElementById('pcNotes').value.trim(),
+    addedAt: new Date().toISOString(),
+    marketValue: null,
+    afterFeeValue: null,
+    lastRefreshed: null,
+    image: null,
+    apiId: null,
+  };
+  // If opened from a card detail page, use known API id + image
+  if (document._pendingApiId) {
+    card.apiId = document._pendingApiId;
+    document._pendingApiId = null;
+  }
+  if (document._pendingImage) {
+    card.image = document._pendingImage;
+    document._pendingImage = null;
+  }
+
+  const portfolio = loadPortfolio();
+  portfolio.unshift(card);
+  savePortfolioData(portfolio);
+  updatePortCount();
+  closeAddCardModal();
+
+  // Show confirmation on the Add to Portfolio button if we came from card detail
+  const portBtn = document.getElementById('addToPortBtn');
+  if (portBtn && currentCard && currentCard.name === card.name) {
+    portBtn.textContent = '✓ Added!';
+    portBtn.classList.add('added');
+    setTimeout(() => {
+      portBtn.innerHTML = '📦 Add to Portfolio';
+      portBtn.classList.remove('added');
+    }, 2500);
+  }
+
+  switchPage('portfolio');
+  if (card.apiId) {
+    refreshCardValue(card.id);
+  }
+}
+
+// ─── RENDER PORTFOLIO ─────────────────────────────────
+function renderPortfolio() {
+  let portfolio = loadPortfolio();
+  const filter = document.getElementById('portFilter').value;
+  const sort = document.getElementById('portSort').value;
+
+  if (filter !== 'all') portfolio = portfolio.filter(c => c.game === filter);
+
+  portfolio.sort((a, b) => {
+    if (sort === 'value_desc') return (b.marketValue||0) - (a.marketValue||0);
+    if (sort === 'pnl_desc') return getPnl(b) - getPnl(a);
+    if (sort === 'pnl_asc') return getPnl(a) - getPnl(b);
+    if (sort === 'name') return a.name.localeCompare(b.name);
+    return new Date(b.addedAt) - new Date(a.addedAt);
+  });
+
+  const all = loadPortfolio();
+  updateSummary(all);
+
+  const grid = document.getElementById('portGrid');
+  const empty = document.getElementById('portEmpty');
+  const proBanner = document.getElementById('portProBanner');
+
+  if (!portfolio.length) {
+    show('portGrid', false); show('portEmpty', true); show('portProBanner', false);
+    show('portHero', false);
+    return;
+  }
+  show('portEmpty', false); show('portGrid', true);
+  show('portProBanner', all.length >= 5);
+
+  grid.innerHTML = '';
+  portfolio.forEach(card => {
+    grid.appendChild(buildCardEl(card));
+  });
+}
+
+function getPnl(card) {
+  const mv = card.marketValue || 0;
+  const cost = (card.cost || 0) * (card.qty || 1);
+  return mv - cost;
+}
+
+function updateSummary(portfolio) {
+  const totalCards = portfolio.reduce((s,c) => s + (c.qty||1), 0);
+  const totalCost = portfolio.reduce((s,c) => s + (c.cost||0) * (c.qty||1), 0);
+  const totalMarket = portfolio.reduce((s,c) => s + (c.marketValue||0), 0);
+  const totalAfterFee = portfolio.reduce((s,c) => s + (c.afterFeeValue||0), 0);
+  const pnl = totalMarket ? (totalMarket - totalCost) : 0;
+  const hasMv = portfolio.some(c => c.marketValue);
+  const hero = document.getElementById('portHero');
+  if (!portfolio.length) { hero.classList.add('hidden'); return; }
+  hero.classList.remove('hidden');
+  document.getElementById('heroMarket').textContent = hasMv ? fmt(totalMarket) : '—';
+  document.getElementById('heroSub').textContent = `${totalCards} card${totalCards!==1?'s':''} in collection`;
+  document.getElementById('heroCost').textContent = fmt(totalCost);
+  document.getElementById('heroAfterFee').textContent = hasMv ? fmt(totalAfterFee) : '—';
+  const pnlEl = document.getElementById('heroPnl');
+  if (!hasMv) { pnlEl.textContent = '—'; pnlEl.className = 'port-hero-stat-val neutral'; }
+  else {
+    pnlEl.textContent = (pnl >= 0 ? '+' : '') + fmt(pnl);
+    pnlEl.className = 'port-hero-stat-val ' + (pnl >= 0 ? 'profit' : 'loss');
+  }
+}
+
+function buildCardEl(card) {
+  const el = document.createElement('div');
+  el.className = 'pc';
+  el.id = 'pc-' + card.id;
+
+  const totalCost = (card.cost||0) * (card.qty||1);
+  const mv = card.marketValue;
+  const afv = card.afterFeeValue;
+  const pnl = mv ? mv - totalCost : null;
+  const pnlPct = mv && totalCost ? ((mv-totalCost)/totalCost*100).toFixed(1) : null;
+
+  const gradeLabel = card.grade ? card.grade.replace('_',' ').toUpperCase() : null;
+  const condLabels = {near_mint:'NM',lightly_played:'LP',moderately_played:'MP',heavily_played:'HP',damaged:'DMG'};
+  const condLabel = card.condition ? condLabels[card.condition] : null;
+
+  // img now handled inline in new card template
+
+  const refreshed = card.lastRefreshed
+    ? `<span style="font-family:monospace;font-size:9px;color:var(--muted2);">↻ ${new Date(card.lastRefreshed).toLocaleDateString('en-US',{month:'short',day:'numeric'})}</span>`
+    : `<span style="font-family:'Instrument Mono',monospace;font-size:9px;color:var(--muted2);">Not yet refreshed</span>`;
+
+  const imgHtml = card.image
+    ? `<img class="pc-img" src="${esc(card.image)}" onerror="this.style.display='none'">`
+    : `<div class="pc-img-ph">🃏</div>`;
+  el.innerHTML = `
+    <div class="pc-img-area">
+      ${imgHtml}
+      <div class="pc-badges-overlay">
+        ${card.type==='graded'?`<span class="pcb pcb-graded">${esc(gradeLabel||'GRADED')}</span>`:`<span class="pcb pcb-raw">${condLabel||'RAW'}</span>`}
+        <span class="pcb pcb-game">${esc(card.game||'')}</span>
+      </div>
+      <div class="pc-img-overlay">
+        <div class="pc-img-name">${esc(card.name)}${card.qty>1?` ×${card.qty}`:''}</div>
+        <div class="pc-img-set">${esc(card.set||'—')}</div>
+      </div>
+    </div>
+    <div class="pc-data">
+      <div class="pc-prices">
+        <div class="pcd-item"><div class="pcd-label">Cost</div><div class="pcd-val neutral">${fmt(totalCost)}</div></div>
+        <div class="pcd-item"><div class="pcd-label">Market</div><div class="pcd-val green">${mv?fmt(mv):'—'}</div></div>
+        <div class="pcd-item"><div class="pcd-label">After Fees</div><div class="pcd-val blue">${afv?fmt(afv):'—'}</div></div>
+      </div>
+      <div class="pc-pnl">
+        <div class="pc-pnl-label">Unrealized P&L</div>
+        <div class="pc-pnl-val ${pnl===null?'neutral':pnl>=0?'profit':'loss'}">${pnl===null?'—':(pnl>=0?'+':'')+fmt(pnl)+(pnlPct?` <span style="font-size:12px;font-family:monospace;">(${pnlPct}%)</span>`:'')}</div>
+      </div>
+      <div class="pc-refresh-line">${card.lastRefreshed?'↻ '+new Date(card.lastRefreshed).toLocaleDateString('en-US',{month:'short',day:'numeric'}):'Not yet refreshed'}</div>
+      <div class="pc-actions">
+        <button class="pc-action comp" onclick="searchCardComp('${esc(card.name)}','${esc(card.game)}')">🔍 COMPS</button>
+        <button class="pc-action" onclick="refreshCardValue('${card.id}')">↻ REFRESH</button>
+        <button class="pc-action danger" onclick="removePortfolioCard('${card.id}')">✕ REMOVE</button>
+      </div>
+    </div>`;
+  return el;
+}
+
+// ─── REFRESH CARD VALUE ───────────────────────────────
+async function refreshCardValue(cardId) {
+  const portfolio = loadPortfolio();
+  const card = portfolio.find(c => c.id === cardId);
+  if (!card) return;
+
+  const el = document.getElementById('pc-' + cardId);
+  if (el) el.classList.add('refreshing');
+
+  try {
+    let detail;
+    if (card.apiId) {
+      // Fast path — we already know the API id, skip search entirely
+      const detailRes = await fetch(`${WORKER_URL}/v1/cards/${card.apiId}`);
+      if (!detailRes.ok) throw new Error('Detail failed');
+      detail = await detailRes.json();
+    } else {
+      // Slow path — search first then fetch detail
+      const game = card.game !== 'other' ? card.game : '';
+      let url = `${WORKER_URL}/v1/cards/search?q=${encodeURIComponent(card.name)}&limit=3`;
+      if (game) url += `&game=${game}`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('Search failed');
+      const data = await res.json();
+      const results = data.data || [];
+      if (!results.length) throw new Error('Card not found');
+      const topResult = results[0];
+      const detailRes = await fetch(`${WORKER_URL}/v1/cards/${topResult.id}`);
+      if (!detailRes.ok) throw new Error('Detail failed');
+      detail = await detailRes.json();
+      card.apiId = topResult.id;
+    }
+
+    // Extract market value based on type
+    let marketValue = null;
+    if (card.type === 'graded' && card.grade) {
+      const parts = card.grade.split('_');
+      const grader = parts[0]; // psa, bgs, cgc
+      const grade = parts.slice(1).join('.');
+      marketValue = detail.prices?.graded?.[grader]?.[grade]?.ebay?.avg_7d
+        || detail.prices?.graded?.[grader]?.[grade]?.tcgplayer?.market;
+    } else {
+      const cond = card.condition || 'near_mint';
+      marketValue = detail.prices?.raw?.[cond]?.tcgplayer?.market
+        || detail.prices?.raw?.[cond]?.ebay?.avg_7d;
+    }
+
+    if (marketValue) marketValue *= (card.qty || 1);
+
+    // Calculate after-fee value
+    let afterFeeValue = null;
+    if (marketValue) {
+      const perCard = marketValue / (card.qty || 1);
+      const {netPayout} = calcEbayPayout(perCard);
+      afterFeeValue = netPayout * (card.qty || 1);
+    }
+
+    // Update card
+    card.marketValue = marketValue;
+    card.afterFeeValue = afterFeeValue;
+    card.lastRefreshed = new Date().toISOString();
+    if (detail.image_url) card.image = detail.image_url;
+    if (topResult.id) card.apiId = topResult.id;
+
+    savePortfolioData(portfolio);
+    renderPortfolio();
+  } catch(e) {
+    console.warn('Refresh failed for', card.name, e.message);
+    if (el) el.classList.remove('refreshing');
+  }
+}
+
+async function refreshAllValues() {
+  const portfolio = loadPortfolio();
+  for (const card of portfolio) {
+    await refreshCardValue(card.id);
+    await new Promise(r => setTimeout(r, 600)); // rate limit spacing
+  }
+}
+
+// ─── REMOVE CARD ──────────────────────────────────────
+function removePortfolioCard(cardId) {
+  if (!confirm('Remove this card from your portfolio?')) return;
+  const portfolio = loadPortfolio().filter(c => c.id !== cardId);
+  savePortfolioData(portfolio);
+  renderPortfolio();
+}
+
+// ─── JUMP TO COMPS ────────────────────────────────────
+function searchCardComp(name, game) {
+  switchPage('comps');
+  document.getElementById('searchInput').value = name;
+  // selectedGame set via chip — reset chips to All
+  selectGame(document.querySelector('.game-chip[data-game=""]'));
+  doSearch();
+}
+
+// ─── WELCOME + FEEDBACK ──────────────────────────────
+function dismissWelcome() {
+  localStorage.setItem('cc_welcomed', '1');
+  document.getElementById('welcomeModal').classList.add('hidden');
+}
+function openFeedbackModal() {
+  document.getElementById('feedbackModal').classList.remove('hidden');
+}
+function closeFeedbackModal() {
+  document.getElementById('feedbackModal').classList.add('hidden');
+}
+async function submitFeedback() {
+  const text = document.getElementById('feedbackText').value.trim();
+  const type = document.getElementById('feedbackType').value;
+  const email = document.getElementById('feedbackEmail').value.trim();
+  const sendBtn = document.getElementById('feedbackSendBtn');
+  const errorEl = document.getElementById('feedbackError');
+
+  if (!text) {
+    document.getElementById('feedbackText').focus();
+    errorEl.textContent = 'Please enter some feedback before sending.';
+    errorEl.classList.remove('hidden');
+    return;
+  }
+
+  // Loading state
+  errorEl.classList.add('hidden');
+  sendBtn.disabled = true;
+  sendBtn.textContent = 'SENDING...';
+
+  try {
+    const res = await fetch('https://formspree.io/f/xojbwqgo', {
+      method: 'POST',
+      headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        message: text,
+        feedback_type: type,
+        email: email || 'not provided',
+        app_version: 'CardComp Beta v5',
+        country: sellerCountry + (sellerProvince ? ' · ' + sellerProvince : ''),
+        submitted_at: new Date().toISOString(),
+      })
+    });
+
+    if (res.ok) {
+      // Success — show thank you state inside modal
+      document.getElementById('feedbackForm').classList.add('hidden');
+      document.getElementById('feedbackSuccess').classList.remove('hidden');
+      // Reset for next time
+      setTimeout(() => {
+        document.getElementById('feedbackText').value = '';
+        document.getElementById('feedbackEmail').value = '';
+        document.getElementById('feedbackType').value = 'general';
+        document.getElementById('feedbackForm').classList.remove('hidden');
+        document.getElementById('feedbackSuccess').classList.add('hidden');
+        closeFeedbackModal();
+      }, 2800);
+    } else {
+      const data = await res.json();
+      const msg = data?.errors?.[0]?.message || 'Something went wrong. Try again.';
+      errorEl.textContent = msg;
+      errorEl.classList.remove('hidden');
+      sendBtn.disabled = false;
+      sendBtn.textContent = 'SEND FEEDBACK';
+    }
+  } catch(e) {
+    errorEl.textContent = 'Network error — check your connection and try again.';
+    errorEl.classList.remove('hidden');
+    sendBtn.disabled = false;
+    sendBtn.textContent = 'SEND FEEDBACK';
+  }
+}
+
+// ─── CURRENCY ────────────────────────────────────────
+const CURRENCY_INFO = {
+  CA: { symbol: 'CA$', code: 'CAD' },
+  US: { symbol: 'US$', code: 'USD' },
+  UK: { symbol: '£',   code: 'GBP' },
+  AU: { symbol: 'AU$', code: 'AUD' },
+};
+
+async function fetchFxRate() {
+  const code = CURRENCY_INFO[sellerCountry]?.code || 'USD';
+  if (code === 'USD') { fxRate = 1.0; currencySymbol = 'US$'; updateCurrencyBtn(); return; }
+  try {
+    const res = await fetch(`https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.json`);
+    const data = await res.json();
+    const rate = data?.usd?.[code.toLowerCase()];
+    if (rate) {
+      fxRate = showingLocalCurrency ? rate : 1.0;
+      currencySymbol = showingLocalCurrency ? (CURRENCY_INFO[sellerCountry]?.symbol || 'US$') : 'US$';
+    }
+  } catch(e) {
+    fxRate = 1.0;
+    currencySymbol = 'US$';
+  }
+  updateCurrencyBtn();
+}
+
+function toggleCurrency() {
+  showingLocalCurrency = !showingLocalCurrency;
+  const code = CURRENCY_INFO[sellerCountry]?.code || 'USD';
+  if (code === 'USD') return; // no toggle needed for US
+  if (showingLocalCurrency) {
+    fetchFxRate().then(() => { if (currentCard) renderDetail(currentCard); renderPortfolio(); });
+  } else {
+    fxRate = 1.0;
+    currencySymbol = 'US$';
+    updateCurrencyBtn();
+    if (currentCard) renderDetail(currentCard);
+    renderPortfolio();
+  }
+}
+
+function updateCurrencyBtn() {
+  const btn = document.getElementById('currencyToggleBtn');
+  if (!btn) return;
+  const code = CURRENCY_INFO[sellerCountry]?.code || 'USD';
+  if (code === 'USD') { btn.classList.add('hidden'); return; }
+  btn.classList.remove('hidden');
+  btn.textContent = showingLocalCurrency
+    ? `${CURRENCY_INFO[sellerCountry]?.symbol} ${code}`
+    : `US$ USD`;
+  btn.title = showingLocalCurrency ? 'Switch to USD' : `Switch to ${code}`;
+}
+
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// COLLECTION PRICER
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+let offerPct = 70;
+let pricerSelectedCard = null; // full card API data for currently selected card
+// ── Load / Save session ───────────────────────────
+function loadPricerSession() {
+  try { return JSON.parse(localStorage.getItem('cc_pricer') || '[]'); }
+  catch(e) { return []; }
+}
+function savePricerSession(items) {
+  localStorage.setItem('cc_pricer', JSON.stringify(items));
+}
+function clearPricerSession() {
+  if (!confirm('Clear this pricing session? This cannot be undone.')) return;
+  savePricerSession([]);
+  renderPricerItems();
+}
+
+// ── Offer slider ──────────────────────────────────
+function onOfferSliderChange(val) {
+  offerPct = parseInt(val);
+  document.getElementById('offerPctDisplay').textContent = offerPct;
+  // Update preset active states
+  document.querySelectorAll('.offer-preset').forEach(btn => {
+    btn.classList.toggle('active', parseInt(btn.textContent) === offerPct);
+  });
+  renderPricerItems();
+}
+function setOfferPct(pct) {
+  offerPct = pct;
+  document.getElementById('offerSlider').value = pct;
+  document.getElementById('offerPctDisplay').textContent = pct;
+  document.querySelectorAll('.offer-preset').forEach(btn => {
+    btn.classList.toggle('active', parseInt(btn.textContent) === pct);
+  });
+  renderPricerItems();
+}
+
+// ── Pricer Search Modal ───────────────────────────
+let psmGame = '';
+let psmAllResults = [];
+let psmPage = 1;
+const PSM_PAGE_SIZE = 24;
+let psmDebounce = null;
+
+function openPsm() {
+  document.getElementById('psmOverlay').classList.remove('hidden');
+  setTimeout(() => document.getElementById('psmInput').focus(), 100);
+}
+function closePsm() {
+  document.getElementById('psmOverlay').classList.add('hidden');
+}
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closePsm();
+});
+function selectPsmGame(el) {
+  document.querySelectorAll('.psm-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  psmGame = el.dataset.game || '';
+}
+function onPsmInput(val) {
+  clearTimeout(psmDebounce);
+  if (!val.trim() || val.trim().length < 2) return;
+  psmDebounce = setTimeout(() => runPsmSearch(), 600);
+}
+async function runPsmSearch() {
+  const q = document.getElementById('psmInput').value.trim();
+  if (!q) return;
+  const setFilter = document.getElementById('psmSetFilter').value.trim();
+  const numFilter = document.getElementById('psmNumberFilter').value.trim();
+  const rarFilter = document.getElementById('psmRarityFilter').value.trim();
+  let fullQuery = q;
+  if (setFilter) fullQuery += ' ' + setFilter;
+  if (numFilter) fullQuery += ' ' + numFilter;
+  if (rarFilter) fullQuery += ' ' + rarFilter;
+  const resultsEl = document.getElementById('psmResults');
+  const btn = document.getElementById('psmSearchBtn');
+  btn.disabled = true; btn.textContent = '...';
+  resultsEl.innerHTML = '<div class="psm-loader"><div class="loader"></div><div style="font-family:monospace;font-size:11px;color:var(--muted);letter-spacing:2px;">SEARCHING...</div></div>';
+  try {
+    let url = `${WORKER_URL}/v1/cards/search?q=${encodeURIComponent(fullQuery)}&limit=100`;
+    if (psmGame) url += `&game=${psmGame}`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`API error ${res.status}`);
+    const data = await res.json();
+    psmAllResults = data.data || [];
+    psmPage = 1;
+    renderPsmResults();
+  } catch(e) {
+    resultsEl.innerHTML = `<div class="psm-empty">Search failed — ${esc(e.message)}</div>`;
+  } finally {
+    btn.disabled = false; btn.textContent = 'SEARCH';
+  }
+}
+function renderPsmResults() {
+  const resultsEl = document.getElementById('psmResults');
+  const cards = psmAllResults;
+  if (!cards.length) {
+    resultsEl.innerHTML = '<div class="psm-empty">No cards found.<br><small style="color:var(--muted2);line-height:1.8;">Try fewer keywords · Check spelling · For 1st edition try "Shadowless" or "1st Edition" in the Set filter</small></div>';
+    return;
+  }
+  const totalPages = Math.ceil(cards.length / PSM_PAGE_SIZE);
+  const start = (psmPage - 1) * PSM_PAGE_SIZE;
+  const pageCards = cards.slice(start, start + PSM_PAGE_SIZE);
+  let html = `<div class="psm-results-header"><div class="psm-results-count">${cards.length} result${cards.length !== 1 ? 's' : ''}</div>${totalPages > 1 ? `<div class="psm-results-page">Page ${psmPage} of ${totalPages}</div>` : ''}</div>`;
+  html += '<div class="psm-grid">';
+  pageCards.forEach(c => {
+    const price = c.prices?.raw?.near_mint?.tcgplayer?.market || c.prices?.raw?.near_mint?.ebay?.avg_7d;
+    const imgHtml = c.image_url ? `<img class="psm-card-img" src="${esc(c.image_url)}" loading="lazy" onerror="this.outerHTML='<div class=psm-card-img-ph>🃏</div>'">` : '<div class="psm-card-img-ph">🃏</div>';
+    html += `<div class="psm-card" onclick="psmSelectCard('${esc(c.id)}')"><div class="psm-card-img-wrap">${imgHtml}</div><div class="psm-card-info"><div class="psm-card-name">${esc(c.name)}</div><div class="psm-card-set">${esc(c.set?.name||'—')}${c.number?' · #'+esc(c.number):''}</div>${price?`<div class="psm-card-price">${fmt(price)}</div>`:'<div class="psm-card-no-price">No price data</div>'}</div></div>`;
+  });
+  html += '</div>';
+  if (totalPages > 1) {
+    const maxBtn = 7;
+    let pages = [];
+    if (totalPages <= maxBtn) pages = Array.from({length:totalPages},(_,i)=>i+1);
+    else if (psmPage <= 4) pages = [1,2,3,4,5,'…',totalPages];
+    else if (psmPage >= totalPages-3) pages = [1,'…',totalPages-4,totalPages-3,totalPages-2,totalPages-1,totalPages];
+    else pages = [1,'…',psmPage-1,psmPage,psmPage+1,'…',totalPages];
+    html += `<div class="psm-pagination"><button class="psm-page-btn" onclick="setPsmPage(${psmPage-1})" ${psmPage<=1?'disabled':''}>← Prev</button>${pages.map(p=>p==='…'?'<span class="psm-page-info">…</span>':`<button class="psm-page-btn ${p===psmPage?'active':''}" onclick="setPsmPage(${p})">${p}</button>`).join('')}<button class="psm-page-btn" onclick="setPsmPage(${psmPage+1})" ${psmPage>=totalPages?'disabled':''}>Next →</button></div>`;
+  }
+  resultsEl.innerHTML = html;
+  resultsEl.scrollTop = 0;
+}
+function setPsmPage(p) {
+  const total = Math.ceil(psmAllResults.length / PSM_PAGE_SIZE);
+  if (p < 1 || p > total) return;
+  psmPage = p;
+  renderPsmResults();
+}
+async function psmSelectCard(cardId) {
+  const btn = document.getElementById('psmSearchBtn');
+  btn.disabled = true; btn.textContent = '...';
+  try {
+    const res = await fetch(`${WORKER_URL}/v1/cards/${cardId}`);
+    if (!res.ok) throw new Error('failed');
+    pricerSelectedCard = await res.json();
+    closePsm();
+    showPricerSelected(pricerSelectedCard);
+  } catch(e) {
+    console.warn('Failed to load card:', e);
+  } finally {
+    btn.disabled = false; btn.textContent = 'SEARCH';
+  }
+}
+// Legacy stubs
+async function doPricerSearch() { openPsm(); }
+function onPricerSearchInput() {}
+
+async function selectPricerCard(cardId) {
+  document.getElementById('pricerSuggestions').classList.add('hidden');
+  const btn = document.getElementById('pricerSearchBtn');
+  btn.disabled = true; btn.textContent = '...';
+  try {
+    const res = await fetch(`${WORKER_URL}/v1/cards/${cardId}`);
+    if (!res.ok) throw new Error('failed');
+    pricerSelectedCard = await res.json();
+    showPricerSelected(pricerSelectedCard);
+  } catch(e) {
+    console.warn('Failed to load card for pricer');
+  } finally {
+    btn.disabled = false; btn.textContent = 'FIND';
+  }
+}
+
+function showPricerSelected(card) {
+  const el = document.getElementById('pricerSelected');
+  el.classList.add('visible');
+  // Image
+  const imgWrap = document.getElementById('pricerSelImg');
+  imgWrap.innerHTML = card.image_url
+    ? `<img class="pricer-sel-img" src="${esc(card.image_url)}" onerror="this.outerHTML='<div class=pricer-sel-ph>🃏</div>'">`
+    : `<div class="pricer-sel-ph">🃏</div>`;
+  document.getElementById('pricerSelName').textContent = card.name;
+  document.getElementById('pricerSelMeta').textContent =
+    `${card.set?.name || ''} · ${card.game?.name || ''}${card.number ? ' · #' + card.number : ''}`;
+  // Reset controls
+  document.getElementById('pricerSelType').value = 'raw';
+  document.getElementById('pricerSelQty').value = '1';
+  onPricerTypeChange();
+  updatePricerSelPrice();
+  // Update search input
+  document.getElementById('pricerSearchInput').value = card.name;
+}
+
+function onPricerTypeChange() {
+  const isGraded = document.getElementById('pricerSelType').value === 'graded';
+  document.getElementById('pricerCondWrap').classList.toggle('hidden', isGraded);
+  document.getElementById('pricerGradeWrap').classList.toggle('hidden', !isGraded);
+  updatePricerSelPrice();
+}
+
+function updatePricerSelPrice() {
+  if (!pricerSelectedCard) return;
+  const isGraded = document.getElementById('pricerSelType').value === 'graded';
+  const qty = parseInt(document.getElementById('pricerSelQty').value) || 1;
+  let price = null;
+  if (isGraded) {
+    const gradeVal = document.getElementById('pricerSelGrade').value; // e.g. psa_10
+    const parts = gradeVal.split('_');
+    const grader = parts[0];
+    const grade = parts.slice(1).join('.');
+    price = pricerSelectedCard.prices?.graded?.[grader]?.[grade]?.ebay?.avg_7d
+      || pricerSelectedCard.prices?.graded?.[grader]?.[grade]?.tcgplayer?.market;
+  } else {
+    const cond = document.getElementById('pricerSelCond').value;
+    price = pricerSelectedCard.prices?.raw?.[cond]?.tcgplayer?.market
+      || pricerSelectedCard.prices?.raw?.[cond]?.ebay?.avg_7d;
+  }
+  const total = price ? price * qty : null;
+  document.getElementById('pricerSelPrice').textContent = total ? fmt(total) : '—';
+}
+
+function addPricerCard() {
+  if (!pricerSelectedCard) return;
+  const isGraded = document.getElementById('pricerSelType').value === 'graded';
+  const qty = parseInt(document.getElementById('pricerSelQty').value) || 1;
+  const gradeVal = isGraded ? document.getElementById('pricerSelGrade').value : null;
+  const cond = !isGraded ? document.getElementById('pricerSelCond').value : null;
+
+  let price = null;
+  let condLabel = '';
+  if (isGraded && gradeVal) {
+    const parts = gradeVal.split('_');
+    const grader = parts[0];
+    const grade = parts.slice(1).join('.');
+    price = pricerSelectedCard.prices?.graded?.[grader]?.[grade]?.ebay?.avg_7d
+      || pricerSelectedCard.prices?.graded?.[grader]?.[grade]?.tcgplayer?.market;
+    condLabel = gradeVal.replace('_', ' ').toUpperCase();
+  } else if (cond) {
+    price = pricerSelectedCard.prices?.raw?.[cond]?.tcgplayer?.market
+      || pricerSelectedCard.prices?.raw?.[cond]?.ebay?.avg_7d;
+    const cl = {near_mint:'NM',lightly_played:'LP',moderately_played:'MP',heavily_played:'HP',damaged:'DMG'};
+    condLabel = cl[cond] || 'NM';
+  }
+
+  const item = {
+    id: Date.now().toString(),
+    type: 'card',
+    name: pricerSelectedCard.name,
+    set: pricerSelectedCard.set?.name || '',
+    game: pricerSelectedCard.game?.name || '',
+    number: pricerSelectedCard.number || '',
+    image: pricerSelectedCard.image_url || null,
+    isGraded,
+    condLabel,
+    qty,
+    unitPrice: price || 0,
+    totalPrice: (price || 0) * qty,
+  };
+
+  const session = loadPricerSession();
+  session.push(item);
+  savePricerSession(session);
+
+  // Reset selected card UI
+  document.getElementById('pricerSelected').classList.remove('visible');
+  document.getElementById('pricerSearchInput').value = '';
+  pricerSelectedCard = null;
+  document.getElementById('pricerSelPrice').textContent = '—';
+
+  renderPricerItems();
+}
+
+// ── Bulk section ──────────────────────────────────
+document.addEventListener('input', (e) => {
+  if (e.target.id === 'bulkCount' || e.target.id === 'bulkPriceEach') {
+    const count = parseInt(document.getElementById('bulkCount').value) || 0;
+    const each = parseFloat(document.getElementById('bulkPriceEach').value) || 0;
+    const total = count * each;
+    document.getElementById('bulkPreviewTotal').textContent = total > 0 ? `= ${fmt(total)}` : '';
+  }
+});
+
+function addBulkLine() {
+  const count = parseInt(document.getElementById('bulkCount').value) || 0;
+  const each = parseFloat(document.getElementById('bulkPriceEach').value) || 0;
+  const label = document.getElementById('bulkLabel').value.trim() || 'Bulk Cards';
+  if (!count || !each) return;
+
+  const item = {
+    id: Date.now().toString(),
+    type: 'bulk',
+    name: label,
+    set: '',
+    game: '',
+    number: '',
+    image: null,
+    isGraded: false,
+    condLabel: `${count} cards @ ${fmt(each)} each`,
+    qty: count,
+    unitPrice: each,
+    totalPrice: count * each,
+  };
+
+  const session = loadPricerSession();
+  session.push(item);
+  savePricerSession(session);
+
+  // Reset bulk inputs
+  document.getElementById('bulkCount').value = '';
+  document.getElementById('bulkPriceEach').value = '';
+  document.getElementById('bulkLabel').value = '';
+  document.getElementById('bulkPreviewTotal').textContent = '';
+
+  renderPricerItems();
+}
+
+// ── Render items list ─────────────────────────────
+function renderPricerItems() {
+  const session = loadPricerSession();
+  const listEl = document.getElementById('pricerItemsList');
+  const countEl = document.getElementById('pricerItemCount');
+  if (!listEl) return;
+
+  // Totals
+  const totalMarket = session.reduce((s, i) => s + (i.totalPrice || 0), 0);
+  const totalOffer = totalMarket * (offerPct / 100);
+  const totalCards = session.reduce((s, i) => s + (i.qty || 1), 0);
+
+  document.getElementById('pricerTotalMarket').textContent = fmt(totalMarket);
+  document.getElementById('pricerTotalOffer').textContent = fmt(totalOffer);
+  document.getElementById('pricerCardCount').textContent = totalCards;
+  countEl.textContent = `${session.length} item${session.length !== 1 ? 's' : ''}`;
+
+  // Badge on nav
+  const badge = document.getElementById('pricerBadge');
+  if (badge) {
+    badge.textContent = session.length;
+    badge.classList.toggle('hidden', session.length === 0);
+  }
+
+  if (!session.length) {
+    listEl.innerHTML = '<div class="pricer-empty">No cards added yet — search above to start pricing a collection.</div>';
+    return;
+  }
+
+  listEl.innerHTML = '';
+
+  // Column headers
+  const header = document.createElement('div');
+  header.style.cssText = 'display:grid;grid-template-columns:40px 1fr auto auto auto;gap:10px;padding:8px 16px;border-bottom:1px solid var(--border);';
+  header.innerHTML = `
+    <span></span>
+    <span style="font-family:'Instrument Mono',monospace;font-size:8px;letter-spacing:2px;color:var(--muted2);text-transform:uppercase;">Card</span>
+    <span style="font-family:'Instrument Mono',monospace;font-size:8px;letter-spacing:2px;color:var(--muted2);text-transform:uppercase;">Qty</span>
+    <span style="font-family:'Instrument Mono',monospace;font-size:8px;letter-spacing:2px;color:var(--muted2);text-transform:uppercase;">Market</span>
+    <span style="font-family:'Instrument Mono',monospace;font-size:8px;letter-spacing:2px;color:var(--accent2);text-transform:uppercase;">${offerPct}% Offer</span>
+  `;
+  listEl.appendChild(header);
+
+  session.forEach(item => {
+    const row = document.createElement('div');
+    row.className = 'pricer-item';
+    const imgHtml = item.image
+      ? `<img class="pricer-item-img" src="${esc(item.image)}" onerror="this.outerHTML='<div class=pricer-item-img-ph>🃏</div>'">`
+      : `<div class="pricer-item-img-ph">${item.type === 'bulk' ? '📦' : '🃏'}</div>`;
+    const offerAmt = (item.totalPrice || 0) * (offerPct / 100);
+    row.innerHTML = `
+      ${imgHtml}
+      <div class="pricer-item-info">
+        <div class="pricer-item-name">${esc(item.name)}</div>
+        <div class="pricer-item-meta">${esc(item.set||'')}${item.number?' · #'+esc(item.number):''} · <span style="color:var(--accent2)">${esc(item.condLabel)}</span></div>
+      </div>
+      <div class="pricer-item-qty">×${item.qty}</div>
+      <div class="pricer-item-market">${fmt(item.totalPrice)}</div>
+      <div class="pricer-item-offer">${fmt(offerAmt)}</div>
+      <button class="pricer-item-remove" onclick="removePricerItem('${item.id}')" title="Remove">✕</button>
+    `;
+    listEl.appendChild(row);
+  });
+
+  // Totals row
+  const totalsRow = document.createElement('div');
+  totalsRow.style.cssText = 'display:grid;grid-template-columns:40px 1fr auto auto auto;gap:10px;padding:12px 16px;border-top:2px solid var(--border2);background:var(--surface2);';
+  totalsRow.innerHTML = `
+    <span></span>
+    <span style="font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1px;color:var(--text);">TOTAL</span>
+    <span style="font-family:'Instrument Mono',monospace;font-size:11px;color:var(--muted);">${totalCards} cards</span>
+    <span style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--text);">${fmt(totalMarket)}</span>
+    <span style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--accent2);">${fmt(totalOffer)}</span>
+    <span></span>
+  `;
+  listEl.appendChild(totalsRow);
+}
+
+function removePricerItem(id) {
+  const session = loadPricerSession().filter(i => i.id !== id);
+  savePricerSession(session);
+  renderPricerItems();
+}
+
+// ── Print offer sheet ─────────────────────────────
+function printOffer() {
+  const session = loadPricerSession();
+  if (!session.length) { alert('Add some cards first.'); return; }
+
+  const totalMarket = session.reduce((s, i) => s + (i.totalPrice || 0), 0);
+  const totalOffer = totalMarket * (offerPct / 100);
+  const totalCards = session.reduce((s, i) => s + (i.qty || 1), 0);
+  const date = new Date().toLocaleDateString('en-CA', {year:'numeric',month:'long',day:'numeric'});
+
+  const rows = session.map(item => {
+    const offerAmt = (item.totalPrice || 0) * (offerPct / 100);
+    return `<tr>
+      <td>${esc(item.name)}</td>
+      <td>${esc(item.set||'—')}</td>
+      <td>${esc(item.condLabel)}</td>
+      <td style="text-align:center;">${item.qty}</td>
+      <td style="text-align:right;">${item.unitPrice ? fmt(item.unitPrice) : '—'}</td>
+      <td style="text-align:right;font-weight:600;">${fmt(item.totalPrice)}</td>
+      <td style="text-align:right;color:#e05a00;font-weight:700;">${fmt(offerAmt)}</td>
+    </tr>`;
+  }).join('');
+
+  const sheet = document.getElementById('printSheet');
+  sheet.innerHTML = `
+    <div style="max-width:800px;margin:0 auto;font-family:'Helvetica Neue',Arial,sans-serif;color:#111;">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;border-bottom:3px solid #111;padding-bottom:16px;">
+        <div>
+          <div style="font-size:28px;font-weight:800;letter-spacing:-0.5px;">CARDCOMP</div>
+          <div style="font-size:12px;color:#666;margin-top:2px;">Collection Pricing Report</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:12px;color:#666;">${date}</div>
+          <div style="font-size:12px;color:#666;margin-top:2px;">${totalCards} cards · ${offerPct}% offer</div>
+        </div>
+      </div>
+
+      <table style="width:100%;border-collapse:collapse;margin-bottom:20px;font-size:13px;">
+        <thead>
+          <tr style="border-bottom:2px solid #111;">
+            <th style="text-align:left;padding:8px 6px;font-size:11px;text-transform:uppercase;letter-spacing:1px;">Card</th>
+            <th style="text-align:left;padding:8px 6px;font-size:11px;text-transform:uppercase;letter-spacing:1px;">Set</th>
+            <th style="text-align:left;padding:8px 6px;font-size:11px;text-transform:uppercase;letter-spacing:1px;">Grade/Cond</th>
+            <th style="text-align:center;padding:8px 6px;font-size:11px;text-transform:uppercase;letter-spacing:1px;">Qty</th>
+            <th style="text-align:right;padding:8px 6px;font-size:11px;text-transform:uppercase;letter-spacing:1px;">Unit</th>
+            <th style="text-align:right;padding:8px 6px;font-size:11px;text-transform:uppercase;letter-spacing:1px;">Market</th>
+            <th style="text-align:right;padding:8px 6px;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#e05a00;">Offer (${offerPct}%)</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+
+      <div style="border-top:3px solid #111;padding-top:16px;display:flex;justify-content:space-between;align-items:flex-end;">
+        <div>
+          <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#666;margin-bottom:4px;">Total Market Value</div>
+          <div style="font-size:28px;font-weight:800;">${fmt(totalMarket)}</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#666;margin-bottom:4px;">My Offer (${offerPct}% of market)</div>
+          <div style="font-size:36px;font-weight:800;color:#e05a00;">${fmt(totalOffer)}</div>
+        </div>
+      </div>
+
+      <div style="margin-top:20px;padding-top:12px;border-top:1px solid #ddd;font-size:11px;color:#999;">
+        Prices sourced from TCGPlayer and eBay sold listings via CardComp. Market values are estimates and may vary. Generated ${date}.
+      </div>
+    </div>
+  `;
+
+  window.print();
+}
+
+// ── Copy offer as text ────────────────────────────
+function copyOfferText() {
+  const session = loadPricerSession();
+  if (!session.length) { alert('Add some cards first.'); return; }
+  const totalMarket = session.reduce((s, i) => s + (i.totalPrice || 0), 0);
+  const totalOffer = totalMarket * (offerPct / 100);
+  const date = new Date().toLocaleDateString('en-CA');
+
+  const lines = session.map(i => {
+    const offerAmt = (i.totalPrice||0) * (offerPct/100);
+    return `${i.name}${i.set?' ('+i.set+')':''} · ${i.condLabel} ×${i.qty} · Market: ${fmt(i.totalPrice)} · Offer: ${fmt(offerAmt)}`;
+  });
+
+  const text = `CARDCOMP — Collection Offer (${date})
+${'─'.repeat(44)}
+${lines.join('\n')}
+${'─'.repeat(44)}
+Total Market: ${fmt(totalMarket)}
+My Offer (${offerPct}%): ${fmt(totalOffer)}
+
+Prices from TCGPlayer/eBay via CardComp`;
+
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.querySelector('.pricer-action-btn:nth-child(2)');
+    if (btn) { const orig = btn.innerHTML; btn.innerHTML = '✓ COPIED!'; setTimeout(() => btn.innerHTML = orig, 2000); }
+  });
+}
+
+// Pricer search now uses modal — no outside click handler needed
+
+// ─── INIT ─────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  refreshApiStatus();
+  refreshCountryUI();
+  updatePortCount();
+  fetchFxRate();
+  renderRecentSearches();
+  renderPricerItems();
+  
+  // ── Browser back/forward button support ──
+  window.addEventListener('popstate', (e) => {
+    const state = e.state;
+    if (!state || state.view === 'home') {
+      show('detailSection', false);
+      show('searchSection', false);
+      show('emptyState', true);
+      show('errorBox', false);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else if (state.view === 'search') {
+      show('detailSection', false);
+      if (searchResults.length) {
+        show('emptyState', false);
+        renderSearchList(searchResults, currentPage);
+      } else {
+        show('emptyState', true);
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else if (state.view === 'detail' && state.cardId) {
+      if (currentCard && currentCard.id === state.cardId) {
+        // Already loaded — just re-show
+        show('searchSection', false);
+        show('emptyState', false);
+        show('detailSection', true);
+      } else {
+        loadCard(state.cardId);
+      }
+    }
+  });
+  // Show welcome screen for first-time visitors only
+  // Show welcome for first-time visitors
+  if (!sessionStorage.getItem('cc_welcomed')) {
+    setTimeout(() => document.getElementById('welcomeModal').classList.remove('hidden'), 400);
+  }
+});
+</script>
+
+<!-- ══ PRINT SHEET ══ -->
+<div id="printSheet"></div>
+
+
+<!-- ══ PRICER SEARCH MODAL ══ -->
+<div class="psm-overlay hidden" id="psmOverlay">
+  <!-- Header with search -->
+  <div class="psm-header">
+    <div class="psm-title">Find Card</div>
+    <input class="psm-search-input" type="text" id="psmInput"
+      placeholder="Card name, set, number..."
+      autocomplete="off"
+      onkeydown="if(event.key==='Enter')runPsmSearch()"
+      oninput="onPsmInput(this.value)">
+    <button class="psm-search-btn" id="psmSearchBtn" onclick="runPsmSearch()">SEARCH</button>
+    <button class="psm-close" onclick="closePsm()" title="Close">✕</button>
+  </div>
+
+  <!-- Filters -->
+  <div class="psm-filters">
+    <div class="psm-game-chips" id="psmGameChips">
+      <button class="psm-chip active" data-game="" onclick="selectPsmGame(this)">All</button>
+      <button class="psm-chip" data-game="pokemon" onclick="selectPsmGame(this)">Pokémon</button>
+      <button class="psm-chip" data-game="pokemon-japan" onclick="selectPsmGame(this)">JP Pokémon</button>
+      <button class="psm-chip" data-game="mtg" onclick="selectPsmGame(this)">MTG</button>
+      <button class="psm-chip" data-game="yugioh" onclick="selectPsmGame(this)">Yu-Gi-Oh!</button>
+      <button class="psm-chip" data-game="onepiece" onclick="selectPsmGame(this)">One Piece</button>
+      <button class="psm-chip" data-game="lorcana" onclick="selectPsmGame(this)">Lorcana</button>
+    </div>
+    <div class="psm-filter-row">
+      <div class="psm-filter-field">
+        <div class="psm-filter-label">Set Name (optional)</div>
+        <input class="psm-filter-input" type="text" id="psmSetFilter" placeholder="e.g. Base Set, Shadowless" style="width:180px;">
+      </div>
+      <div class="psm-filter-field">
+        <div class="psm-filter-label">Card Number (optional)</div>
+        <input class="psm-filter-input" type="text" id="psmNumberFilter" placeholder="e.g. 059/102" style="width:130px;">
+      </div>
+      <div class="psm-filter-field">
+        <div class="psm-filter-label">Rarity (optional)</div>
+        <input class="psm-filter-input" type="text" id="psmRarityFilter" placeholder="e.g. Holo Rare" style="width:130px;">
+      </div>
+    </div>
+  </div>
+
+  <!-- Results -->
+  <div class="psm-results" id="psmResults">
+    <div class="psm-empty">Enter a card name above and hit Search</div>
+  </div>
+</div>
+
+<!-- ══ COLLECTION PRICER PAGE ══ -->
+<div class="page" id="pagePricer">
+  <div class="pricer-wrap">
+
+    <!-- Offer summary bar -->
+    <div class="offer-bar">
+      <div class="offer-bar-item">
+        <div class="offer-bar-label">Market Value</div>
+        <div class="offer-bar-val market" id="pricerTotalMarket">CA$0.00</div>
+      </div>
+      <div class="offer-bar-item">
+        <div class="offer-bar-label">Your Offer</div>
+        <div class="offer-bar-val offer" id="pricerTotalOffer">CA$0.00</div>
+      </div>
+      <div class="offer-bar-item">
+        <div class="offer-bar-label">Cards</div>
+        <div class="offer-bar-val count" id="pricerCardCount">0</div>
+      </div>
+    </div>
+
+    <!-- Offer % slider -->
+    <div class="offer-slider-section">
+      <div class="offer-slider-head">
+        <div class="offer-slider-title">Offer Percentage</div>
+        <div class="offer-pct-display"><span id="offerPctDisplay">70</span>%</div>
+      </div>
+      <input class="offer-slider" type="range" id="offerSlider" min="30" max="90" step="5" value="70" oninput="onOfferSliderChange(this.value)">
+      <div class="offer-presets">
+        <button class="offer-preset" onclick="setOfferPct(50)">50%</button>
+        <button class="offer-preset" onclick="setOfferPct(60)">60%</button>
+        <button class="offer-preset active" onclick="setOfferPct(70)">70%</button>
+        <button class="offer-preset" onclick="setOfferPct(75)">75%</button>
+        <button class="offer-preset" onclick="setOfferPct(80)">80%</button>
+      </div>
+    </div>
+
+    <!-- Add card -->
+    <div class="pricer-add-section">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
+        <div>
+          <div class="pricer-add-title">Add a Card</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px;">Search by name, set, or number — including 1st edition, shadowless, variants</div>
+        </div>
+        <button class="pricer-search-btn" onclick="openPsm()" style="display:flex;align-items:center;gap:7px;font-size:15px;">
+          🔍 SEARCH CARDS
+        </button>
+      </div>
+
+      <!-- Selected card quick-add row -->
+      <div class="pricer-selected" id="pricerSelected">
+        <div id="pricerSelImg"></div>
+        <div class="pricer-sel-info">
+          <div class="pricer-sel-name" id="pricerSelName">—</div>
+          <div class="pricer-sel-meta" id="pricerSelMeta">—</div>
+        </div>
+        <div class="pricer-sel-controls">
+          <div class="pricer-sel-field">
+            <div class="pricer-sel-label">Type</div>
+            <select class="pricer-sel-select" id="pricerSelType" onchange="onPricerTypeChange()">
+              <option value="raw">Raw</option>
+              <option value="graded">Graded</option>
+            </select>
+          </div>
+          <div class="pricer-sel-field" id="pricerCondWrap">
+            <div class="pricer-sel-label">Condition</div>
+            <select class="pricer-sel-select" id="pricerSelCond" onchange="updatePricerSelPrice()">
+              <option value="near_mint">Near Mint</option>
+              <option value="lightly_played">Lightly Played</option>
+              <option value="moderately_played">Moderately Played</option>
+              <option value="heavily_played">Heavily Played</option>
+              <option value="damaged">Damaged</option>
+            </select>
+          </div>
+          <div class="pricer-sel-field hidden" id="pricerGradeWrap">
+            <div class="pricer-sel-label">Grade</div>
+            <select class="pricer-sel-select" id="pricerSelGrade" onchange="updatePricerSelPrice()">
+              <option value="psa_10">PSA 10</option>
+              <option value="psa_9">PSA 9</option>
+              <option value="psa_8">PSA 8</option>
+              <option value="psa_7">PSA 7</option>
+              <option value="bgs_10">BGS 10</option>
+              <option value="bgs_9.5">BGS 9.5</option>
+              <option value="bgs_9">BGS 9</option>
+              <option value="cgc_10">CGC 10</option>
+              <option value="cgc_9.5">CGC 9.5</option>
+              <option value="cgc_9">CGC 9</option>
+            </select>
+          </div>
+          <div class="pricer-sel-field">
+            <div class="pricer-sel-label">Qty</div>
+            <input class="pricer-sel-input" type="number" id="pricerSelQty" value="1" min="1" style="width:56px;" oninput="updatePricerSelPrice()">
+          </div>
+          <div class="pricer-sel-price" id="pricerSelPrice">—</div>
+          <button class="pricer-add-btn" onclick="addPricerCard()">+ ADD</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bulk cards section -->
+    <div class="bulk-section">
+      <div class="bulk-title">Bulk / Commons</div>
+      <div class="bulk-sub">Add a flat-rate count for common cards, bulk lots, or unsorted cards.</div>
+      <div class="bulk-row">
+        <div class="bulk-field">
+          <label>Card Count</label>
+          <input class="bulk-input" type="number" id="bulkCount" placeholder="e.g. 500" min="0">
+        </div>
+        <div class="bulk-field">
+          <label>Price Per Card ($)</label>
+          <input class="bulk-input" type="number" id="bulkPriceEach" placeholder="e.g. 0.10" min="0" step="0.01">
+        </div>
+        <div class="bulk-field">
+          <label>Label</label>
+          <input class="bulk-input" type="text" id="bulkLabel" placeholder="e.g. Commons" style="font-family:'Instrument Sans',sans-serif;">
+        </div>
+        <button class="bulk-add-btn" onclick="addBulkLine()">+ ADD</button>
+        <div class="bulk-total" id="bulkPreviewTotal"></div>
+      </div>
+    </div>
+
+    <!-- Action buttons -->
+    <div class="pricer-actions">
+      <button class="pricer-action-btn primary" onclick="printOffer()">🖨️ PRINT / SAVE PDF</button>
+      <button class="pricer-action-btn" onclick="copyOfferText()">📋 COPY OFFER</button>
+      <button class="pricer-action-btn" onclick="clearPricerSession()">🗑️ CLEAR SESSION</button>
+    </div>
+
+    <!-- Items list -->
+    <div class="pricer-items-section">
+      <div class="pricer-items-head">
+        <div class="pricer-items-title">Collection Items</div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div id="pricerItemCount" style="font-family:'Instrument Mono',monospace;font-size:10px;color:var(--muted);">0 items</div>
+        </div>
+      </div>
+      <div id="pricerItemsList">
+        <div class="pricer-empty">No cards added yet — search above to start pricing a collection.</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="https://unpkg.com/@formspree/ajax@1" defer></script>
+</body>
+</html>
