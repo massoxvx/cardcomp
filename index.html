@@ -2631,9 +2631,9 @@ async function runPsmSearch() {
   const resultsEl = document.getElementById('psmResults');
   const btn = document.getElementById('psmSearchBtn');
   btn.disabled = true; btn.textContent = '...';
-  resultsEl.innerHTML = '<div class="psm-loader"><div class="loader"></div><div style="font-family:monospace;font-size:11px;color:var(--muted);letter-spacing:2px;">SEARCHING...</div></div>';
+  resultsEl.innerHTML = '<div class="psm-loader"><div class="loader"></div><div style="font-family:monospace;font-size:11px;color:var(--muted);letter-spacing:2px;">SEARCHING ' + (psmGame ? psmGame.toUpperCase() : 'ALL GAMES') + '...</div></div>';
   try {
-    let url = `${WORKER_URL}/v1/cards/search?q=${encodeURIComponent(fullQuery)}&limit=100`;
+    let url = `${WORKER_URL}/v1/cards/search?q=${encodeURIComponent(fullQuery)}&limit=50`;
     if (psmGame) url += `&game=${psmGame}`;
     const res = await fetch(url);
     if (!res.ok) throw new Error(`API error ${res.status}`);
@@ -2684,6 +2684,20 @@ function setPsmPage(p) {
   renderPsmResults();
 }
 async function psmSelectCard(cardId) {
+  // First try to use data already in search results — no extra API call needed
+  const cached = psmAllResults.find(c => c.id === cardId);
+  if (cached) {
+    pricerSelectedCard = cached;
+    closePsm();
+    showPricerSelected(pricerSelectedCard);
+    // Silently fetch full detail in background for graded prices
+    fetch(`${WORKER_URL}/v1/cards/${cardId}`)
+      .then(r => r.ok ? r.json() : null)
+      .then(full => { if (full) { pricerSelectedCard = full; updatePricerSelPrice(); } })
+      .catch(() => {});
+    return;
+  }
+  // Fallback — fetch if not in cache
   const btn = document.getElementById('psmSearchBtn');
   btn.disabled = true; btn.textContent = '...';
   try {
@@ -2734,8 +2748,9 @@ function showPricerSelected(card) {
   document.getElementById('pricerSelQty').value = '1';
   onPricerTypeChange();
   updatePricerSelPrice();
-  // Update search input
-  document.getElementById('pricerSearchInput').value = card.name;
+  // Update search input if it exists (may not in modal flow)
+  const psi = document.getElementById('pricerSearchInput');
+  if (psi) psi.value = card.name;
 }
 
 function onPricerTypeChange() {
@@ -2810,7 +2825,8 @@ function addPricerCard() {
 
   // Reset selected card UI
   document.getElementById('pricerSelected').classList.remove('visible');
-  document.getElementById('pricerSearchInput').value = '';
+  const psiClear = document.getElementById('pricerSearchInput');
+  if (psiClear) psiClear.value = '';
   pricerSelectedCard = null;
   document.getElementById('pricerSelPrice').textContent = '—';
 
