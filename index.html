@@ -624,7 +624,7 @@ header{position:sticky;top:0;z-index:200;background:rgba(8,11,15,0.95);backdrop-
 .psm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:16px;}
 .psm-card{background:var(--surface);border:1px solid var(--border2);border-radius:10px;overflow:hidden;cursor:pointer;transition:all 0.15s;}
 .psm-card:hover{border-color:var(--accent2);transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,0,0,0.4);}
-.psm-card-img-wrap{position:relative;padding-bottom:70%;background:var(--surface2);}
+.psm-card-img-wrap{position:relative;padding-bottom:140%;background:var(--surface2);}
 .psm-card-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
 .psm-card-img-ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:32px;opacity:0.15;}
 .psm-card-info{padding:8px 10px;}
@@ -2614,9 +2614,8 @@ function selectPsmGame(el) {
   psmGame = el.dataset.game || '';
 }
 function onPsmInput(val) {
-  clearTimeout(psmDebounce);
-  if (!val.trim() || val.trim().length < 2) return;
-  psmDebounce = setTimeout(() => runPsmSearch(), 600);
+  // No auto-search — saves API calls and prevents 429 errors
+  // Search fires on Enter key or SEARCH button click only
 }
 async function runPsmSearch() {
   const q = document.getElementById('psmInput').value.trim();
@@ -2624,10 +2623,14 @@ async function runPsmSearch() {
   const setFilter = document.getElementById('psmSetFilter').value.trim();
   const numFilter = document.getElementById('psmNumberFilter').value.trim();
   const rarFilter = document.getElementById('psmRarityFilter').value.trim();
-  let fullQuery = q;
-  if (setFilter) fullQuery += ' ' + setFilter;
-  if (numFilter) fullQuery += ' ' + numFilter;
-  if (rarFilter) fullQuery += ' ' + rarFilter;
+  // Build query — name is primary, filters narrow it down
+  // Keep them separate so the API can match each field correctly
+  let fullQuery = q.trim();
+  if (setFilter) fullQuery += ' ' + setFilter.trim();
+  if (numFilter) fullQuery += ' ' + numFilter.trim();
+  if (rarFilter) fullQuery += ' ' + rarFilter.trim();
+  // Clean up extra spaces
+  fullQuery = fullQuery.replace(/\s+/g, ' ').trim();
   const resultsEl = document.getElementById('psmResults');
   const btn = document.getElementById('psmSearchBtn');
   btn.disabled = true; btn.textContent = '...';
@@ -2642,7 +2645,11 @@ async function runPsmSearch() {
     psmPage = 1;
     renderPsmResults();
   } catch(e) {
-    resultsEl.innerHTML = `<div class="psm-empty">Search failed — ${esc(e.message)}</div>`;
+    const is429 = e.message.includes('429') || e.message.includes('Rate limit');
+    const errMsg = is429
+      ? '<b>Rate limit hit</b> — free tier is 200 searches/day. Resets at midnight. Upgrade to Trader ($14.99/mo) for 10,000/day.'
+      : 'Search failed: ' + esc(e.message) + ' — check your connection.';
+    resultsEl.innerHTML = '<div class="psm-empty" style="line-height:1.8;">' + errMsg + '</div>';
   } finally {
     btn.disabled = false; btn.textContent = 'SEARCH';
   }
@@ -3119,7 +3126,7 @@ document.addEventListener('DOMContentLoaded', () => {
   <div class="psm-header">
     <div class="psm-title">Find Card</div>
     <input class="psm-search-input" type="text" id="psmInput"
-      placeholder="Card name, set, number..."
+      placeholder="Card name... (press Enter or click Search)"
       autocomplete="off"
       onkeydown="if(event.key==='Enter')runPsmSearch()"
       oninput="onPsmInput(this.value)">
