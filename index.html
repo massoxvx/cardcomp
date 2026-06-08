@@ -347,43 +347,45 @@ header{position:sticky;top:0;z-index:200;background:rgba(8,11,15,0.95);backdrop-
 .add-card-btn:hover{background:#33ffaa;}
 
 /* Portfolio grid */
-.port-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;}
-.pc{background:var(--surface);border:1px solid var(--border2);border-radius:14px;overflow:hidden;transition:border-color 0.15s,transform 0.15s;}
-.pc:hover{border-color:var(--border2);transform:translateY(-2px);}
+.port-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:10px;}
+/* Portfolio card — horizontal layout, full card image */
+.pc{background:var(--surface);border:1px solid var(--border2);border-radius:12px;overflow:hidden;transition:border-color 0.15s;display:flex;flex-direction:row;align-items:stretch;}
+.pc:hover{border-color:var(--border2);}
 
-/* Card image area — prominent */
-.pc-img-area{position:relative;height:0;padding-bottom:70%;background:var(--surface2);overflow:hidden;}
-.pc-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
-.pc-img-ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:48px;opacity:0.15;}
-.pc-img-overlay{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(8,11,15,0.92));padding:20px 12px 10px;}
-.pc-img-name{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:0.5px;line-height:1.1;color:#fff;margin-bottom:2px;}
-.pc-img-set{font-family:'Instrument Mono',monospace;font-size:9px;color:rgba(255,255,255,0.55);}
-.pc-badges-overlay{position:absolute;top:8px;left:8px;display:flex;gap:4px;flex-wrap:wrap;}
-.pcb{font-family:'Instrument Mono',monospace;font-size:8px;padding:3px 7px;border-radius:4px;backdrop-filter:blur(6px);}
-.pcb-raw{background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.8);border:1px solid rgba(255,255,255,0.15);}
-.pcb-graded{background:rgba(0,212,255,0.2);color:var(--accent);border:1px solid rgba(0,212,255,0.3);}
+/* Full portrait card image — left side */
+.pc-img-area{flex-shrink:0;width:90px;background:var(--surface2);position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;}
+.pc-img{width:100%;height:100%;object-fit:contain;object-position:center;padding:6px;}
+.pc-img-ph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:36px;opacity:0.2;}
+.pc-img-overlay{display:none;}
+.pc-badges-overlay{position:absolute;top:5px;left:5px;display:flex;flex-direction:column;gap:3px;}
+.pcb{font-family:'Instrument Mono',monospace;font-size:7px;padding:2px 5px;border-radius:3px;backdrop-filter:blur(6px);}
+.pcb-raw{background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.85);border:1px solid rgba(255,255,255,0.15);}
+.pcb-graded{background:rgba(0,212,255,0.25);color:var(--accent);border:1px solid rgba(0,212,255,0.35);}
 .pcb-game{background:rgba(255,215,0,0.15);color:var(--gold);border:1px solid rgba(255,215,0,0.25);}
 
-/* Card data area */
-.pc-data{padding:12px;}
-.pc-prices{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:10px;}
-.pcd-item{background:var(--surface2);border-radius:6px;padding:7px 8px;}
-.pcd-label{font-family:'Instrument Mono',monospace;font-size:7px;letter-spacing:2px;color:var(--muted2);text-transform:uppercase;margin-bottom:3px;}
-.pcd-val{font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:0.5px;}
+/* Card data — right side */
+.pc-data{flex:1;padding:12px 12px 10px;display:flex;flex-direction:column;gap:0;min-width:0;}
+.pc-card-header{margin-bottom:8px;}
+.pc-card-name{font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:1px;}
+.pc-card-meta{font-family:'Instrument Mono',monospace;font-size:9px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.pc-prices{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-bottom:6px;}
+.pcd-item{background:var(--surface2);border-radius:5px;padding:6px 7px;}
+.pcd-label{font-family:'Instrument Mono',monospace;font-size:7px;letter-spacing:1.5px;color:var(--muted2);text-transform:uppercase;margin-bottom:2px;}
+.pcd-val{font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:0.5px;}
 .pcd-val.green{color:var(--green);}
 .pcd-val.blue{color:var(--accent);}
 .pcd-val.profit{color:var(--green);}
 .pcd-val.loss{color:var(--red);}
 .pcd-val.neutral{color:var(--text);}
-.pc-pnl{background:var(--surface2);border-radius:6px;padding:8px 10px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;}
-.pc-pnl-label{font-family:'Instrument Mono',monospace;font-size:8px;letter-spacing:2px;color:var(--muted2);text-transform:uppercase;}
-.pc-pnl-val{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:0.5px;}
+.pc-pnl{background:var(--surface2);border-radius:5px;padding:6px 8px;margin-bottom:6px;display:flex;align-items:center;justify-content:space-between;}
+.pc-pnl-label{font-family:'Instrument Mono',monospace;font-size:7px;letter-spacing:1.5px;color:var(--muted2);text-transform:uppercase;}
+.pc-pnl-val{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:0.5px;}
 .pc-pnl-val.profit{color:var(--green);}
 .pc-pnl-val.loss{color:var(--red);}
 .pc-pnl-val.neutral{color:var(--muted);}
-.pc-refresh-line{font-family:'Instrument Mono',monospace;font-size:8px;color:var(--muted2);margin-bottom:8px;}
-.pc-actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;}
-.pc-action{font-family:'Instrument Mono',monospace;font-size:9px;letter-spacing:0.5px;padding:7px 4px;border-radius:6px;border:1px solid var(--border2);background:transparent;color:var(--muted);cursor:pointer;transition:all 0.12s;text-align:center;}
+.pc-refresh-line{font-family:'Instrument Mono',monospace;font-size:7px;color:var(--muted2);margin-bottom:6px;}
+.pc-actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-top:auto;}
+.pc-action{font-family:'Instrument Mono',monospace;font-size:9px;letter-spacing:0.5px;padding:6px 4px;border-radius:5px;border:1px solid var(--border2);background:transparent;color:var(--muted);cursor:pointer;transition:all 0.12s;text-align:center;}
 .pc-action:hover{border-color:var(--accent);color:var(--accent);}
 .pc-action.danger:hover{border-color:var(--red);color:var(--red);}
 .pc-action.comp:hover{border-color:var(--accent2);color:var(--accent2);}
@@ -420,7 +422,7 @@ header{position:sticky;top:0;z-index:200;background:rgba(8,11,15,0.95);backdrop-
   .form-grid{grid-template-columns:1fr;}
   .gt-head,.gt-row{grid-template-columns:76px 1fr 1fr;}
   .gt-head .gt-hcell:last-child,.gt-row>:last-child{display:none;}
-  .port-grid{grid-template-columns:1fr 1fr;}
+  .port-grid{grid-template-columns:1fr;}
   .snap-bar{flex-direction:column;align-items:flex-start;}
   .pro-bar{flex-direction:column;align-items:flex-start;}
 }
@@ -1189,9 +1191,9 @@ function onSearchInput(val) {
     if (chip) selectGame(chip);
   }
 
-  clearTimeout(suggestTimeout);
-  if (val.trim().length < 2) { hideSuggestions(); return; }
-  suggestTimeout = setTimeout(() => fetchSuggestions(val.trim()), 350);
+  // No auto-search on input — search fires on Enter or SEARCH button only
+  // This prevents burning through API rate limits while typing
+  hideSuggestions();
 }
 
 async function fetchSuggestions(q) {
@@ -2300,14 +2302,13 @@ function buildCardEl(card) {
       ${imgHtml}
       <div class="pc-badges-overlay">
         ${card.type==='graded'?`<span class="pcb pcb-graded">${esc(gradeLabel||'GRADED')}</span>`:`<span class="pcb pcb-raw">${condLabel||'RAW'}</span>`}
-        <span class="pcb pcb-game">${esc(card.game||'')}</span>
-      </div>
-      <div class="pc-img-overlay">
-        <div class="pc-img-name">${esc(card.name)}${card.qty>1?` ×${card.qty}`:''}</div>
-        <div class="pc-img-set">${esc(card.set||'—')}</div>
       </div>
     </div>
     <div class="pc-data">
+      <div class="pc-card-header">
+        <div class="pc-card-name">${esc(card.name)}${card.qty>1?` <span style="color:var(--muted);font-size:11px;">×${card.qty}</span>`:''}</div>
+        <div class="pc-card-meta">${esc(card.set||'—')} · <span style="color:var(--accent2)">${esc(card.game||'')}</span></div>
+      </div>
       <div class="pc-prices">
         <div class="pcd-item"><div class="pcd-label">Cost</div><div class="pcd-val neutral">${fmt(totalCost)}</div></div>
         <div class="pcd-item"><div class="pcd-label">Market</div><div class="pcd-val green">${mv?fmt(mv):'—'}</div></div>
@@ -2315,9 +2316,9 @@ function buildCardEl(card) {
       </div>
       <div class="pc-pnl">
         <div class="pc-pnl-label">Unrealized P&L</div>
-        <div class="pc-pnl-val ${pnl===null?'neutral':pnl>=0?'profit':'loss'}">${pnl===null?'—':(pnl>=0?'+':'')+fmt(pnl)+(pnlPct?` <span style="font-size:12px;font-family:monospace;">(${pnlPct}%)</span>`:'')}</div>
+        <div class="pc-pnl-val ${pnl===null?'neutral':pnl>=0?'profit':'loss'}">${pnl===null?'—':(pnl>=0?'+':'')+fmt(pnl)+(pnlPct?` <span style="font-size:11px;font-family:monospace;">(${pnlPct}%)</span>`:'')}</div>
       </div>
-      <div class="pc-refresh-line">${card.lastRefreshed?'↻ '+new Date(card.lastRefreshed).toLocaleDateString('en-US',{month:'short',day:'numeric'}):'Not yet refreshed'}</div>
+      <div class="pc-refresh-line">${card.lastRefreshed?'↻ '+new Date(card.lastRefreshed).toLocaleDateString('en-US',{month:'short',day:'numeric'}):'Not refreshed yet'}</div>
       <div class="pc-actions">
         <button class="pc-action comp" onclick="searchCardComp('${esc(card.name)}','${esc(card.game)}')">🔍 COMPS</button>
         <button class="pc-action" onclick="refreshCardValue('${card.id}')">↻ REFRESH</button>
