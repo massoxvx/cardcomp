@@ -643,6 +643,78 @@ header{position:sticky;top:0;z-index:200;background:rgba(8,11,15,0.95);backdrop-
 .psm-empty{text-align:center;padding:48px 20px;color:var(--muted);font-size:13px;}
 .psm-loader{display:flex;flex-direction:column;align-items:center;padding:48px 20px;gap:12px;}
 
+
+/* ── ROI MODAL ── */
+.roi-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(14px);z-index:600;display:flex;align-items:flex-end;justify-content:center;}
+.roi-modal-overlay.hidden{display:none;}
+.roi-modal{background:var(--surface);border:1px solid rgba(0,232,122,0.25);border-radius:20px 20px 0 0;width:100%;max-width:580px;max-height:92vh;overflow-y:auto;animation:sheetUp 0.28s cubic-bezier(0.34,1.1,0.64,1);}
+.roi-modal-drag{width:40px;height:4px;background:var(--border2);border-radius:2px;margin:14px auto 0;}
+.roi-modal-head{padding:16px 20px 12px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:12px;}
+.roi-modal-card-img{width:48px;height:67px;border-radius:6px;object-fit:contain;background:var(--surface2);border:1px solid var(--border2);flex-shrink:0;}
+.roi-modal-card-img-ph{width:48px;height:67px;border-radius:6px;background:var(--surface2);border:1px solid var(--border2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:20px;opacity:0.3;}
+.roi-modal-card-info{flex:1;min-width:0;}
+.roi-modal-card-name{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:0.5px;line-height:1.1;margin-bottom:2px;}
+.roi-modal-card-set{font-family:'Instrument Mono',monospace;font-size:10px;color:var(--muted);}
+.roi-modal-close{background:none;border:1px solid var(--border2);color:var(--muted);font-size:16px;width:32px;height:32px;border-radius:7px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all 0.15s;margin-left:auto;}
+.roi-modal-close:hover{border-color:var(--red);color:var(--red);}
+
+/* Verdict banner — big and prominent at top */
+.roi-verdict-banner{margin:14px 20px;border-radius:12px;padding:16px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.roi-verdict-banner.strong{background:rgba(0,232,122,0.1);border:1px solid rgba(0,232,122,0.3);}
+.roi-verdict-banner.good{background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.25);}
+.roi-verdict-banner.marginal{background:rgba(255,215,0,0.08);border:1px solid rgba(255,215,0,0.25);}
+.roi-verdict-banner.skip{background:rgba(255,71,87,0.08);border:1px solid rgba(255,71,87,0.25);}
+.roi-verdict-banner.empty{background:var(--surface2);border:1px solid var(--border2);}
+.rvb-left{}
+.rvb-badge{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px;line-height:1;margin-bottom:4px;}
+.roi-verdict-banner.strong .rvb-badge{color:var(--green);}
+.roi-verdict-banner.good .rvb-badge{color:var(--accent);}
+.roi-verdict-banner.marginal .rvb-badge{color:var(--gold);}
+.roi-verdict-banner.skip .rvb-badge{color:var(--red);}
+.roi-verdict-banner.empty .rvb-badge{color:var(--muted);}
+.rvb-msg{font-size:12px;color:var(--muted);line-height:1.5;max-width:280px;}
+.rvb-pct{font-family:'Bebas Neue',sans-serif;font-size:52px;letter-spacing:-1px;line-height:1;flex-shrink:0;}
+.roi-verdict-banner.strong .rvb-pct{color:var(--green);}
+.roi-verdict-banner.good .rvb-pct{color:var(--accent);}
+.roi-verdict-banner.marginal .rvb-pct{color:var(--gold);}
+.roi-verdict-banner.skip .rvb-pct{color:var(--red);}
+.roi-verdict-banner.empty .rvb-pct{color:var(--muted2);}
+
+/* Inputs */
+.roi-modal-body{padding:0 20px 32px;}
+.roi-modal-section-title{font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:2px;color:var(--muted);margin-bottom:10px;margin-top:14px;}
+.roi-modal-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:4px;}
+.roi-modal-field{display:flex;flex-direction:column;gap:4px;}
+.roi-modal-field label{font-family:'Instrument Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;}
+.roi-modal-input{background:var(--bg);border:1px solid var(--border2);color:var(--text);font-family:'Instrument Mono',monospace;font-size:14px;padding:10px 12px;border-radius:8px;outline:none;width:100%;transition:border-color 0.2s;}
+.roi-modal-input:focus{border-color:var(--green);}
+.roi-modal-select{background:var(--bg);border:1px solid var(--border2);color:var(--text);font-family:'Instrument Sans',sans-serif;font-size:13px;padding:10px 12px;border-radius:8px;outline:none;width:100%;cursor:pointer;}
+
+/* Grade comparison strip */
+.grade-comp-strip{display:flex;gap:6px;overflow-x:auto;padding:2px 0 8px;-ms-overflow-style:none;scrollbar-width:none;}
+.grade-comp-strip::-webkit-scrollbar{display:none;}
+.grade-comp-item{flex-shrink:0;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:8px 12px;cursor:pointer;transition:all 0.15s;text-align:center;min-width:72px;}
+.grade-comp-item:hover{border-color:var(--green);}
+.grade-comp-item.selected{background:rgba(0,232,122,0.08);border-color:var(--green);}
+.gci-grade{font-family:'Instrument Mono',monospace;font-size:9px;letter-spacing:1px;color:var(--muted);margin-bottom:3px;}
+.gci-price{font-family:'Bebas Neue',sans-serif;font-size:17px;color:var(--text);letter-spacing:0.5px;}
+.gci-price.na{font-size:11px;color:var(--muted2);}
+
+/* Fee breakdown */
+.roi-fee-breakdown{background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:12px 14px;margin-top:12px;}
+.roi-fee-title{font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:2px;color:var(--muted);margin-bottom:8px;}
+.roi-stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;}
+.roi-stat{background:var(--surface);border-radius:7px;padding:9px 11px;}
+.roi-stat-label{font-family:'Instrument Mono',monospace;font-size:8px;letter-spacing:2px;color:var(--muted2);text-transform:uppercase;margin-bottom:3px;}
+.roi-stat-val{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:0.5px;}
+.roi-stat-val.profit{color:var(--green);}
+.roi-stat-val.loss{color:var(--red);}
+.roi-stat-val.neutral{color:var(--text);}
+
+/* ROI button on card hero */
+.roi-trigger-btn{display:inline-flex;align-items:center;gap:6px;font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:1.5px;color:var(--green);background:rgba(0,232,122,0.08);border:1px solid rgba(0,232,122,0.25);padding:7px 14px;border-radius:7px;cursor:pointer;transition:all 0.15s;white-space:nowrap;margin-top:8px;}
+.roi-trigger-btn:hover{background:rgba(0,232,122,0.15);border-color:rgba(0,232,122,0.4);}
+
 </style>
 </head>
 <body>
@@ -870,6 +942,85 @@ header{position:sticky;top:0;z-index:200;background:rgba(8,11,15,0.95);backdrop-
   </div>
 </div>
 
+
+<!-- ══ ROI CALCULATOR MODAL ══ -->
+<div class="roi-modal-overlay hidden" id="roiModalOverlay">
+  <div class="roi-modal">
+    <div class="roi-modal-drag"></div>
+    <div class="roi-modal-head">
+      <div id="roiModalCardImg"></div>
+      <div class="roi-modal-card-info">
+        <div class="roi-modal-card-name" id="roiModalCardName">Grade ROI Calculator</div>
+        <div class="roi-modal-card-set" id="roiModalCardSet">Should I grade this card?</div>
+      </div>
+      <button class="roi-modal-close" onclick="closeRoiModal()">✕</button>
+    </div>
+
+    <!-- Big verdict banner -->
+    <div class="roi-verdict-banner empty" id="roiModalVerdict">
+      <div class="rvb-left">
+        <div class="rvb-badge" id="roiModalBadge">ENTER DETAILS</div>
+        <div class="rvb-msg" id="roiModalMsg">Fill in what you paid and expected sale price to see if grading is worth it.</div>
+      </div>
+      <div class="rvb-pct" id="roiModalPct">—</div>
+    </div>
+
+    <div class="roi-modal-body">
+
+      <!-- Grade selector strip with live prices -->
+      <div class="roi-modal-section-title">Select Expected Grade</div>
+      <div class="grade-comp-strip" id="roiGradeStrip"></div>
+
+      <!-- Inputs -->
+      <div class="roi-modal-section-title">Your Numbers</div>
+      <div class="roi-modal-grid">
+        <div class="roi-modal-field">
+          <label>Raw Card Cost ($) *</label>
+          <input class="roi-modal-input" type="number" id="roiModalCost" placeholder="What you paid" min="0" step="0.01" oninput="calcRoiModal()">
+        </div>
+        <div class="roi-modal-field">
+          <label>Grading Company</label>
+          <select class="roi-modal-select" id="roiModalGrader" onchange="calcRoiModal()">
+            <option value="psa_economy">PSA Economy ($18)</option>
+            <option value="psa_value" selected>PSA Value ($32.99)</option>
+            <option value="psa_regular">PSA Regular ($75)</option>
+            <option value="bgs_economy">BGS Economy ($22)</option>
+            <option value="bgs_standard">BGS Standard ($75)</option>
+            <option value="cgc_economy">CGC Economy ($18)</option>
+            <option value="cgc_standard">CGC Standard ($35)</option>
+          </select>
+        </div>
+        <div class="roi-modal-field">
+          <label>Shipping to Grader ($)</label>
+          <input class="roi-modal-input" type="number" id="roiModalShipping" value="12" min="0" step="0.01" oninput="calcRoiModal()">
+        </div>
+        <div class="roi-modal-field">
+          <label>Expected Sale Price ($)</label>
+          <input class="roi-modal-input" type="number" id="roiModalSale" placeholder="Tap a grade above" min="0" step="0.01" oninput="calcRoiModal()">
+        </div>
+        <div class="roi-modal-field">
+          <label>Promoted Listing (%)</label>
+          <input class="roi-modal-input" type="number" id="roiModalPromo" value="0" min="0" max="100" step="0.1" oninput="calcRoiModal()">
+        </div>
+      </div>
+
+      <!-- Stats row -->
+      <div class="roi-stats-row">
+        <div class="roi-stat"><div class="roi-stat-label">Net Profit</div><div class="roi-stat-val" id="roiModalProfit">—</div></div>
+        <div class="roi-stat"><div class="roi-stat-label">Total Costs</div><div class="roi-stat-val neutral" id="roiModalCosts">—</div></div>
+        <div class="roi-stat"><div class="roi-stat-label">Break Even</div><div class="roi-stat-val neutral" id="roiModalBreak">—</div></div>
+      </div>
+
+      <!-- Fee breakdown -->
+      <div class="roi-fee-breakdown" id="roiModalFees">
+        <div class="roi-fee-title">Fee Breakdown</div>
+        <div id="roiModalFeeLines" style="color:var(--muted);font-size:12px;">Enter your numbers above to see the full breakdown.</div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
 <!-- ══ COMPS PAGE ══ -->
 <div class="page active" id="pageComps">
   <!-- Search hero -->
@@ -951,7 +1102,7 @@ header{position:sticky;top:0;z-index:200;background:rgba(8,11,15,0.95);backdrop-
         <button class="stab tcg active" onclick="switchTab('tcg',this)">TCGPlayer</button>
         <button class="stab ebay" onclick="switchTab('ebay',this)">eBay Sold</button>
         <button class="stab graded" onclick="switchTab('graded',this)">Graded</button>
-        <button class="stab roi" onclick="switchTab('roi',this)">🧮 ROI</button>
+        <!-- ROI moved to dedicated modal -->
       </div>
 
       <!-- TCG Panel -->
@@ -985,8 +1136,8 @@ header{position:sticky;top:0;z-index:200;background:rgba(8,11,15,0.95);backdrop-
         <div class="grade-table" id="gradeTable"></div>
       </div>
 
-      <!-- ROI Panel -->
-      <div class="price-panel" id="panel-roi">
+      <!-- ROI Panel (legacy — kept for calcROI references) -->
+      <div class="price-panel hidden" id="panel-roi" style="display:none!important;">
         <div class="roi-wrap">
           <div class="roi-head">
             <div class="roi-head-title">🧮 Grade ROI Calculator</div>
@@ -1656,6 +1807,7 @@ function renderHeader(card) {
         ${psa10?`<div class="cph-item"><div class="cph-label">PSA 10</div><div class="cph-value psa10">${fmt(psa10)}</div></div>`:''}
       </div>
       ${updated?`<div class="updated-line"><span class="live-dot"></span>Updated ${updated}</div>`:''}
+      <button class="roi-trigger-btn" onclick="openRoiModal()">🧮 GRADE ROI CALCULATOR</button>
     </div>`;
 }
 
@@ -3070,6 +3222,191 @@ Prices from TCGPlayer/eBay via CardComp`;
 }
 
 // Pricer search now uses modal — no outside click handler needed
+
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// ROI CALCULATOR MODAL
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+let roiModalGrade = '9'; // currently selected grade in modal
+let roiModalGrader = 'psa'; // psa / bgs / cgc
+
+function openRoiModal() {
+  if (!currentCard) return;
+  const card = currentCard;
+
+  // Set card identity in modal header
+  const imgWrap = document.getElementById('roiModalCardImg');
+  imgWrap.innerHTML = card.image_url
+    ? `<img class="roi-modal-card-img" src="${esc(card.image_url)}" onerror="this.outerHTML='<div class=roi-modal-card-img-ph>🃏</div>'">`
+    : '<div class="roi-modal-card-img-ph">🃏</div>';
+  document.getElementById('roiModalCardName').textContent = card.name || 'Unknown Card';
+  document.getElementById('roiModalCardSet').textContent =
+    (card.set?.name || '') + (card.number ? ' · #' + card.number : '') + ' · ' + (card.game?.name || '');
+
+  // Build grade strip from available data
+  buildRoiGradeStrip(card);
+
+  // Reset inputs
+  document.getElementById('roiModalCost').value = '';
+  document.getElementById('roiModalShipping').value = '12';
+  document.getElementById('roiModalPromo').value = '0';
+
+  // Auto-fill sale price from PSA 9 if available
+  const psa9 = card.prices?.graded?.psa?.['9']?.ebay?.avg_7d;
+  const psa10 = card.prices?.graded?.psa?.['10']?.ebay?.avg_7d;
+  const tcgNm = card.prices?.raw?.near_mint?.tcgplayer?.market;
+  if (psa9) {
+    document.getElementById('roiModalSale').value = psa9.toFixed(2);
+    roiModalGrade = '9'; roiModalGrader = 'psa';
+  } else if (psa10) {
+    document.getElementById('roiModalSale').value = psa10.toFixed(2);
+    roiModalGrade = '10'; roiModalGrader = 'psa';
+  } else if (tcgNm) {
+    // No graded data — use raw NM as starting point
+    document.getElementById('roiModalSale').value = tcgNm.toFixed(2);
+  }
+
+  // Reset verdict
+  resetRoiVerdict();
+  calcRoiModal();
+
+  document.getElementById('roiModalOverlay').classList.remove('hidden');
+}
+
+function closeRoiModal() {
+  document.getElementById('roiModalOverlay').classList.add('hidden');
+}
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeRoiModal();
+});
+document.getElementById('roiModalOverlay').addEventListener('click', (e) => {
+  if (e.target === document.getElementById('roiModalOverlay')) closeRoiModal();
+});
+
+function buildRoiGradeStrip(card) {
+  const strip = document.getElementById('roiGradeStrip');
+  const graders = ['psa','bgs','cgc'];
+  const grades = ['10','9.5','9','8.5','8','7'];
+  const graderLabels = {psa:'PSA',bgs:'BGS',cgc:'CGC'};
+  let items = [];
+
+  graders.forEach(grader => {
+    const gdata = card.prices?.graded?.[grader];
+    if (!gdata) return;
+    grades.forEach(g => {
+      const price = gdata[g]?.ebay?.avg_7d || gdata[g]?.tcgplayer?.market;
+      items.push({ grader, grade: g, price, label: graderLabels[grader] + ' ' + g });
+    });
+  });
+
+  // If no graded data at all, show grade options without prices
+  if (!items.length) {
+    ['PSA 10','PSA 9','PSA 8.5','PSA 8','BGS 9.5','BGS 9'].forEach(lbl => {
+      const parts = lbl.split(' ');
+      items.push({ grader: parts[0].toLowerCase(), grade: parts[1], price: null, label: lbl });
+    });
+  }
+
+  strip.innerHTML = items.map(item => {
+    const isSelected = item.grader === roiModalGrader && item.grade === roiModalGrade;
+    return `<div class="grade-comp-item ${isSelected ? 'selected' : ''}"
+      onclick="selectRoiGrade('${item.grader}','${item.grade}',${item.price || 0})">
+      <div class="gci-grade">${item.label}</div>
+      <div class="gci-price ${item.price ? '' : 'na'}">${item.price ? fmt(item.price) : 'No data'}</div>
+    </div>`;
+  }).join('');
+}
+
+function selectRoiGrade(grader, grade, price) {
+  roiModalGrade = grade;
+  roiModalGrader = grader;
+  // Update selected state
+  document.querySelectorAll('.grade-comp-item').forEach(el => el.classList.remove('selected'));
+  event.currentTarget.classList.add('selected');
+  // Set sale price if available
+  if (price > 0) {
+    document.getElementById('roiModalSale').value = price.toFixed(2);
+  }
+  calcRoiModal();
+}
+
+function resetRoiVerdict() {
+  const v = document.getElementById('roiModalVerdict');
+  v.className = 'roi-verdict-banner empty';
+  document.getElementById('roiModalBadge').textContent = 'ENTER DETAILS';
+  document.getElementById('roiModalMsg').textContent = 'Fill in what you paid and expected sale price to see if grading is worth it.';
+  document.getElementById('roiModalPct').textContent = '—';
+}
+
+function calcRoiModal() {
+  const rawCost = parseFloat(document.getElementById('roiModalCost').value) || 0;
+  const graderKey = document.getElementById('roiModalGrader').value;
+  const gradingFee = GRADING_FEES[graderKey] || 32.99;
+  const shipping = parseFloat(document.getElementById('roiModalShipping').value) || 0;
+  const salePrice = parseFloat(document.getElementById('roiModalSale').value) || 0;
+  const promoRate = parseFloat(document.getElementById('roiModalPromo').value) || 0;
+
+  if (!salePrice) { resetRoiVerdict(); return; }
+
+  const totalCosts = rawCost + gradingFee + shipping;
+  const {fvfAmount, taxOnFees, promoFee, fixed, totalFees, netPayout} = calcEbayPayout(salePrice, promoRate);
+  const netProfit = netPayout - totalCosts;
+  const roi = totalCosts > 0 ? (netProfit / totalCosts) * 100 : (netPayout > 0 ? 100 : 0);
+  const breakEven = calcBreakEven(totalCosts, promoRate);
+
+  // Verdict
+  let badge, msg, cls;
+  if (!rawCost) {
+    // No cost entered — just show take-home
+    badge = 'TAKE-HOME';
+    msg = `After all eBay fees you would pocket ${fmt(netPayout)} from a ${fmt(salePrice)} sale.`;
+    cls = netPayout > 0 ? 'good' : 'skip';
+  } else if (roi >= 50) {
+    badge = 'STRONG GRADE';
+    msg = `${roi.toFixed(0)}% ROI — strong submission. Even grading down one level you likely still profit.`;
+    cls = 'strong';
+  } else if (roi >= 20) {
+    badge = 'GRADE IT';
+    msg = `${roi.toFixed(0)}% ROI — solid. Covers all costs with meaningful upside.`;
+    cls = 'good';
+  } else if (roi >= 0) {
+    badge = 'MARGINAL';
+    msg = `${roi.toFixed(0)}% ROI — tight. A grade lower than expected could put you in the red. Break even at ${fmt(breakEven)}.`;
+    cls = 'marginal';
+  } else {
+    badge = 'SKIP IT';
+    msg = `${roi.toFixed(0)}% ROI — grading costs exceed projected sale. Hold raw or wait for market to move. Break even at ${fmt(breakEven)}.`;
+    cls = 'skip';
+  }
+
+  const v = document.getElementById('roiModalVerdict');
+  v.className = 'roi-verdict-banner ' + cls;
+  document.getElementById('roiModalBadge').textContent = badge;
+  document.getElementById('roiModalMsg').textContent = msg;
+  document.getElementById('roiModalPct').textContent = rawCost ? roi.toFixed(0) + '%' : fmt(netPayout);
+
+  // Stats
+  const profitCls = netProfit >= 0 ? 'profit' : 'loss';
+  const profitEl = document.getElementById('roiModalProfit');
+  profitEl.textContent = fmt(netProfit);
+  profitEl.className = 'roi-stat-val ' + (rawCost ? profitCls : 'neutral');
+  document.getElementById('roiModalCosts').textContent = fmt(totalCosts);
+  document.getElementById('roiModalBreak').textContent = fmt(breakEven);
+
+  // Fee breakdown
+  const flag = COUNTRY_FLAGS[sellerCountry] || '🌍';
+  const taxLbl = getTaxLabel();
+  document.getElementById('roiModalFeeLines').innerHTML = `
+    <div class="fee-row deduct"><span class="fee-row-label">Raw card cost</span><span class="fee-row-val">−${fmt(rawCost)}</span></div>
+    <div class="fee-row deduct"><span class="fee-row-label">Grading fee (${graderKey.replace('_',' ').toUpperCase()})</span><span class="fee-row-val">−${fmt(gradingFee)}</span></div>
+    <div class="fee-row deduct"><span class="fee-row-label">Shipping to grader</span><span class="fee-row-val">−${fmt(shipping)}</span></div>
+    <div class="fee-row deduct"><span class="fee-row-label">eBay final value fee (${(getFVF()*100).toFixed(2)}%)</span><span class="fee-row-val">−${fmt(fvfAmount)}</span></div>
+    <div class="fee-row deduct"><span class="fee-row-label">Tax on fees ${flag} (${taxLbl})</span><span class="fee-row-val">−${fmt(taxOnFees)}</span></div>
+    ${promoFee > 0 ? `<div class="fee-row deduct"><span class="fee-row-label">Promoted listing (${promoRate}%)</span><span class="fee-row-val">−${fmt(promoFee)}</span></div>` : ''}
+    <div class="fee-row deduct"><span class="fee-row-label">Per-order fee</span><span class="fee-row-val">−${fmt(fixed)}</span></div>
+    <div class="fee-row total"><span class="fee-row-label">Net Profit</span><span class="fee-row-val">${fmt(netProfit)}</span></div>`;
+}
 
 // ─── INIT ─────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
