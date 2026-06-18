@@ -4,983 +4,777 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#080b0f">
-<title>CardComp — TCG Comps & Portfolio</title>
+<title>CardComp</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Instrument+Sans:wght@400;500;600;700&family=Instrument+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <style>
+/* ── TOKENS ── */
 :root{
-  --bg:#080b0f;--surface:#0f1318;--surface2:#161c23;--surface3:#1d2530;
-  --border:#1e2730;--border2:#2a3540;
-  --accent:#00d4ff;--accent2:#ff6b35;--green:#00e87a;--red:#ff4757;
+  --bg:#080b0f;--s1:#0f1318;--s2:#161c23;--s3:#1d2530;
+  --b1:#1e2730;--b2:#2a3540;
+  --cyan:#00d4ff;--orange:#ff6b35;--green:#00e87a;--red:#ff4757;
   --gold:#ffd700;--purple:#7b8fff;
   --text:#dde4ec;--muted:#526070;--muted2:#3a4a58;
-  --nav-h:64px;--bottom-nav-h:68px;
+  --nav:64px;--bnav:68px;
+  --font:'Instrument Sans',sans-serif;
+  --mono:'Instrument Mono',monospace;
+  --display:'Bebas Neue',sans-serif;
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 html{scroll-behavior:smooth;}
-body{background:var(--bg);color:var(--text);font-family:'Instrument Sans',sans-serif;min-height:100vh;overflow-x:hidden;padding-bottom:var(--bottom-nav-h);}
-body::before{content:'';position:fixed;top:-150px;left:50%;transform:translateX(-50%);width:700px;height:500px;background:radial-gradient(ellipse,rgba(0,212,255,0.05) 0%,transparent 70%);pointer-events:none;z-index:0;}
+body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh;overflow-x:hidden;padding-bottom:var(--bnav);}
+body::before{content:'';position:fixed;top:-150px;left:50%;transform:translateX(-50%);width:700px;height:500px;background:radial-gradient(ellipse,rgba(0,212,255,0.04) 0%,transparent 70%);pointer-events:none;z-index:0;}
 
-/* ━━━ TOP HEADER ━━━ */
-header{position:sticky;top:0;z-index:200;background:rgba(8,11,15,0.95);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-bottom:1px solid var(--border);height:var(--nav-h);display:flex;align-items:center;justify-content:space-between;padding:0 20px;gap:10px;}
-.logo{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:3px;cursor:pointer;display:flex;align-items:center;gap:3px;flex-shrink:0;}
-.logo span{color:var(--accent);}
-.header-actions{display:flex;align-items:center;gap:6px;}
-.hdr-btn{display:flex;align-items:center;gap:5px;font-family:'Instrument Mono',monospace;font-size:10px;letter-spacing:1px;color:var(--muted);background:var(--surface);border:1px solid var(--border2);padding:6px 10px;border-radius:6px;cursor:pointer;transition:all 0.18s;white-space:nowrap;}
-.hdr-btn:hover{border-color:var(--accent);color:var(--accent);}
+/* ── TOP HEADER ── */
+header{position:sticky;top:0;z-index:200;background:rgba(8,11,15,0.95);backdrop-filter:blur(24px);border-bottom:1px solid var(--b1);height:var(--nav);display:flex;align-items:center;justify-content:space-between;padding:0 18px;gap:10px;}
+.logo{font-family:var(--display);font-size:24px;letter-spacing:3px;cursor:pointer;display:flex;align-items:center;gap:3px;flex-shrink:0;user-select:none;}
+.logo span{color:var(--cyan);}
+.hdr-right{display:flex;align-items:center;gap:6px;}
+.hdr-btn{display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:10px;letter-spacing:1px;color:var(--muted);background:var(--s1);border:1px solid var(--b2);padding:6px 10px;border-radius:6px;cursor:pointer;transition:all 0.18s;white-space:nowrap;}
+.hdr-btn:hover{border-color:var(--cyan);color:var(--cyan);}
 .hdr-btn.gold:hover{border-color:var(--gold);color:var(--gold);}
+.hdr-btn.orange{border-color:rgba(255,107,53,0.3);color:var(--orange);}
+.hdr-btn.orange:hover{border-color:var(--orange);}
 .status-dot{width:6px;height:6px;border-radius:50%;background:var(--muted2);flex-shrink:0;}
 .status-dot.live{background:var(--green);box-shadow:0 0 5px var(--green);animation:pulse 2s infinite;}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.35}}
 
-/* ━━━ BOTTOM NAV (mobile-first) ━━━ */
-.bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:200;background:rgba(8,11,15,0.97);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-top:1px solid var(--border);height:var(--bottom-nav-h);display:flex;align-items:center;padding:0 8px;padding-bottom:env(safe-area-inset-bottom);}
-.bnav-tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:8px 4px;cursor:pointer;border-radius:10px;transition:all 0.18s;border:none;background:transparent;color:var(--muted);}
+/* ── BOTTOM NAV ── */
+.bnav{position:fixed;bottom:0;left:0;right:0;z-index:200;background:rgba(8,11,15,0.97);backdrop-filter:blur(24px);border-top:1px solid var(--b1);height:var(--bnav);display:flex;align-items:center;padding:0 8px;padding-bottom:env(safe-area-inset-bottom);}
+.bnav-tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:8px 4px;cursor:pointer;border-radius:10px;transition:all 0.18s;border:none;background:transparent;color:var(--muted);}
 .bnav-tab:hover{color:var(--text);}
-.bnav-tab.active{color:var(--accent);}
-.bnav-tab.active.port{color:var(--green);}
-.bnav-tab.active.pricer{color:var(--accent2);}
-.bnav-icon{font-size:20px;line-height:1;}
-.bnav-label{font-family:'Instrument Mono',monospace;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;}
-.bnav-badge{position:absolute;top:-2px;right:-4px;background:var(--green);color:var(--bg);font-family:'Instrument Mono',monospace;font-size:9px;font-weight:700;padding:1px 5px;border-radius:8px;min-width:16px;text-align:center;}
-.bnav-icon-wrap{position:relative;display:inline-block;}
+.bnav-tab.active{color:var(--cyan);}
+.bnav-tab.active.t-collection{color:var(--green);}
+.bnav-tab.active.t-pricer{color:var(--orange);}
+.bnav-icon{font-size:20px;line-height:1;position:relative;display:inline-block;}
+.bnav-badge{position:absolute;top:-3px;right:-6px;background:var(--green);color:var(--bg);font-family:var(--mono);font-size:8px;font-weight:700;padding:1px 4px;border-radius:8px;min-width:14px;text-align:center;}
+.bnav-badge.orange{background:var(--orange);}
+.bnav-label{font-family:var(--mono);font-size:9px;letter-spacing:1.5px;text-transform:uppercase;}
 
-/* ━━━ PAGES ━━━ */
-.page{display:none;min-height:calc(100vh - var(--nav-h) - var(--bottom-nav-h));animation:pageIn 0.22s ease;}
+/* ── PAGES ── */
+.page{display:none;min-height:calc(100vh - var(--nav) - var(--bnav));animation:pageIn 0.2s ease;}
 .page.active{display:block;}
-@keyframes pageIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-.page-inner{max-width:860px;margin:0 auto;padding:24px 20px 40px;}
+@keyframes pageIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.wrap{max-width:900px;margin:0 auto;padding:20px 18px 40px;}
 
-/* ━━━ MODALS ━━━ */
+/* ── MODALS (bottom sheet) ── */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(16px);z-index:500;display:flex;align-items:flex-end;justify-content:center;}
 .modal-overlay.hidden{display:none;}
-.modal{background:var(--surface);border:1px solid var(--border2);border-radius:20px 20px 0 0;padding:28px 24px 40px;width:100%;max-width:580px;max-height:92vh;overflow-y:auto;animation:sheetUp 0.28s cubic-bezier(0.34,1.1,0.64,1);}
+.modal{background:var(--s1);border:1px solid var(--b2);border-radius:20px 20px 0 0;width:100%;max-width:580px;max-height:92vh;overflow-y:auto;animation:sheetUp 0.28s cubic-bezier(0.34,1.1,0.64,1);}
 @keyframes sheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
-.modal-drag{width:40px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 20px;}
-.modal-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1.5px;margin-bottom:6px;}
-.modal-title.cyan{color:var(--accent);}
-.modal-title.gold{color:var(--gold);}
-.modal-title.green{color:var(--green);}
-.modal-desc{font-size:13px;color:var(--muted);line-height:1.65;margin-bottom:16px;}
-.modal-desc a{color:var(--accent);}
-.field-label{font-family:'Instrument Mono',monospace;font-size:9px;letter-spacing:2.5px;color:var(--muted);text-transform:uppercase;margin-bottom:5px;display:block;}
-.modal-input{width:100%;background:var(--bg);border:1px solid var(--border2);color:var(--text);font-family:'Instrument Mono',monospace;font-size:13px;padding:12px 14px;border-radius:10px;outline:none;margin-bottom:10px;transition:border-color 0.2s;}
-.modal-input:focus{border-color:var(--accent);}
-.modal-select{width:100%;background:var(--bg);border:1px solid var(--border2);color:var(--text);font-family:'Instrument Sans',sans-serif;font-size:13px;padding:12px 14px;border-radius:10px;outline:none;cursor:pointer;margin-bottom:10px;transition:border-color 0.2s;}
-.modal-select:focus{border-color:var(--gold);}
-.modal-select option{background:var(--surface2);}
+.drag{width:40px;height:4px;background:var(--b2);border-radius:2px;margin:14px auto 0;}
+.modal h2{font-family:var(--display);font-size:22px;letter-spacing:1.5px;margin-bottom:6px;}
+.modal h2.cyan{color:var(--cyan);}
+.modal h2.gold{color:var(--gold);}
+.modal h2.green{color:var(--green);}
+.modal h2.orange{color:var(--orange);}
+.modal-body{padding:16px 20px 36px;}
+.modal p{font-size:13px;color:var(--muted);line-height:1.65;margin-bottom:14px;}
+.modal p a{color:var(--cyan);}
+.flabel{font-family:var(--mono);font-size:9px;letter-spacing:2.5px;color:var(--muted);text-transform:uppercase;display:block;margin-bottom:5px;}
+.finput{width:100%;background:var(--bg);border:1px solid var(--b2);color:var(--text);font-family:var(--mono);font-size:13px;padding:11px 13px;border-radius:9px;outline:none;transition:border-color 0.2s;margin-bottom:10px;}
+.finput:focus{border-color:var(--cyan);}
+.finput.green:focus{border-color:var(--green);}
+.fselect{width:100%;background:var(--bg);border:1px solid var(--b2);color:var(--text);font-family:var(--font);font-size:13px;padding:11px 13px;border-radius:9px;outline:none;cursor:pointer;margin-bottom:10px;}
+.fselect option{background:var(--s2);}
 .modal-btns{display:flex;gap:8px;margin-top:4px;}
-.btn-primary{flex:1;border:none;font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;padding:14px;border-radius:10px;cursor:pointer;transition:all 0.15s;}
-.btn-primary.cyan{background:var(--accent);color:var(--bg);}
-.btn-primary.cyan:hover{background:#33ddff;}
-.btn-primary.gold{background:var(--gold);color:var(--bg);}
-.btn-primary.gold:hover{background:#ffe533;}
-.btn-primary.green{background:var(--green);color:var(--bg);}
-.btn-primary.green:hover{background:#33ffaa;}
-.btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border2);font-family:'Instrument Sans',sans-serif;font-size:13px;padding:14px 18px;border-radius:10px;cursor:pointer;}
-.modal-note{margin-top:12px;border-radius:10px;padding:12px 14px;font-size:11px;color:var(--muted);line-height:1.6;}
+.btn{flex:1;border:none;font-family:var(--display);font-size:16px;letter-spacing:1.5px;padding:13px;border-radius:9px;cursor:pointer;transition:all 0.15s;}
+.btn.cyan{background:var(--cyan);color:var(--bg);}
+.btn.cyan:hover{background:#33ddff;}
+.btn.gold{background:var(--gold);color:var(--bg);}
+.btn.gold:hover{background:#ffe533;}
+.btn.green{background:var(--green);color:var(--bg);}
+.btn.green:hover{background:#33ffaa;}
+.btn.orange{background:var(--orange);color:#fff;}
+.btn.orange:hover{background:#ff8555;}
+.btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--b2);font-family:var(--font);font-size:13px;padding:13px 18px;border-radius:9px;cursor:pointer;}
+.modal-note{margin-top:12px;border-radius:9px;padding:11px 13px;font-size:11px;color:var(--muted);line-height:1.6;}
 .modal-note.cyan{background:rgba(0,212,255,0.05);border:1px solid rgba(0,212,255,0.15);}
 .modal-note.gold{background:rgba(255,215,0,0.05);border:1px solid rgba(255,215,0,0.15);}
 .modal-note strong{color:var(--text);}
-.province-row{display:none;flex-direction:column;margin-bottom:10px;}
-.province-row.visible{display:flex;}
-.tax-strip{display:flex;align-items:center;justify-content:space-between;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px 14px;margin-bottom:10px;}
-.tax-strip-label{font-size:12px;color:var(--muted);}
-.tax-strip-val{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--gold);}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+.ffield{display:flex;flex-direction:column;gap:4px;}
 
-/* ━━━ COMPS PAGE ━━━ */
-.search-hero{padding:28px 20px 20px;max-width:860px;margin:0 auto;}
-.search-eyebrow{font-family:'Instrument Mono',monospace;font-size:9px;letter-spacing:4px;color:var(--accent);text-transform:uppercase;margin-bottom:10px;opacity:0.8;}
-.search-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(40px,8vw,72px);line-height:0.92;letter-spacing:1px;margin-bottom:12px;}
-.search-title .hl{color:var(--accent);}
-.search-title .gh{-webkit-text-stroke:1px rgba(221,228,236,0.2);color:transparent;}
-.search-sub{color:var(--muted);font-size:13px;line-height:1.4;margin-bottom:22px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.search-box{background:var(--surface);border:1px solid var(--border2);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px;transition:border-color 0.2s,box-shadow 0.2s;}
-.search-box:focus-within{border-color:rgba(0,212,255,0.45);box-shadow:0 0 0 1px rgba(0,212,255,0.1),0 8px 40px rgba(0,0,0,0.5);}
-.search-row{display:flex;gap:8px;}
-.search-input{flex:1;background:var(--bg);border:1px solid var(--border2);color:var(--text);font-family:'Instrument Sans',sans-serif;font-size:15px;padding:12px 15px;border-radius:9px;outline:none;transition:border-color 0.2s;}
-.search-input::placeholder{color:var(--muted2);}
-.search-input:focus{border-color:rgba(0,212,255,0.5);}
-.search-btn{background:var(--accent);color:var(--bg);border:none;font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:2px;padding:12px 24px;border-radius:9px;cursor:pointer;transition:all 0.15s;white-space:nowrap;flex-shrink:0;}
-.search-btn:hover{background:#33ddff;transform:translateY(-1px);box-shadow:0 4px 20px rgba(0,212,255,0.3);}
-.search-btn:active{transform:translateY(0);}
-.search-btn:disabled{background:var(--muted2);cursor:not-allowed;transform:none;box-shadow:none;}
-.game-chips{display:flex;gap:6px;flex-wrap:wrap;}
-.game-chip{font-family:'Instrument Mono',monospace;font-size:10px;letter-spacing:0.5px;padding:6px 12px;border-radius:20px;border:1px solid var(--border2);background:transparent;color:var(--muted);cursor:pointer;transition:all 0.15s;white-space:nowrap;}
-.game-chip:hover{border-color:var(--accent);color:var(--accent);}
-.game-chip.active{background:rgba(0,212,255,0.1);border-color:var(--accent);color:var(--accent);}
-
-/* ━━━ RESULTS ━━━ */
-.results-wrap{max-width:860px;margin:0 auto;padding:0 20px 20px;}
-.empty-state{text-align:center;padding:60px 20px;}
-.empty-icon{font-size:48px;margin-bottom:14px;opacity:0.25;}
-.empty-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;opacity:0.35;margin-bottom:6px;}
-.empty-sub{font-size:13px;color:var(--muted);}
-.loader-wrap{display:flex;flex-direction:column;align-items:center;padding:60px 20px;gap:14px;}
-.loader{width:36px;height:36px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin 0.65s linear infinite;}
+/* ── SHARED COMPONENTS ── */
+.loader{width:34px;height:34px;border:2px solid var(--b2);border-top-color:var(--cyan);border-radius:50%;animation:spin 0.65s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg)}}
-.loader-label{font-family:'Instrument Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;}
-.error-bar{background:rgba(255,71,87,0.08);border:1px solid rgba(255,71,87,0.25);border-radius:10px;padding:12px 16px;font-size:13px;color:var(--red);margin-bottom:14px;}
-.upgrade-bar{display:flex;align-items:center;gap:8px;background:rgba(255,215,0,0.06);border:1px solid rgba(255,215,0,0.2);border-radius:10px;padding:10px 14px;font-size:12px;color:var(--gold);margin-bottom:14px;}
+.loader-wrap{display:flex;flex-direction:column;align-items:center;padding:56px 20px;gap:12px;}
+.loader-label{font-family:var(--mono);font-size:10px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;}
+.empty-state{text-align:center;padding:56px 20px;}
+.empty-icon{font-size:44px;margin-bottom:12px;opacity:0.25;}
+.empty-title{font-family:var(--display);font-size:22px;letter-spacing:1px;opacity:0.35;margin-bottom:6px;}
+.empty-sub{font-size:13px;color:var(--muted);margin-bottom:20px;}
+.error-bar{background:rgba(255,71,87,0.08);border:1px solid rgba(255,71,87,0.25);border-radius:9px;padding:11px 15px;font-size:13px;color:var(--red);margin-bottom:12px;}
+.upgrade-bar{display:flex;align-items:center;gap:8px;background:rgba(255,215,0,0.06);border:1px solid rgba(255,215,0,0.2);border-radius:9px;padding:9px 13px;font-size:12px;color:var(--gold);margin-bottom:12px;}
 .upgrade-bar a{color:var(--gold);font-weight:600;}
+.section-title{font-family:var(--display);font-size:16px;letter-spacing:1.5px;margin-bottom:12px;}
+.chip{font-family:var(--mono);font-size:10px;padding:5px 12px;border-radius:20px;border:1px solid var(--b2);background:transparent;color:var(--muted);cursor:pointer;transition:all 0.15s;white-space:nowrap;}
+.chip:hover{border-color:var(--cyan);color:var(--cyan);}
+.chip.active{background:rgba(0,212,255,0.1);border-color:var(--cyan);color:var(--cyan);}
+.chip.active.orange{background:rgba(255,107,53,0.1);border-color:var(--orange);color:var(--orange);}
+.chips{display:flex;gap:5px;flex-wrap:wrap;}
+.card-surface{background:var(--s1);border:1px solid var(--b2);border-radius:12px;}
 
-/* ━━━ SEARCH RESULTS LIST ━━━ */
-.card-list{background:var(--surface);border:1px solid var(--border2);border-radius:14px;overflow:hidden;margin-bottom:16px;}
-.card-list-head{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border);}
-.card-list-title{font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:2px;}
-.card-list-badge{font-family:'Instrument Mono',monospace;font-size:10px;color:var(--muted);background:var(--surface2);border:1px solid var(--border2);padding:2px 8px;border-radius:4px;}
-.card-list-item{display:flex;align-items:center;gap:14px;padding:13px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.12s;}
-.card-list-item:hover{background:var(--surface2);}
-.card-list-item:last-child{border-bottom:none;}
-.cli-img{width:56px;height:78px;border-radius:7px;object-fit:cover;background:var(--surface2);border:1px solid var(--border2);flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,0.4);}
-.cli-img-ph{width:56px;height:78px;border-radius:7px;background:var(--surface2);border:1px solid var(--border2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:20px;opacity:0.35;}
-.cli-info{flex:1;min-width:0;}
-.cli-name{font-size:14px;font-weight:600;color:var(--text);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.cli-meta{font-family:'Instrument Mono',monospace;font-size:10px;color:var(--muted);}
-.cli-price{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--accent);flex-shrink:0;}
-.cli-arrow{color:var(--muted2);font-size:16px;flex-shrink:0;}
-
-/* ━━━ CARD DETAIL ━━━ */
-.detail-back{display:inline-flex;align-items:center;gap:6px;font-family:'Instrument Mono',monospace;font-size:10px;letter-spacing:1px;color:var(--muted);cursor:pointer;padding:6px 0;margin-bottom:14px;transition:color 0.15s;}
-.detail-back:hover{color:var(--accent);}
-
-/* Big card hero */
-.card-hero{display:flex;gap:20px;align-items:flex-start;margin-bottom:20px;}
-.card-hero-img-wrap{flex-shrink:0;position:relative;}
-.card-hero-img{width:120px;height:168px;border-radius:10px;object-fit:cover;border:1px solid var(--border2);box-shadow:0 8px 32px rgba(0,0,0,0.5);}
-.card-hero-img-ph{width:120px;height:168px;border-radius:10px;background:var(--surface2);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:40px;opacity:0.25;}
-.card-hero-info{flex:1;min-width:0;padding-top:4px;}
-.card-hero-game{font-family:'Instrument Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--accent);text-transform:uppercase;margin-bottom:6px;}
-.card-hero-name{font-family:'Bebas Neue',sans-serif;font-size:clamp(26px,5vw,40px);line-height:1;letter-spacing:0.5px;margin-bottom:4px;}
-.card-hero-set{font-family:'Instrument Mono',monospace;font-size:11px;color:var(--muted);margin-bottom:12px;}
-.card-tags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:14px;}
-.ctag{font-family:'Instrument Mono',monospace;font-size:9px;padding:3px 8px;border-radius:4px;}
-.ctag-rarity{background:rgba(255,215,0,0.08);color:var(--gold);border:1px solid rgba(255,215,0,0.2);}
-.ctag-variant{background:rgba(255,255,255,0.04);color:var(--muted);border:1px solid var(--border2);}
-.card-price-hero{display:flex;gap:10px;flex-wrap:wrap;}
-.cph-item{background:var(--surface2);border-radius:8px;padding:10px 14px;}
-.cph-label{font-family:'Instrument Mono',monospace;font-size:8px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:3px;}
-.cph-value{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:0.5px;line-height:1;}
-.cph-value.tcg{color:var(--accent2);}
-.cph-value.ebay{color:var(--purple);}
-.cph-value.psa10{color:var(--green);}
-.updated-line{font-family:'Instrument Mono',monospace;font-size:9px;color:var(--muted2);display:flex;align-items:center;gap:4px;margin-top:8px;}
-.live-dot{width:5px;height:5px;border-radius:50%;background:var(--green);box-shadow:0 0 4px var(--green);}
-
-/* Quick add bar */
-.quick-add{background:rgba(0,232,122,0.06);border:1px solid rgba(0,232,122,0.22);border-radius:12px;padding:12px 14px;margin-bottom:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
-.qa-label{font-family:'Instrument Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--green);text-transform:uppercase;flex-shrink:0;}
-.qa-context{font-size:12px;color:var(--muted);flex:1;min-width:100px;}
-.qa-context strong{color:var(--text);}
-.qa-inputs{display:flex;align-items:flex-end;gap:7px;flex-shrink:0;}
-.qa-field{display:flex;flex-direction:column;gap:3px;}
-.qa-field-label{font-family:'Instrument Mono',monospace;font-size:8px;letter-spacing:1.5px;color:var(--muted2);text-transform:uppercase;}
-.qa-input{background:var(--bg);border:1px solid var(--border2);color:var(--text);font-family:'Instrument Mono',monospace;font-size:12px;padding:7px 9px;border-radius:7px;outline:none;width:82px;transition:border-color 0.2s;}
-.qa-input::placeholder{color:var(--muted2);font-size:10px;}
-.qa-input:focus{border-color:var(--green);}
-.qa-input[type=number]::-webkit-inner-spin-button,.qa-input[type=number]::-webkit-outer-spin-button{opacity:0.35;}
-.qa-qty{width:48px;}
-.qa-btn{background:var(--green);color:var(--bg);border:none;font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1.5px;padding:8px 14px;border-radius:7px;cursor:pointer;transition:all 0.15s;white-space:nowrap;align-self:flex-end;}
-.qa-btn:hover{background:#33ffaa;transform:translateY(-1px);}
-.qa-btn.done{background:transparent;color:var(--green);border:1px solid rgba(0,232,122,0.3);pointer-events:none;}
-
-/* Source tabs */
-.source-tabs{display:flex;gap:6px;margin-bottom:16px;overflow-x:auto;padding-bottom:2px;-ms-overflow-style:none;scrollbar-width:none;}
-.source-tabs::-webkit-scrollbar{display:none;}
-.stab{font-family:'Instrument Mono',monospace;font-size:10px;letter-spacing:1px;padding:8px 14px;border-radius:8px;border:1px solid var(--border2);background:var(--surface);color:var(--muted);cursor:pointer;transition:all 0.15s;white-space:nowrap;flex-shrink:0;}
-.stab:hover{color:var(--text);}
-.stab.active.tcg{background:rgba(255,107,53,0.1);border-color:var(--accent2);color:var(--accent2);}
-.stab.active.ebay{background:rgba(123,143,255,0.1);border-color:var(--purple);color:var(--purple);}
-.stab.active.graded{background:rgba(0,212,255,0.1);border-color:var(--accent);color:var(--accent);}
-.stab.active.roi{background:rgba(0,232,122,0.1);border-color:var(--green);color:var(--green);}
-.price-panel{display:none;}
-.price-panel.active{display:block;animation:fadeUp 0.2s ease both;}
-@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-
-/* Condition chips (inside panels) */
-.cond-chips{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px;}
-.cond-chip{font-family:'Instrument Mono',monospace;font-size:10px;padding:5px 11px;border-radius:20px;border:1px solid var(--border2);background:transparent;color:var(--muted);cursor:pointer;transition:all 0.15s;white-space:nowrap;}
-.cond-chip.active{background:rgba(255,107,53,0.1);border-color:var(--accent2);color:var(--accent2);}
-
-/* Price grid */
-.price-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;}
-.pg-card{background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:14px 15px;position:relative;overflow:hidden;}
-.pg-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:2px 2px 0 0;}
-.pg-tcg::before{background:var(--accent2);}
-.pg-e7::before{background:var(--purple);}
-.pg-e30::before{background:rgba(123,143,255,0.45);}
-.pg-low::before{background:var(--red);}
-.pg-high::before{background:var(--gold);}
-.pg-neutral::before{background:var(--muted);}
-.pg-label{font-family:'Instrument Mono',monospace;font-size:8px;letter-spacing:2.5px;color:var(--muted);text-transform:uppercase;margin-bottom:5px;}
-.pg-value{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:0.5px;line-height:1;}
-.pg-tcg .pg-value{color:var(--accent2);}
-.pg-e7 .pg-value{color:var(--purple);}
-.pg-e30 .pg-value{color:rgba(123,143,255,0.65);}
-.pg-low .pg-value{color:var(--red);}
-.pg-high .pg-value{color:var(--gold);}
-.pg-neutral .pg-value{color:var(--muted);}
-.pg-sub{font-size:10px;color:var(--muted);margin-top:3px;font-family:'Instrument Mono',monospace;}
-
-/* Fee breakdown */
-.fee-card{background:var(--surface2);border:1px solid var(--border2);border-radius:12px;padding:14px 16px;margin-bottom:14px;}
-.fee-card-title{font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:2px;color:var(--muted);margin-bottom:10px;}
-.fee-row{display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(30,39,48,0.6);font-size:12px;}
-.fee-row:last-child{border-bottom:none;padding-top:8px;margin-top:3px;}
+/* ── FEE ROWS (shared) ── */
+.fee-card{background:var(--s2);border:1px solid var(--b2);border-radius:10px;padding:13px 15px;margin-top:12px;}
+.fee-card-title{font-family:var(--display);font-size:13px;letter-spacing:2px;color:var(--muted);margin-bottom:8px;}
+.fee-row{display:flex;align-items:center;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(30,39,48,0.6);font-size:12px;}
+.fee-row:last-child{border-bottom:none;padding-top:7px;margin-top:3px;}
 .fee-row-label{color:var(--muted);}
-.fee-row-val{font-family:'Instrument Mono',monospace;color:var(--text);}
+.fee-row-val{font-family:var(--mono);color:var(--text);}
 .fee-row.deduct .fee-row-val{color:var(--red);}
 .fee-row.total .fee-row-label{font-weight:600;color:var(--text);}
-.fee-row.total .fee-row-val{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--green);letter-spacing:0.5px;}
+.fee-row.total .fee-row-val{font-family:var(--display);font-size:19px;color:var(--green);letter-spacing:0.5px;}
 
-/* Chart */
-.chart-card{background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:16px 18px;margin-bottom:14px;}
-.chart-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:8px;flex-wrap:wrap;}
-.chart-title{font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:1.5px;}
-.period-chips{display:flex;gap:4px;}
-.period-chip{font-family:'Instrument Mono',monospace;font-size:9px;letter-spacing:1px;padding:4px 9px;border-radius:5px;border:1px solid var(--border2);background:var(--surface2);color:var(--muted);cursor:pointer;transition:all 0.12s;}
-.period-chip.active{border-color:var(--accent);color:var(--accent);}
-.chart-wrap{position:relative;height:170px;}
-.chart-locked{display:flex;flex-direction:column;align-items:center;justify-content:center;height:170px;gap:6px;}
-.chart-locked-icon{font-size:22px;opacity:0.3;}
-.chart-locked-text{font-size:12px;color:var(--muted);text-align:center;}
-.chart-locked-text a{color:var(--accent);}
-
-/* Grade table */
-.grader-chips{display:flex;gap:5px;margin-bottom:10px;}
-.grader-chip{font-family:'Instrument Mono',monospace;font-size:10px;letter-spacing:1px;padding:6px 14px;border-radius:20px;border:1px solid var(--border2);background:transparent;color:var(--muted);cursor:pointer;transition:all 0.15s;}
-.grader-chip.active{background:rgba(0,212,255,0.1);border-color:var(--accent);color:var(--accent);}
-.grade-table{background:var(--surface);border:1px solid var(--border2);border-radius:12px;overflow:hidden;margin-bottom:14px;}
-.gt-head{display:grid;grid-template-columns:88px 1fr 1fr 80px;gap:6px;padding:8px 14px;border-bottom:1px solid var(--border);}
-.gt-hcell{font-family:'Instrument Mono',monospace;font-size:8px;letter-spacing:2px;color:var(--muted2);text-transform:uppercase;}
-.gt-row{display:grid;grid-template-columns:88px 1fr 1fr 80px;gap:6px;align-items:center;padding:10px 14px;border-bottom:1px solid rgba(30,39,48,0.5);transition:background 0.12s;}
-.gt-row:last-child{border-bottom:none;}
-.gt-row:hover{background:var(--surface2);}
-.gpill{font-family:'Instrument Mono',monospace;font-size:10px;font-weight:500;padding:3px 8px;border-radius:4px;display:inline-block;}
-.gpill-psa{background:rgba(0,212,255,0.08);color:var(--accent);border:1px solid rgba(0,212,255,0.2);}
-.gpill-bgs{background:rgba(123,143,255,0.08);color:var(--purple);border:1px solid rgba(123,143,255,0.2);}
-.gpill-cgc{background:rgba(255,107,53,0.08);color:var(--accent2);border:1px solid rgba(255,107,53,0.2);}
-.gt-val{font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--green);letter-spacing:0.5px;}
-.gt-val.na{font-family:'Instrument Mono',monospace;font-size:11px;color:var(--muted2);}
-.gt-delta{font-family:'Instrument Mono',monospace;font-size:10px;color:var(--muted);}
-.gt-delta.up{color:var(--green);}
-.gt-delta.down{color:var(--red);}
-
-/* ROI panel */
-.roi-wrap{background:var(--surface);border:1px solid rgba(0,232,122,0.2);border-radius:12px;overflow:hidden;margin-bottom:14px;}
-.roi-head{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
-.roi-head-title{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1.5px;color:var(--green);}
-.roi-head-loc{font-family:'Instrument Mono',monospace;font-size:9px;color:var(--muted);background:var(--surface2);border:1px solid var(--border2);padding:3px 8px;border-radius:4px;}
-.roi-body{padding:16px;}
-.roi-inputs{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
-.roi-field label{font-family:'Instrument Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;display:block;margin-bottom:5px;}
-.roi-input{width:100%;background:var(--bg);border:1px solid var(--border2);color:var(--text);font-family:'Instrument Mono',monospace;font-size:13px;padding:10px 12px;border-radius:8px;outline:none;transition:border-color 0.2s;}
-.roi-input:focus{border-color:var(--green);}
-.roi-select{width:100%;background:var(--bg);border:1px solid var(--border2);color:var(--text);font-family:'Instrument Sans',sans-serif;font-size:13px;padding:10px 12px;border-radius:8px;outline:none;cursor:pointer;}
-.roi-calc-btn{width:100%;background:var(--green);color:var(--bg);border:none;font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:2px;padding:13px;border-radius:10px;cursor:pointer;margin-bottom:14px;transition:all 0.15s;}
-.roi-calc-btn:hover{background:#33ffaa;}
-.roi-results{display:none;}
-.roi-results.on{display:block;animation:fadeUp 0.22s ease both;}
-.verdict-box{border-radius:10px;padding:14px 16px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;gap:10px;}
-.verdict-box.strong{background:rgba(0,232,122,0.09);border:1px solid rgba(0,232,122,0.28);}
-.verdict-box.good{background:rgba(0,212,255,0.07);border:1px solid rgba(0,212,255,0.22);}
-.verdict-box.marginal{background:rgba(255,215,0,0.07);border:1px solid rgba(255,215,0,0.22);}
-.verdict-box.skip{background:rgba(255,71,87,0.07);border:1px solid rgba(255,71,87,0.22);}
-.verdict-badge{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;}
-.verdict-box.strong .verdict-badge{color:var(--green);}
-.verdict-box.good .verdict-badge{color:var(--accent);}
-.verdict-box.marginal .verdict-badge{color:var(--gold);}
-.verdict-box.skip .verdict-badge{color:var(--red);}
-.verdict-msg{font-size:12px;color:var(--muted);flex:1;line-height:1.5;}
-.verdict-pct{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:0.5px;flex-shrink:0;}
-.verdict-box.strong .verdict-pct{color:var(--green);}
-.verdict-box.good .verdict-pct{color:var(--accent);}
-.verdict-box.marginal .verdict-pct{color:var(--gold);}
-.verdict-box.skip .verdict-pct{color:var(--red);}
-.roi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
-.roi-gc{background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;}
-.roi-gc-label{font-family:'Instrument Mono',monospace;font-size:8px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:3px;}
-.roi-gc-val{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:0.5px;}
-.roi-gc-val.profit{color:var(--green);}
-.roi-gc-val.loss{color:var(--red);}
-.roi-gc-val.neutral{color:var(--text);}
-
-/* Snap + Pro */
-.snap-bar{background:linear-gradient(135deg,rgba(0,212,255,0.04),rgba(255,107,53,0.02));border:1px solid rgba(0,212,255,0.17);border-radius:12px;padding:13px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;}
-.snap-info{font-size:12px;color:var(--muted);line-height:1.5;}
-.snap-info strong{color:var(--text);font-weight:500;}
-.snap-btn{background:var(--surface2);border:1px solid var(--border2);color:var(--text);font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:1.5px;padding:8px 14px;border-radius:7px;cursor:pointer;white-space:nowrap;transition:all 0.15s;flex-shrink:0;}
-.snap-btn:hover{border-color:var(--accent);color:var(--accent);}
-.snap-btn.copied{border-color:var(--green);color:var(--green);}
-.pro-bar{background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:16px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;}
-.pro-bar-info h3{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1px;color:var(--gold);margin-bottom:3px;}
-.pro-bar-info p{font-size:11px;color:var(--muted);}
-.pro-chip{font-family:'Instrument Mono',monospace;font-size:8px;letter-spacing:1px;padding:2px 6px;background:rgba(255,215,0,0.08);border:1px solid rgba(255,215,0,0.2);color:var(--gold);border-radius:3px;margin-left:6px;vertical-align:middle;}
-.pro-btn{background:transparent;border:1px solid rgba(255,215,0,0.35);color:var(--gold);font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:1.5px;padding:8px 14px;border-radius:7px;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all 0.15s;}
-.pro-btn:hover{background:rgba(255,215,0,0.07);}
-
-/* ━━━ PORTFOLIO PAGE ━━━ */
-/* Portfolio hero — shown when cards exist */
-.port-hero{background:linear-gradient(135deg,var(--surface),var(--surface2));border:1px solid var(--border2);border-radius:16px;padding:22px;margin-bottom:18px;position:relative;overflow:hidden;}
-.port-hero::before{content:'';position:absolute;top:-60px;right:-60px;width:200px;height:200px;background:radial-gradient(circle,rgba(0,232,122,0.08),transparent 70%);pointer-events:none;}
-.port-hero-label{font-family:'Instrument Mono',monospace;font-size:9px;letter-spacing:3px;color:var(--green);text-transform:uppercase;margin-bottom:8px;opacity:0.8;}
-.port-hero-value{font-family:'Bebas Neue',sans-serif;font-size:clamp(44px,10vw,72px);letter-spacing:0.5px;line-height:1;color:var(--green);margin-bottom:4px;}
-.port-hero-sub{font-family:'Instrument Mono',monospace;font-size:11px;color:var(--muted);margin-bottom:16px;}
-.port-hero-row{display:flex;gap:10px;flex-wrap:wrap;}
-.port-hero-stat{flex:1;min-width:100px;background:rgba(0,0,0,0.25);border-radius:8px;padding:10px 12px;}
-.port-hero-stat-label{font-family:'Instrument Mono',monospace;font-size:8px;letter-spacing:2px;color:var(--muted2);text-transform:uppercase;margin-bottom:4px;}
-.port-hero-stat-val{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:0.5px;}
-.port-hero-stat-val.green{color:var(--green);}
-.port-hero-stat-val.blue{color:var(--accent);}
-.port-hero-stat-val.profit{color:var(--green);}
-.port-hero-stat-val.loss{color:var(--red);}
-.port-hero-stat-val.neutral{color:var(--text);}
-
-/* Portfolio toolbar */
-.port-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
-.port-toolbar-title{font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:2px;}
-.port-toolbar-right{display:flex;gap:7px;align-items:center;flex-wrap:wrap;}
-.port-select{background:var(--surface);border:1px solid var(--border2);color:var(--text);font-family:'Instrument Sans',sans-serif;font-size:12px;padding:7px 10px;border-radius:7px;outline:none;cursor:pointer;}
-.port-select option{background:var(--surface2);}
-.add-card-btn{background:var(--green);color:var(--bg);border:none;font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1.5px;padding:8px 16px;border-radius:7px;cursor:pointer;transition:all 0.15s;white-space:nowrap;}
-.add-card-btn:hover{background:#33ffaa;}
-
+/* ━━━ PAGE: COLLECTION (homepage) ━━━ */
+/* Hero strip */
+.coll-hero{background:linear-gradient(135deg,var(--s1),var(--s2));border:1px solid var(--b2);border-radius:14px;padding:20px;margin-bottom:16px;position:relative;overflow:hidden;}
+.coll-hero::before{content:'';position:absolute;top:-60px;right:-60px;width:200px;height:200px;background:radial-gradient(circle,rgba(0,232,122,0.08),transparent 70%);pointer-events:none;}
+.coll-hero-label{font-family:var(--mono);font-size:9px;letter-spacing:3px;color:var(--green);text-transform:uppercase;margin-bottom:7px;opacity:0.8;}
+.coll-hero-value{font-family:var(--display);font-size:clamp(40px,9vw,68px);letter-spacing:0.5px;line-height:1;color:var(--green);margin-bottom:3px;}
+.coll-hero-sub{font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:14px;}
+.coll-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.coll-stat{background:rgba(0,0,0,0.25);border-radius:8px;padding:9px 11px;}
+.coll-stat-label{font-family:var(--mono);font-size:7px;letter-spacing:2px;color:var(--muted2);text-transform:uppercase;margin-bottom:3px;}
+.coll-stat-val{font-family:var(--display);font-size:20px;letter-spacing:0.5px;}
+.coll-stat-val.green{color:var(--green);}
+.coll-stat-val.blue{color:var(--cyan);}
+.coll-stat-val.profit{color:var(--green);}
+.coll-stat-val.loss{color:var(--red);}
+.coll-stat-val.neutral{color:var(--text);}
+/* Toolbar */
+.coll-toolbar{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px;flex-wrap:wrap;}
+.coll-toolbar-right{display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
+.sel{background:var(--s1);border:1px solid var(--b2);color:var(--text);font-family:var(--font);font-size:12px;padding:7px 10px;border-radius:7px;outline:none;cursor:pointer;}
+.add-btn{background:var(--green);color:var(--bg);border:none;font-family:var(--display);font-size:14px;letter-spacing:1.5px;padding:8px 16px;border-radius:7px;cursor:pointer;transition:all 0.15s;white-space:nowrap;}
+.add-btn:hover{background:#33ffaa;}
+/* Empty collection onboarding */
+.onboard{text-align:center;padding:48px 20px;}
+.onboard-icon{font-size:56px;margin-bottom:16px;opacity:0.2;}
+.onboard-title{font-family:var(--display);font-size:28px;letter-spacing:1px;margin-bottom:8px;}
+.onboard-sub{font-size:14px;color:var(--muted);line-height:1.7;margin-bottom:24px;max-width:360px;margin-left:auto;margin-right:auto;}
+.onboard-btn{display:inline-flex;align-items:center;gap:8px;background:var(--green);color:var(--bg);border:none;font-family:var(--display);font-size:18px;letter-spacing:2px;padding:14px 28px;border-radius:10px;cursor:pointer;transition:all 0.15s;}
+.onboard-btn:hover{background:#33ffaa;transform:translateY(-1px);}
 /* Portfolio grid */
-.port-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:10px;}
-/* Portfolio card — horizontal layout, full card image */
-.pc{background:var(--surface);border:1px solid var(--border2);border-radius:12px;overflow:hidden;transition:border-color 0.15s;display:flex;flex-direction:row;align-items:stretch;}
-.pc:hover{border-color:var(--border2);}
-
-/* Full portrait card image — left side */
-.pc-img-area{flex-shrink:0;width:90px;background:var(--surface2);position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;}
-.pc-img{width:100%;height:100%;object-fit:contain;object-position:center;padding:6px;}
-.pc-img-ph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:36px;opacity:0.2;}
-.pc-img-overlay{display:none;}
-.pc-badges-overlay{position:absolute;top:5px;left:5px;display:flex;flex-direction:column;gap:3px;}
-.pcb{font-family:'Instrument Mono',monospace;font-size:7px;padding:2px 5px;border-radius:3px;backdrop-filter:blur(6px);}
+.port-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px;}
+.pc{background:var(--s1);border:1px solid var(--b2);border-radius:12px;overflow:hidden;display:flex;flex-direction:row;align-items:stretch;transition:border-color 0.15s;}
+.pc-img-area{flex-shrink:0;width:88px;background:var(--s2);display:flex;align-items:center;justify-content:center;position:relative;}
+.pc-img{width:100%;height:100%;object-fit:contain;padding:6px;}
+.pc-img-ph{display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-size:32px;opacity:0.2;}
+.pc-badges{position:absolute;top:5px;left:5px;display:flex;flex-direction:column;gap:3px;}
+.pcb{font-family:var(--mono);font-size:7px;padding:2px 5px;border-radius:3px;backdrop-filter:blur(6px);}
 .pcb-raw{background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.85);border:1px solid rgba(255,255,255,0.15);}
-.pcb-graded{background:rgba(0,212,255,0.25);color:var(--accent);border:1px solid rgba(0,212,255,0.35);}
+.pcb-graded{background:rgba(0,212,255,0.25);color:var(--cyan);border:1px solid rgba(0,212,255,0.35);}
 .pcb-game{background:rgba(255,215,0,0.15);color:var(--gold);border:1px solid rgba(255,215,0,0.25);}
-
-/* Card data — right side */
-.pc-data{flex:1;padding:12px 12px 10px;display:flex;flex-direction:column;gap:0;min-width:0;}
-.pc-card-header{margin-bottom:8px;}
-.pc-card-name{font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:1px;}
-.pc-card-meta{font-family:'Instrument Mono',monospace;font-size:9px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.pc-prices{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-bottom:6px;}
-.pcd-item{background:var(--surface2);border-radius:5px;padding:6px 7px;}
-.pcd-label{font-family:'Instrument Mono',monospace;font-size:7px;letter-spacing:1.5px;color:var(--muted2);text-transform:uppercase;margin-bottom:2px;}
-.pcd-val{font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:0.5px;}
-.pcd-val.green{color:var(--green);}
-.pcd-val.blue{color:var(--accent);}
-.pcd-val.profit{color:var(--green);}
-.pcd-val.loss{color:var(--red);}
-.pcd-val.neutral{color:var(--text);}
-.pc-pnl{background:var(--surface2);border-radius:5px;padding:6px 8px;margin-bottom:6px;display:flex;align-items:center;justify-content:space-between;}
-.pc-pnl-label{font-family:'Instrument Mono',monospace;font-size:7px;letter-spacing:1.5px;color:var(--muted2);text-transform:uppercase;}
-.pc-pnl-val{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:0.5px;}
+.pc-data{flex:1;padding:11px 11px 9px;display:flex;flex-direction:column;min-width:0;}
+.pc-name{font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:1px;}
+.pc-meta{font-family:var(--mono);font-size:9px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:7px;}
+.pc-prices{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:5px;}
+.pcp{background:var(--s2);border-radius:5px;padding:5px 7px;}
+.pcp-label{font-family:var(--mono);font-size:7px;letter-spacing:1.5px;color:var(--muted2);text-transform:uppercase;margin-bottom:2px;}
+.pcp-val{font-family:var(--display);font-size:14px;letter-spacing:0.5px;}
+.pcp-val.green{color:var(--green);}
+.pcp-val.blue{color:var(--cyan);}
+.pcp-val.profit{color:var(--green);}
+.pcp-val.loss{color:var(--red);}
+.pcp-val.neutral{color:var(--text);}
+.pc-pnl{background:var(--s2);border-radius:5px;padding:5px 8px;display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;}
+.pc-pnl-label{font-family:var(--mono);font-size:7px;letter-spacing:1.5px;color:var(--muted2);text-transform:uppercase;}
+.pc-pnl-val{font-family:var(--display);font-size:17px;letter-spacing:0.5px;}
 .pc-pnl-val.profit{color:var(--green);}
 .pc-pnl-val.loss{color:var(--red);}
 .pc-pnl-val.neutral{color:var(--muted);}
-.pc-refresh-line{font-family:'Instrument Mono',monospace;font-size:7px;color:var(--muted2);margin-bottom:6px;}
+.pc-refresh{font-family:var(--mono);font-size:7px;color:var(--muted2);margin-bottom:5px;}
 .pc-actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-top:auto;}
-.pc-action{font-family:'Instrument Mono',monospace;font-size:9px;letter-spacing:0.5px;padding:6px 4px;border-radius:5px;border:1px solid var(--border2);background:transparent;color:var(--muted);cursor:pointer;transition:all 0.12s;text-align:center;}
-.pc-action:hover{border-color:var(--accent);color:var(--accent);}
+.pc-action{font-family:var(--mono);font-size:9px;letter-spacing:0.5px;padding:6px 4px;border-radius:5px;border:1px solid var(--b2);background:transparent;color:var(--muted);cursor:pointer;transition:all 0.12s;text-align:center;}
+.pc-action:hover{border-color:var(--cyan);color:var(--cyan);}
 .pc-action.danger:hover{border-color:var(--red);color:var(--red);}
-.pc-action.comp:hover{border-color:var(--accent2);color:var(--accent2);}
+.pc-action.comp:hover{border-color:var(--orange);color:var(--orange);}
 .refreshing{opacity:0.45;pointer-events:none;}
 
-/* Empty portfolio */
-.port-empty{text-align:center;padding:60px 20px;}
-.port-empty-icon{font-size:52px;margin-bottom:14px;opacity:0.2;}
-.port-empty-title{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:1px;opacity:0.35;margin-bottom:8px;}
-.port-empty-sub{font-size:13px;color:var(--muted);margin-bottom:22px;}
+/* Pro banner */
+.pro-bar{background:var(--s1);border:1px solid var(--b2);border-radius:12px;padding:15px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:14px;}
+.pro-bar h3{font-family:var(--display);font-size:16px;letter-spacing:1px;color:var(--gold);margin-bottom:3px;}
+.pro-bar p{font-size:11px;color:var(--muted);}
+.pro-chip{font-family:var(--mono);font-size:8px;letter-spacing:1px;padding:2px 6px;background:rgba(255,215,0,0.08);border:1px solid rgba(255,215,0,0.2);color:var(--gold);border-radius:3px;margin-left:5px;vertical-align:middle;}
+.pro-btn{background:transparent;border:1px solid rgba(255,215,0,0.35);color:var(--gold);font-family:var(--display);font-size:12px;letter-spacing:1.5px;padding:8px 14px;border-radius:7px;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all 0.15s;}
+.pro-btn:hover{background:rgba(255,215,0,0.07);}
 
-/* ━━━ ADD CARD MODAL ━━━ */
-.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
-.form-field{display:flex;flex-direction:column;gap:4px;}
-
-/* ━━━ WELCOME MODAL ━━━ */
-.welcome-feat{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);}
-.welcome-feat:last-child{border-bottom:none;}
-.welcome-feat-icon{font-size:18px;flex-shrink:0;margin-top:1px;}
-.welcome-feat-text{font-size:13px;color:var(--muted);line-height:1.5;}
-.welcome-feat-text strong{color:var(--text);}
-
-/* ━━━ FEEDBACK MODAL ━━━ */
-.fb-textarea{width:100%;background:var(--bg);border:1px solid var(--border2);color:var(--text);font-family:'Instrument Sans',sans-serif;font-size:13px;padding:12px 14px;border-radius:10px;outline:none;resize:vertical;min-height:100px;line-height:1.6;margin-bottom:10px;}
-.fb-textarea:focus{border-color:var(--accent2);}
-
-/* ━━━ UTILITIES ━━━ */
-.hidden{display:none!important;}
-@media(max-width:480px){.search-sub{white-space:normal;font-size:12px;}
-
-  .price-grid{grid-template-columns:1fr 1fr;}
-  .price-grid .pg-card:nth-child(3){grid-column:1/-1;}
-  .roi-inputs{grid-template-columns:1fr;}
-  .form-grid{grid-template-columns:1fr;}
-  .gt-head,.gt-row{grid-template-columns:76px 1fr 1fr;}
-  .gt-head .gt-hcell:last-child,.gt-row>:last-child{display:none;}
-  .port-grid{grid-template-columns:1fr;}
-  .snap-bar{flex-direction:column;align-items:flex-start;}
-  .pro-bar{flex-direction:column;align-items:flex-start;}
-}
-
-/* ── PAGINATION ── */
-.pagination{display:flex;align-items:center;justify-content:center;gap:8px;padding:16px 0 4px;}
-.page-btn{font-family:'Instrument Mono',monospace;font-size:11px;letter-spacing:1px;padding:8px 16px;border-radius:8px;border:1px solid var(--border2);background:var(--surface);color:var(--muted);cursor:pointer;transition:all 0.15s;}
-.page-btn:hover{border-color:var(--accent);color:var(--accent);}
-.page-btn:disabled{opacity:0.3;cursor:not-allowed;border-color:var(--border);}
-.page-btn.active{background:rgba(0,212,255,0.1);border-color:var(--accent);color:var(--accent);}
-.page-info{font-family:'Instrument Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:1px;}
-.results-count{font-family:'Instrument Mono',monospace;font-size:10px;color:var(--muted);padding:0 4px 8px;letter-spacing:1px;}
-
-/* ── RECENT SEARCHES ── */
-.recent-searches{padding:2px 0 4px;}
-.recent-label{font-family:'Instrument Mono',monospace;font-size:9px;letter-spacing:2.5px;color:var(--muted2);text-transform:uppercase;margin-bottom:7px;}
-.recent-chips{display:flex;gap:6px;flex-wrap:wrap;}
-.recent-chip{display:inline-flex;align-items:center;gap:5px;font-family:'Instrument Mono',monospace;font-size:10px;padding:5px 10px;border-radius:20px;border:1px solid var(--border2);background:var(--surface2);color:var(--muted);cursor:pointer;transition:all 0.15s;max-width:180px;}
-.recent-chip:hover{border-color:var(--accent);color:var(--accent);}
+/* ━━━ PAGE: SEARCH ━━━ */
+.search-page-header{padding:20px 18px 0;max-width:900px;margin:0 auto;}
+.search-box{background:var(--s1);border:1px solid var(--b2);border-radius:13px;padding:14px;display:flex;flex-direction:column;gap:10px;transition:border-color 0.2s,box-shadow 0.2s;margin-bottom:14px;}
+.search-box:focus-within{border-color:rgba(0,212,255,0.45);box-shadow:0 0 0 1px rgba(0,212,255,0.08),0 8px 32px rgba(0,0,0,0.5);}
+.search-row{display:flex;gap:8px;position:relative;}
+.search-input{flex:1;background:var(--bg);border:1px solid var(--b2);color:var(--text);font-family:var(--font);font-size:15px;padding:11px 38px 11px 14px;border-radius:8px;outline:none;transition:border-color 0.2s;}
+.search-input::placeholder{color:var(--muted2);}
+.search-input:focus{border-color:rgba(0,212,255,0.5);}
+.search-clear{position:absolute;right:110px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted2);cursor:pointer;font-size:15px;padding:4px 8px;line-height:1;display:none;}
+.search-clear.visible{display:block;}
+.search-btn{background:var(--cyan);color:var(--bg);border:none;font-family:var(--display);font-size:17px;letter-spacing:2px;padding:11px 22px;border-radius:8px;cursor:pointer;transition:all 0.15s;white-space:nowrap;flex-shrink:0;}
+.search-btn:hover{background:#33ddff;}
+.search-btn:disabled{background:var(--muted2);cursor:not-allowed;}
+.game-chips{display:flex;gap:5px;flex-wrap:wrap;overflow-x:auto;padding-bottom:2px;-ms-overflow-style:none;scrollbar-width:none;}
+.game-chips::-webkit-scrollbar{display:none;}
+.recent-wrap{padding:2px 0 4px;}
+.recent-label{font-family:var(--mono);font-size:8px;letter-spacing:2.5px;color:var(--muted2);text-transform:uppercase;margin-bottom:6px;}
+.recent-chips{display:flex;gap:5px;flex-wrap:wrap;}
+.recent-chip{display:inline-flex;align-items:center;gap:4px;font-family:var(--mono);font-size:10px;padding:4px 9px;border-radius:20px;border:1px solid var(--b2);background:var(--s2);color:var(--muted);cursor:pointer;transition:all 0.15s;max-width:160px;}
+.recent-chip:hover{border-color:var(--cyan);color:var(--cyan);}
 .recent-chip-text{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.recent-chip-x{color:var(--muted2);flex-shrink:0;font-size:11px;padding:0 0 0 2px;line-height:1;background:none;border:none;cursor:pointer;color:inherit;opacity:0.6;}
-.recent-chip-x:hover{opacity:1;}
-
-/* ── SUGGESTIONS DROPDOWN ── */
-.search-wrap{position:relative;}
-.suggestions{position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--surface);border:1px solid var(--border2);border-radius:12px;overflow:hidden;z-index:300;box-shadow:0 8px 32px rgba(0,0,0,0.5);display:none;}
+.recent-chip-x{opacity:0.5;font-size:10px;background:none;border:none;cursor:pointer;color:inherit;padding:0 0 0 2px;}
+/* Suggestions */
+.suggestions{position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--s1);border:1px solid var(--b2);border-radius:11px;overflow:hidden;z-index:300;box-shadow:0 8px 32px rgba(0,0,0,0.5);display:none;}
 .suggestions.visible{display:block;animation:fadeUp 0.15s ease both;}
-.suggestion-item{display:flex;align-items:center;gap:12px;padding:10px 14px;cursor:pointer;transition:background 0.12s;border-bottom:1px solid rgba(30,39,48,0.5);}
-.suggestion-item:last-child{border-bottom:none;}
-.suggestion-item:hover,.suggestion-item.focused{background:var(--surface2);}
-.sug-img{width:32px;height:45px;border-radius:4px;object-fit:cover;background:var(--surface2);border:1px solid var(--border2);flex-shrink:0;}
-.sug-img-ph{width:32px;height:45px;border-radius:4px;background:var(--surface2);border:1px solid var(--border2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px;opacity:0.3;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.sug-item{display:flex;align-items:center;gap:11px;padding:9px 13px;cursor:pointer;transition:background 0.12s;border-bottom:1px solid var(--b1);}
+.sug-item:hover,.sug-item.focused{background:var(--s2);}
+.sug-item:last-child{border-bottom:none;}
+.sug-img{width:32px;height:45px;border-radius:4px;object-fit:contain;background:var(--s2);border:1px solid var(--b2);flex-shrink:0;}
+.sug-img-ph{width:32px;height:45px;border-radius:4px;background:var(--s2);border:1px solid var(--b2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;opacity:0.3;}
 .sug-info{flex:1;min-width:0;}
 .sug-name{font-size:13px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.sug-meta{font-family:'Instrument Mono',monospace;font-size:9px;color:var(--muted);margin-top:1px;}
-.sug-price{font-family:'Bebas Neue',sans-serif;font-size:17px;color:var(--accent);flex-shrink:0;}
-.sug-loading{padding:14px 16px;font-family:'Instrument Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;display:flex;align-items:center;gap:8px;}
-.sug-loader{width:12px;height:12px;border:1.5px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin 0.65s linear infinite;}
-.sug-empty{padding:14px 16px;font-size:12px;color:var(--muted);}
+.sug-meta{font-family:var(--mono);font-size:9px;color:var(--muted);}
+.sug-price{font-family:var(--display);font-size:16px;color:var(--cyan);flex-shrink:0;}
+.sug-loading{padding:12px 14px;font-family:var(--mono);font-size:11px;color:var(--muted);display:flex;align-items:center;gap:8px;}
+.sug-loader{width:12px;height:12px;border:1.5px solid var(--b2);border-top-color:var(--cyan);border-radius:50%;animation:spin 0.65s linear infinite;}
+/* Search results list */
+.card-list{background:var(--s1);border:1px solid var(--b2);border-radius:12px;overflow:hidden;margin-bottom:14px;}
+.card-list-head{display:flex;align-items:center;justify-content:space-between;padding:11px 15px;border-bottom:1px solid var(--b1);}
+.card-list-title{font-family:var(--display);font-size:14px;letter-spacing:2px;}
+.card-list-badge{font-family:var(--mono);font-size:10px;color:var(--muted);background:var(--s2);border:1px solid var(--b2);padding:2px 7px;border-radius:4px;}
+.cli{display:flex;align-items:center;gap:12px;padding:11px 15px;border-bottom:1px solid var(--b1);cursor:pointer;transition:background 0.12s;}
+.cli:hover{background:var(--s2);}
+.cli:last-child{border-bottom:none;}
+.cli-img{width:38px;height:54px;border-radius:5px;object-fit:contain;background:var(--s2);border:1px solid var(--b2);flex-shrink:0;}
+.cli-img-ph{width:38px;height:54px;border-radius:5px;background:var(--s2);border:1px solid var(--b2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:16px;opacity:0.3;}
+.cli-info{flex:1;min-width:0;}
+.cli-name{font-size:13px;font-weight:500;color:var(--text);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.cli-meta{font-family:var(--mono);font-size:9px;color:var(--muted);}
+.cli-price{font-family:var(--display);font-size:19px;color:var(--cyan);flex-shrink:0;}
+.cli-arrow{color:var(--muted2);font-size:14px;flex-shrink:0;}
+.pagination{display:flex;align-items:center;justify-content:center;gap:6px;padding:12px;}
+.pg-btn{font-family:var(--mono);font-size:10px;letter-spacing:1px;padding:7px 13px;border-radius:7px;border:1px solid var(--b2);background:var(--s1);color:var(--muted);cursor:pointer;transition:all 0.15s;}
+.pg-btn:hover:not(:disabled){border-color:var(--cyan);color:var(--cyan);}
+.pg-btn:disabled{opacity:0.3;cursor:not-allowed;}
+.pg-btn.active{background:rgba(0,212,255,0.1);border-color:var(--cyan);color:var(--cyan);}
+.pg-info{font-family:var(--mono);font-size:9px;color:var(--muted);}
+/* Card detail */
+.back-btn{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:10px;letter-spacing:1px;color:var(--muted);cursor:pointer;padding:6px 0;margin-bottom:12px;transition:color 0.15s;}
+.back-btn:hover{color:var(--cyan);}
+.card-hero{display:flex;gap:18px;align-items:flex-start;margin-bottom:16px;}
+.card-hero-img{width:110px;height:154px;border-radius:9px;object-fit:contain;border:1px solid var(--b2);box-shadow:0 8px 28px rgba(0,0,0,0.5);flex-shrink:0;}
+.card-hero-img-ph{width:110px;height:154px;border-radius:9px;background:var(--s2);border:1px solid var(--b2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:38px;opacity:0.2;}
+.card-hero-info{flex:1;min-width:0;padding-top:2px;}
+.card-hero-game{font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--cyan);text-transform:uppercase;margin-bottom:5px;opacity:0.8;}
+.card-hero-name{font-family:var(--display);font-size:clamp(22px,5vw,36px);line-height:1;letter-spacing:0.5px;margin-bottom:4px;}
+.card-hero-set{font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:9px;}
+.card-tags{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px;}
+.ctag{font-family:var(--mono);font-size:9px;padding:3px 7px;border-radius:3px;}
+.ctag-rarity{background:rgba(255,215,0,0.08);color:var(--gold);border:1px solid rgba(255,215,0,0.2);}
+.ctag-variant{background:rgba(255,255,255,0.04);color:var(--muted);border:1px solid var(--b2);}
+.card-price-row{display:flex;gap:8px;flex-wrap:wrap;}
+.cpr{background:var(--s2);border-radius:7px;padding:9px 13px;}
+.cpr-label{font-family:var(--mono);font-size:8px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:3px;}
+.cpr-val{font-family:var(--display);font-size:26px;letter-spacing:0.5px;line-height:1;}
+.cpr-val.orange{color:var(--orange);}
+.cpr-val.purple{color:var(--purple);}
+.cpr-val.green{color:var(--green);}
+.updated-line{font-family:var(--mono);font-size:9px;color:var(--muted2);display:flex;align-items:center;gap:4px;margin-top:7px;}
+.live-dot{width:5px;height:5px;border-radius:50%;background:var(--green);box-shadow:0 0 4px var(--green);}
+/* Quick add bar */
+.quick-add{background:rgba(0,232,122,0.06);border:1px solid rgba(0,232,122,0.22);border-radius:11px;padding:10px 13px;margin-bottom:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.qa-label{font-family:var(--mono);font-size:8px;letter-spacing:2px;color:var(--green);text-transform:uppercase;flex-shrink:0;}
+.qa-context{font-size:12px;color:var(--muted);flex:1;min-width:80px;}
+.qa-context strong{color:var(--text);}
+.qa-inputs{display:flex;align-items:flex-end;gap:6px;flex-shrink:0;}
+.qa-field{display:flex;flex-direction:column;gap:3px;}
+.qa-flabel{font-family:var(--mono);font-size:7px;letter-spacing:1.5px;color:var(--muted2);text-transform:uppercase;}
+.qa-input{background:var(--bg);border:1px solid var(--b2);color:var(--text);font-family:var(--mono);font-size:12px;padding:7px 8px;border-radius:6px;outline:none;width:80px;}
+.qa-input::placeholder{color:var(--muted2);font-size:10px;}
+.qa-input:focus{border-color:var(--green);}
+.qa-input[type=number]::-webkit-inner-spin-button,.qa-input[type=number]::-webkit-outer-spin-button{opacity:0.3;}
+.qa-qty{width:46px;}
+.qa-btn{background:var(--green);color:var(--bg);border:none;font-family:var(--display);font-size:14px;letter-spacing:1.5px;padding:8px 14px;border-radius:7px;cursor:pointer;transition:all 0.15s;white-space:nowrap;align-self:flex-end;}
+.qa-btn:hover{background:#33ffaa;}
+.qa-btn.done{background:transparent;color:var(--green);border:1px solid rgba(0,232,122,0.3);pointer-events:none;}
+/* ROI trigger */
+.roi-trigger{display:inline-flex;align-items:center;gap:5px;font-family:var(--display);font-size:12px;letter-spacing:1.5px;color:var(--green);background:rgba(0,232,122,0.07);border:1px solid rgba(0,232,122,0.22);padding:7px 13px;border-radius:7px;cursor:pointer;transition:all 0.15s;margin-top:7px;}
+.roi-trigger:hover{background:rgba(0,232,122,0.14);}
+/* Source tabs */
+.stabs{display:flex;gap:5px;margin-bottom:14px;overflow-x:auto;padding-bottom:2px;-ms-overflow-style:none;scrollbar-width:none;}
+.stabs::-webkit-scrollbar{display:none;}
+.stab{font-family:var(--mono);font-size:10px;letter-spacing:1px;padding:7px 13px;border-radius:8px;border:1px solid var(--b2);background:var(--s1);color:var(--muted);cursor:pointer;transition:all 0.15s;white-space:nowrap;flex-shrink:0;}
+.stab.active.tcg{background:rgba(255,107,53,0.1);border-color:var(--orange);color:var(--orange);}
+.stab.active.ebay{background:rgba(123,143,255,0.1);border-color:var(--purple);color:var(--purple);}
+.stab.active.graded{background:rgba(0,212,255,0.1);border-color:var(--cyan);color:var(--cyan);}
+.price-panel{display:none;}
+.price-panel.active{display:block;animation:fadeUp 0.2s ease both;}
+.cond-chips{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px;}
+.cond-chip{font-family:var(--mono);font-size:9px;padding:5px 10px;border-radius:20px;border:1px solid var(--b2);background:transparent;color:var(--muted);cursor:pointer;transition:all 0.15s;white-space:nowrap;}
+.cond-chip.active{background:rgba(255,107,53,0.1);border-color:var(--orange);color:var(--orange);}
+.price-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:12px;}
+.pgc{background:var(--s1);border:1px solid var(--b2);border-radius:10px;padding:12px 14px;position:relative;overflow:hidden;}
+.pgc::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.pgc.tcg::before{background:var(--orange);}
+.pgc.e7::before{background:var(--purple);}
+.pgc.e30::before{background:rgba(123,143,255,0.45);}
+.pgc.low::before{background:var(--red);}
+.pgc.high::before{background:var(--gold);}
+.pgc.muted::before{background:var(--muted);}
+.pgc-label{font-family:var(--mono);font-size:8px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:4px;}
+.pgc-val{font-family:var(--display);font-size:26px;letter-spacing:0.5px;line-height:1;}
+.pgc.tcg .pgc-val{color:var(--orange);}
+.pgc.e7 .pgc-val{color:var(--purple);}
+.pgc.e30 .pgc-val{color:rgba(123,143,255,0.65);}
+.pgc.low .pgc-val{color:var(--red);}
+.pgc.high .pgc-val{color:var(--gold);}
+.pgc.muted .pgc-val{color:var(--muted);}
+.pgc-sub{font-size:9px;color:var(--muted);margin-top:2px;font-family:var(--mono);}
+.grader-chips{display:flex;gap:5px;margin-bottom:9px;}
+.grader-chip{font-family:var(--mono);font-size:10px;letter-spacing:1px;padding:6px 13px;border-radius:20px;border:1px solid var(--b2);background:transparent;color:var(--muted);cursor:pointer;transition:all 0.15s;}
+.grader-chip.active{background:rgba(0,212,255,0.1);border-color:var(--cyan);color:var(--cyan);}
+.grade-table{background:var(--s1);border:1px solid var(--b2);border-radius:11px;overflow:hidden;margin-bottom:12px;}
+.gt-head{display:grid;grid-template-columns:86px 1fr 1fr 80px;gap:6px;padding:8px 14px;border-bottom:1px solid var(--b1);}
+.gth{font-family:var(--mono);font-size:8px;letter-spacing:2px;color:var(--muted2);text-transform:uppercase;}
+.gt-row{display:grid;grid-template-columns:86px 1fr 1fr 80px;gap:6px;align-items:center;padding:9px 14px;border-bottom:1px solid rgba(30,39,48,0.5);transition:background 0.12s;}
+.gt-row:last-child{border-bottom:none;}
+.gt-row:hover{background:var(--s2);}
+.gpill{font-family:var(--mono);font-size:10px;font-weight:500;padding:3px 8px;border-radius:4px;display:inline-block;}
+.gpill-psa{background:rgba(0,212,255,0.08);color:var(--cyan);border:1px solid rgba(0,212,255,0.2);}
+.gpill-bgs{background:rgba(123,143,255,0.08);color:var(--purple);border:1px solid rgba(123,143,255,0.2);}
+.gpill-cgc{background:rgba(255,107,53,0.08);color:var(--orange);border:1px solid rgba(255,107,53,0.2);}
+.gval{font-family:var(--display);font-size:18px;color:var(--green);letter-spacing:0.5px;}
+.gval.na{font-family:var(--mono);font-size:11px;color:var(--muted2);}
+.gdelta{font-family:var(--mono);font-size:10px;color:var(--muted);}
+.gdelta.up{color:var(--green);}
+.gdelta.down{color:var(--red);}
+/* Chart */
+.chart-card{background:var(--s1);border:1px solid var(--b2);border-radius:11px;padding:14px 16px;margin-bottom:12px;}
+.chart-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px;gap:8px;flex-wrap:wrap;}
+.period-chips{display:flex;gap:4px;}
+.period-chip{font-family:var(--mono);font-size:9px;letter-spacing:1px;padding:4px 8px;border-radius:5px;border:1px solid var(--b2);background:var(--s2);color:var(--muted);cursor:pointer;transition:all 0.12s;}
+.period-chip.active{border-color:var(--cyan);color:var(--cyan);}
+.chart-wrap{position:relative;height:165px;}
+.chart-locked{display:flex;flex-direction:column;align-items:center;justify-content:center;height:165px;gap:6px;}
+.chart-locked-icon{font-size:20px;opacity:0.3;}
+.chart-locked-text{font-size:12px;color:var(--muted);text-align:center;}
+.chart-locked-text a{color:var(--cyan);}
+/* Snap bar */
+.snap-bar{background:linear-gradient(135deg,rgba(0,212,255,0.04),rgba(255,107,53,0.02));border:1px solid rgba(0,212,255,0.15);border-radius:11px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;}
+.snap-info{font-size:12px;color:var(--muted);line-height:1.5;}
+.snap-info strong{color:var(--text);font-weight:500;}
+.snap-btn{background:var(--s2);border:1px solid var(--b2);color:var(--text);font-family:var(--display);font-size:12px;letter-spacing:1.5px;padding:7px 13px;border-radius:7px;cursor:pointer;white-space:nowrap;transition:all 0.15s;flex-shrink:0;}
+.snap-btn:hover{border-color:var(--cyan);color:var(--cyan);}
+.snap-btn.copied{border-color:var(--green);color:var(--green);}
 
-/* ── SEARCH INPUT CLEAR BTN ── */
-.search-row{position:relative;}
-.search-clear{position:absolute;right:120px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted2);cursor:pointer;font-size:16px;padding:4px 8px;line-height:1;display:none;}
-.search-clear.visible{display:block;}
-.search-clear:hover{color:var(--text);}
-
-
-/* ━━━ COLLECTION PRICER ━━━ */
-.pricer-wrap{max-width:900px;margin:0 auto;padding:24px 20px 40px;}
-
-/* Offer summary bar — always visible at top */
-.offer-bar{background:linear-gradient(135deg,rgba(255,107,53,0.08),rgba(255,107,53,0.04));border:1px solid rgba(255,107,53,0.25);border-radius:14px;padding:18px 20px;margin-bottom:18px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
-.offer-bar-item{display:flex;flex-direction:column;gap:4px;}
-.offer-bar-label{font-family:'Instrument Mono',monospace;font-size:8px;letter-spacing:2.5px;color:var(--muted);text-transform:uppercase;}
-.offer-bar-val{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:0.5px;line-height:1;}
-.offer-bar-val.market{color:var(--text);}
-.offer-bar-val.offer{color:var(--accent2);}
-.offer-bar-val.count{color:var(--muted);}
-
-/* Offer slider section */
-.offer-slider-section{background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:16px 18px;margin-bottom:16px;}
-.offer-slider-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;}
-.offer-slider-title{font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:1.5px;}
-.offer-pct-display{font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--accent2);letter-spacing:0.5px;}
-.offer-slider{width:100%;-webkit-appearance:none;appearance:none;height:4px;background:var(--border2);border-radius:2px;outline:none;margin-bottom:10px;}
-.offer-slider::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--accent2);cursor:pointer;box-shadow:0 0 8px rgba(255,107,53,0.4);}
-.offer-slider::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:var(--accent2);cursor:pointer;border:none;}
-.offer-presets{display:flex;gap:6px;flex-wrap:wrap;}
-.offer-preset{font-family:'Instrument Mono',monospace;font-size:10px;letter-spacing:1px;padding:5px 12px;border-radius:20px;border:1px solid var(--border2);background:transparent;color:var(--muted);cursor:pointer;transition:all 0.15s;}
-.offer-preset:hover{border-color:var(--accent2);color:var(--accent2);}
-.offer-preset.active{background:rgba(255,107,53,0.1);border-color:var(--accent2);color:var(--accent2);}
-
-/* Add card section */
-.pricer-add-section{background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:16px 18px;margin-bottom:16px;}
-.pricer-add-title{font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:1.5px;margin-bottom:12px;}
-.pricer-search-row{display:flex;gap:8px;margin-bottom:10px;position:relative;}
-.pricer-search-input{flex:1;background:var(--bg);border:1px solid var(--border2);color:var(--text);font-family:'Instrument Sans',sans-serif;font-size:14px;padding:11px 14px;border-radius:9px;outline:none;transition:border-color 0.2s;}
-.pricer-search-input::placeholder{color:var(--muted2);}
-.pricer-search-input:focus{border-color:rgba(255,107,53,0.5);}
-.pricer-search-btn{background:var(--accent2);color:#fff;border:none;font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1.5px;padding:11px 20px;border-radius:9px;cursor:pointer;white-space:nowrap;transition:all 0.15s;}
-.pricer-search-btn:hover{background:#ff8555;}
-.pricer-search-btn:disabled{background:var(--muted2);cursor:not-allowed;}
-.pricer-suggestions{position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--surface);border:1px solid var(--border2);border-radius:12px;overflow:hidden;z-index:300;box-shadow:0 8px 32px rgba(0,0,0,0.5);display:none;}
-.pricer-suggestions.visible{display:block;}
-.pricer-sug-item{display:flex;align-items:center;gap:11px;padding:10px 14px;cursor:pointer;transition:background 0.12s;border-bottom:1px solid var(--border);}
-.pricer-sug-item:hover{background:var(--surface2);}
-.pricer-sug-item:last-child{border-bottom:none;}
-.pricer-sug-img{width:30px;height:42px;border-radius:4px;object-fit:cover;background:var(--surface2);border:1px solid var(--border2);flex-shrink:0;}
-.pricer-sug-ph{width:30px;height:42px;border-radius:4px;background:var(--surface2);border:1px solid var(--border2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;opacity:0.3;}
-.pricer-sug-name{font-size:13px;font-weight:500;color:var(--text);}
-.pricer-sug-meta{font-family:'Instrument Mono',monospace;font-size:9px;color:var(--muted);}
-.pricer-sug-price{font-family:'Bebas Neue',sans-serif;font-size:16px;color:var(--accent2);flex-shrink:0;margin-left:auto;}
-
-/* Quick add row for selected card */
-.pricer-selected{display:none;background:var(--surface2);border:1px solid rgba(255,107,53,0.2);border-radius:10px;padding:12px 14px;margin-bottom:10px;animation:fadeUp 0.2s ease both;}
-.pricer-selected.visible{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
-.pricer-sel-img{width:36px;height:50px;border-radius:5px;object-fit:cover;border:1px solid var(--border2);flex-shrink:0;}
-.pricer-sel-ph{width:36px;height:50px;border-radius:5px;background:var(--surface2);border:1px solid var(--border2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:16px;opacity:0.3;}
-.pricer-sel-info{flex:1;min-width:120px;}
-.pricer-sel-name{font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px;}
-.pricer-sel-meta{font-family:'Instrument Mono',monospace;font-size:9px;color:var(--muted);}
-.pricer-sel-controls{display:flex;align-items:flex-end;gap:8px;flex-wrap:wrap;}
-.pricer-sel-field{display:flex;flex-direction:column;gap:3px;}
-.pricer-sel-label{font-family:'Instrument Mono',monospace;font-size:8px;letter-spacing:1.5px;color:var(--muted2);text-transform:uppercase;}
-.pricer-sel-input{background:var(--bg);border:1px solid var(--border2);color:var(--text);font-family:'Instrument Mono',monospace;font-size:12px;padding:7px 9px;border-radius:7px;outline:none;width:80px;}
-.pricer-sel-input:focus{border-color:var(--accent2);}
-.pricer-sel-select{background:var(--bg);border:1px solid var(--border2);color:var(--text);font-family:'Instrument Sans',sans-serif;font-size:12px;padding:7px 9px;border-radius:7px;outline:none;cursor:pointer;min-width:110px;}
-.pricer-sel-price{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--green);letter-spacing:0.5px;align-self:flex-end;margin-left:4px;}
-.pricer-add-btn{background:var(--accent2);color:#fff;border:none;font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:1.5px;padding:9px 18px;border-radius:8px;cursor:pointer;align-self:flex-end;white-space:nowrap;transition:all 0.15s;}
-.pricer-add-btn:hover{background:#ff8555;}
-
-/* Bulk section */
-.bulk-section{background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:16px 18px;margin-bottom:16px;}
-.bulk-title{font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:1.5px;margin-bottom:4px;}
-.bulk-sub{font-size:12px;color:var(--muted);margin-bottom:12px;}
-.bulk-row{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;}
-.bulk-field{display:flex;flex-direction:column;gap:4px;flex:1;min-width:100px;}
-.bulk-field label{font-family:'Instrument Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;}
-.bulk-input{background:var(--bg);border:1px solid var(--border2);color:var(--text);font-family:'Instrument Mono',monospace;font-size:14px;padding:10px 12px;border-radius:8px;outline:none;width:100%;}
-.bulk-input:focus{border-color:var(--accent2);}
-.bulk-add-btn{background:var(--surface2);color:var(--text);border:1px solid var(--border2);font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1.5px;padding:10px 18px;border-radius:8px;cursor:pointer;white-space:nowrap;transition:all 0.15s;}
-.bulk-add-btn:hover{border-color:var(--accent2);color:var(--accent2);}
-.bulk-total{font-family:'Instrument Mono',monospace;font-size:11px;color:var(--green);align-self:flex-end;padding-bottom:10px;}
-
-/* Items list */
-.pricer-items-section{background:var(--surface);border:1px solid var(--border2);border-radius:12px;overflow:hidden;margin-bottom:16px;}
-.pricer-items-head{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border);}
-.pricer-items-title{font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:1.5px;}
-.pricer-clear-btn{font-family:'Instrument Mono',monospace;font-size:10px;letter-spacing:1px;color:var(--muted);background:transparent;border:1px solid var(--border2);padding:5px 10px;border-radius:5px;cursor:pointer;transition:all 0.15s;}
-.pricer-clear-btn:hover{border-color:var(--red);color:var(--red);}
-.pricer-item{display:grid;grid-template-columns:40px 1fr auto auto auto;gap:10px;align-items:center;padding:11px 16px;border-bottom:1px solid rgba(30,39,48,0.5);transition:background 0.12s;}
-.pricer-item:last-child{border-bottom:none;}
-.pricer-item:hover{background:var(--surface2);}
-.pricer-item-img{width:36px;height:50px;border-radius:4px;object-fit:cover;border:1px solid var(--border2);}
-.pricer-item-img-ph{width:36px;height:50px;border-radius:4px;background:var(--surface2);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:14px;opacity:0.3;}
-.pricer-item-info{min-width:0;}
-.pricer-item-name{font-size:13px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.pricer-item-meta{font-family:'Instrument Mono',monospace;font-size:9px;color:var(--muted);margin-top:1px;}
-.pricer-item-qty{font-family:'Instrument Mono',monospace;font-size:11px;color:var(--muted);white-space:nowrap;}
-.pricer-item-market{font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--text);letter-spacing:0.5px;white-space:nowrap;}
-.pricer-item-offer{font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--accent2);letter-spacing:0.5px;white-space:nowrap;}
-.pricer-item-remove{background:none;border:none;color:var(--muted2);cursor:pointer;font-size:14px;padding:4px;transition:color 0.15s;flex-shrink:0;}
-.pricer-item-remove:hover{color:var(--red);}
-.pricer-empty{text-align:center;padding:40px 20px;color:var(--muted);font-size:13px;}
-
-/* Print / share */
-.pricer-actions{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
-.pricer-action-btn{display:flex;align-items:center;gap:7px;font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1.5px;padding:11px 20px;border-radius:9px;cursor:pointer;transition:all 0.15s;border:1px solid var(--border2);background:var(--surface);color:var(--text);}
-.pricer-action-btn:hover{border-color:var(--accent2);color:var(--accent2);}
-.pricer-action-btn.primary{background:var(--accent2);color:#fff;border-color:var(--accent2);}
-.pricer-action-btn.primary:hover{background:#ff8555;}
-
-/* Print styles */
-@media print {
-  body > *:not(#printSheet){display:none!important;}
-  #printSheet{display:block!important;position:fixed;inset:0;background:#fff;color:#000;z-index:99999;padding:32px;font-family:'Helvetica Neue',Arial,sans-serif;}
-  .print-hide{display:none!important;}
-}
-#printSheet{display:none;}
-
-@media(max-width:580px){
-  .offer-bar{grid-template-columns:1fr 1fr;}
-  .offer-bar .offer-bar-item:last-child{grid-column:1/-1;}
-  .pricer-item{grid-template-columns:36px 1fr auto auto;}
-  .pricer-item-offer{display:none;}
-}
-
-
-/* ── PRICER SEARCH MODAL ── */
-.psm-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.88);backdrop-filter:blur(14px);z-index:600;display:flex;flex-direction:column;}
-.psm-overlay.hidden{display:none;}
-.psm-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0;background:var(--surface);}
-.psm-title{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:var(--accent2);flex-shrink:0;}
-.psm-search-input{flex:1;background:var(--bg);border:1px solid var(--border2);color:var(--text);font-family:'Instrument Sans',sans-serif;font-size:15px;padding:10px 14px;border-radius:9px;outline:none;transition:border-color 0.2s;}
-.psm-search-input:focus{border-color:rgba(255,107,53,0.5);}
-.psm-search-input::placeholder{color:var(--muted2);}
-.psm-search-btn{background:var(--accent2);color:#fff;border:none;font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1.5px;padding:10px 20px;border-radius:9px;cursor:pointer;white-space:nowrap;transition:all 0.15s;flex-shrink:0;}
-.psm-search-btn:hover{background:#ff8555;}
-.psm-search-btn:disabled{background:var(--muted2);cursor:not-allowed;}
-.psm-close{background:none;border:1px solid var(--border2);color:var(--muted);font-size:18px;width:38px;height:38px;border-radius:8px;cursor:pointer;flex-shrink:0;transition:all 0.15s;display:flex;align-items:center;justify-content:center;}
-.psm-close:hover{border-color:var(--red);color:var(--red);}
-
-/* Filters row */
-.psm-filters{padding:10px 20px;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0;display:flex;flex-direction:column;gap:8px;}
-.psm-filter-row{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;}
-.psm-filter-field{display:flex;flex-direction:column;gap:3px;}
-.psm-filter-label{font-family:'Instrument Mono',monospace;font-size:8px;letter-spacing:2px;color:var(--muted2);text-transform:uppercase;}
-.psm-filter-input{background:var(--bg);border:1px solid var(--border2);color:var(--text);font-family:'Instrument Sans',sans-serif;font-size:12px;padding:7px 11px;border-radius:7px;outline:none;transition:border-color 0.2s;}
-.psm-filter-input:focus{border-color:rgba(255,107,53,0.4);}
-.psm-filter-input::placeholder{color:var(--muted2);}
-.psm-game-chips{display:flex;gap:5px;flex-wrap:wrap;}
-.psm-chip{font-family:'Instrument Mono',monospace;font-size:10px;padding:5px 11px;border-radius:20px;border:1px solid var(--border2);background:transparent;color:var(--muted);cursor:pointer;transition:all 0.15s;white-space:nowrap;}
-.psm-chip:hover{border-color:var(--accent2);color:var(--accent2);}
-.psm-chip.active{background:rgba(255,107,53,0.1);border-color:var(--accent2);color:var(--accent2);}
-
-/* Results area */
-.psm-results{flex:1;overflow-y:auto;padding:12px 20px;}
-.psm-results-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
-.psm-results-count{font-family:'Instrument Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:1px;}
-.psm-results-page{font-family:'Instrument Mono',monospace;font-size:10px;color:var(--muted);}
-.psm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:16px;}
-.psm-card{background:var(--surface);border:1px solid var(--border2);border-radius:10px;overflow:hidden;cursor:pointer;transition:all 0.15s;}
-.psm-card:hover{border-color:var(--accent2);transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,0,0,0.4);}
-.psm-card-img-wrap{position:relative;padding-bottom:140%;background:var(--surface2);}
-.psm-card-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
-.psm-card-img-ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:32px;opacity:0.15;}
-.psm-card-info{padding:8px 10px;}
-.psm-card-name{font-size:12px;font-weight:600;color:var(--text);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.psm-card-set{font-family:'Instrument Mono',monospace;font-size:9px;color:var(--muted);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.psm-card-price{font-family:'Bebas Neue',sans-serif;font-size:16px;color:var(--accent2);letter-spacing:0.5px;}
-.psm-card-no-price{font-family:'Instrument Mono',monospace;font-size:9px;color:var(--muted2);}
-.psm-pagination{display:flex;align-items:center;justify-content:center;gap:8px;padding:8px 0 4px;}
-.psm-page-btn{font-family:'Instrument Mono',monospace;font-size:11px;letter-spacing:1px;padding:8px 16px;border-radius:8px;border:1px solid var(--border2);background:var(--surface);color:var(--muted);cursor:pointer;transition:all 0.15s;}
-.psm-page-btn:hover:not(:disabled){border-color:var(--accent2);color:var(--accent2);}
-.psm-page-btn:disabled{opacity:0.3;cursor:not-allowed;}
-.psm-page-btn.active{background:rgba(255,107,53,0.1);border-color:var(--accent2);color:var(--accent2);}
-.psm-page-info{font-family:'Instrument Mono',monospace;font-size:10px;color:var(--muted);}
-.psm-empty{text-align:center;padding:48px 20px;color:var(--muted);font-size:13px;}
-.psm-loader{display:flex;flex-direction:column;align-items:center;padding:48px 20px;gap:12px;}
-
-
-/* ── ROI MODAL ── */
-.roi-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(14px);z-index:600;display:flex;align-items:flex-end;justify-content:center;}
-.roi-modal-overlay.hidden{display:none;}
-.roi-modal{background:var(--surface);border:1px solid rgba(0,232,122,0.25);border-radius:20px 20px 0 0;width:100%;max-width:580px;max-height:92vh;overflow-y:auto;animation:sheetUp 0.28s cubic-bezier(0.34,1.1,0.64,1);}
-.roi-modal-drag{width:40px;height:4px;background:var(--border2);border-radius:2px;margin:14px auto 0;}
-.roi-modal-head{padding:16px 20px 12px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:12px;}
-.roi-modal-card-img{width:48px;height:67px;border-radius:6px;object-fit:contain;background:var(--surface2);border:1px solid var(--border2);flex-shrink:0;}
-.roi-modal-card-img-ph{width:48px;height:67px;border-radius:6px;background:var(--surface2);border:1px solid var(--border2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:20px;opacity:0.3;}
-.roi-modal-card-info{flex:1;min-width:0;}
-.roi-modal-card-name{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:0.5px;line-height:1.1;margin-bottom:2px;}
-.roi-modal-card-set{font-family:'Instrument Mono',monospace;font-size:10px;color:var(--muted);}
-.roi-modal-close{background:none;border:1px solid var(--border2);color:var(--muted);font-size:16px;width:32px;height:32px;border-radius:7px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all 0.15s;margin-left:auto;}
-.roi-modal-close:hover{border-color:var(--red);color:var(--red);}
-
-/* Verdict banner — big and prominent at top */
-.roi-verdict-banner{margin:14px 20px;border-radius:12px;padding:16px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;}
-.roi-verdict-banner.strong{background:rgba(0,232,122,0.1);border:1px solid rgba(0,232,122,0.3);}
-.roi-verdict-banner.good{background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.25);}
-.roi-verdict-banner.marginal{background:rgba(255,215,0,0.08);border:1px solid rgba(255,215,0,0.25);}
-.roi-verdict-banner.skip{background:rgba(255,71,87,0.08);border:1px solid rgba(255,71,87,0.25);}
-.roi-verdict-banner.empty{background:var(--surface2);border:1px solid var(--border2);}
-.rvb-left{}
-.rvb-badge{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px;line-height:1;margin-bottom:4px;}
-.roi-verdict-banner.strong .rvb-badge{color:var(--green);}
-.roi-verdict-banner.good .rvb-badge{color:var(--accent);}
-.roi-verdict-banner.marginal .rvb-badge{color:var(--gold);}
-.roi-verdict-banner.skip .rvb-badge{color:var(--red);}
-.roi-verdict-banner.empty .rvb-badge{color:var(--muted);}
-.rvb-msg{font-size:12px;color:var(--muted);line-height:1.5;max-width:280px;}
-.rvb-pct{font-family:'Bebas Neue',sans-serif;font-size:52px;letter-spacing:-1px;line-height:1;flex-shrink:0;}
-.roi-verdict-banner.strong .rvb-pct{color:var(--green);}
-.roi-verdict-banner.good .rvb-pct{color:var(--accent);}
-.roi-verdict-banner.marginal .rvb-pct{color:var(--gold);}
-.roi-verdict-banner.skip .rvb-pct{color:var(--red);}
-.roi-verdict-banner.empty .rvb-pct{color:var(--muted2);}
-
-/* Inputs */
-.roi-modal-body{padding:0 20px 32px;}
-.roi-modal-section-title{font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:2px;color:var(--muted);margin-bottom:10px;margin-top:14px;}
-.roi-modal-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:4px;}
-.roi-modal-field{display:flex;flex-direction:column;gap:4px;}
-.roi-modal-field label{font-family:'Instrument Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;}
-.roi-modal-input{background:var(--bg);border:1px solid var(--border2);color:var(--text);font-family:'Instrument Mono',monospace;font-size:14px;padding:10px 12px;border-radius:8px;outline:none;width:100%;transition:border-color 0.2s;}
-.roi-modal-input:focus{border-color:var(--green);}
-.roi-modal-select{background:var(--bg);border:1px solid var(--border2);color:var(--text);font-family:'Instrument Sans',sans-serif;font-size:13px;padding:10px 12px;border-radius:8px;outline:none;width:100%;cursor:pointer;}
-
-/* Grade comparison strip */
-.grade-comp-strip{display:flex;gap:6px;overflow-x:auto;padding:2px 0 8px;-ms-overflow-style:none;scrollbar-width:none;}
-.grade-comp-strip::-webkit-scrollbar{display:none;}
-.grade-comp-item{flex-shrink:0;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:8px 12px;cursor:pointer;transition:all 0.15s;text-align:center;min-width:72px;}
-.grade-comp-item:hover{border-color:var(--green);}
-.grade-comp-item.selected{background:rgba(0,232,122,0.08);border-color:var(--green);}
-.gci-grade{font-family:'Instrument Mono',monospace;font-size:9px;letter-spacing:1px;color:var(--muted);margin-bottom:3px;}
-.gci-price{font-family:'Bebas Neue',sans-serif;font-size:17px;color:var(--text);letter-spacing:0.5px;}
-.gci-price.na{font-size:11px;color:var(--muted2);}
-
-/* Fee breakdown */
-.roi-fee-breakdown{background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:12px 14px;margin-top:12px;}
-.roi-fee-title{font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:2px;color:var(--muted);margin-bottom:8px;}
-.roi-stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;}
-.roi-stat{background:var(--surface);border-radius:7px;padding:9px 11px;}
-.roi-stat-label{font-family:'Instrument Mono',monospace;font-size:8px;letter-spacing:2px;color:var(--muted2);text-transform:uppercase;margin-bottom:3px;}
-.roi-stat-val{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:0.5px;}
+/* ━━━ ROI MODAL ━━━ */
+.roi-m-head{padding:14px 18px 12px;border-bottom:1px solid var(--b1);display:flex;align-items:flex-start;gap:11px;}
+.roi-m-img{width:44px;height:62px;border-radius:5px;object-fit:contain;background:var(--s2);border:1px solid var(--b2);flex-shrink:0;}
+.roi-m-img-ph{width:44px;height:62px;border-radius:5px;background:var(--s2);border:1px solid var(--b2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:18px;opacity:0.3;}
+.roi-m-info{flex:1;min-width:0;}
+.roi-m-name{font-family:var(--display);font-size:19px;letter-spacing:0.5px;line-height:1.1;margin-bottom:2px;}
+.roi-m-set{font-family:var(--mono);font-size:9px;color:var(--muted);}
+.roi-m-close{background:none;border:1px solid var(--b2);color:var(--muted);font-size:15px;width:30px;height:30px;border-radius:6px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;margin-left:auto;}
+.roi-m-close:hover{border-color:var(--red);color:var(--red);}
+.verdict-banner{margin:12px 18px;border-radius:11px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.verdict-banner.strong{background:rgba(0,232,122,0.1);border:1px solid rgba(0,232,122,0.28);}
+.verdict-banner.good{background:rgba(0,212,255,0.07);border:1px solid rgba(0,212,255,0.22);}
+.verdict-banner.marginal{background:rgba(255,215,0,0.07);border:1px solid rgba(255,215,0,0.22);}
+.verdict-banner.skip{background:rgba(255,71,87,0.07);border:1px solid rgba(255,71,87,0.22);}
+.verdict-banner.empty{background:var(--s2);border:1px solid var(--b2);}
+.vb-badge{font-family:var(--display);font-size:22px;letter-spacing:2px;line-height:1;margin-bottom:3px;}
+.verdict-banner.strong .vb-badge{color:var(--green);}
+.verdict-banner.good .vb-badge{color:var(--cyan);}
+.verdict-banner.marginal .vb-badge{color:var(--gold);}
+.verdict-banner.skip .vb-badge{color:var(--red);}
+.verdict-banner.empty .vb-badge{color:var(--muted);}
+.vb-msg{font-size:11px;color:var(--muted);line-height:1.5;max-width:270px;}
+.vb-pct{font-family:var(--display);font-size:46px;letter-spacing:-1px;line-height:1;flex-shrink:0;}
+.verdict-banner.strong .vb-pct{color:var(--green);}
+.verdict-banner.good .vb-pct{color:var(--cyan);}
+.verdict-banner.marginal .vb-pct{color:var(--gold);}
+.verdict-banner.skip .vb-pct{color:var(--red);}
+.verdict-banner.empty .vb-pct{color:var(--muted2);}
+.grade-strip{display:flex;gap:5px;overflow-x:auto;padding:2px 0 8px;-ms-overflow-style:none;scrollbar-width:none;}
+.grade-strip::-webkit-scrollbar{display:none;}
+.gsi{flex-shrink:0;background:var(--s2);border:1px solid var(--b2);border-radius:7px;padding:7px 11px;cursor:pointer;transition:all 0.15s;text-align:center;min-width:66px;}
+.gsi:hover{border-color:var(--green);}
+.gsi.selected{background:rgba(0,232,122,0.08);border-color:var(--green);}
+.gsi-grade{font-family:var(--mono);font-size:8px;letter-spacing:1px;color:var(--muted);margin-bottom:2px;}
+.gsi-price{font-family:var(--display);font-size:15px;color:var(--text);letter-spacing:0.5px;}
+.gsi-price.na{font-size:10px;color:var(--muted2);}
+.roi-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:10px;}
+.roi-stat{background:var(--s1);border-radius:7px;padding:9px 10px;}
+.roi-stat-label{font-family:var(--mono);font-size:7px;letter-spacing:2px;color:var(--muted2);text-transform:uppercase;margin-bottom:3px;}
+.roi-stat-val{font-family:var(--display);font-size:19px;letter-spacing:0.5px;}
 .roi-stat-val.profit{color:var(--green);}
 .roi-stat-val.loss{color:var(--red);}
 .roi-stat-val.neutral{color:var(--text);}
+.roi-m-section{font-family:var(--display);font-size:13px;letter-spacing:2px;color:var(--muted);margin-bottom:8px;margin-top:12px;}
+.roi-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:4px;}
+.roi-field{display:flex;flex-direction:column;gap:4px;}
+.roi-field label{font-family:var(--mono);font-size:8px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;}
+.roi-input{width:100%;background:var(--bg);border:1px solid var(--b2);color:var(--text);font-family:var(--mono);font-size:13px;padding:9px 11px;border-radius:7px;outline:none;transition:border-color 0.2s;}
+.roi-input:focus{border-color:var(--green);}
+.roi-select{width:100%;background:var(--bg);border:1px solid var(--b2);color:var(--text);font-family:var(--font);font-size:12px;padding:9px 11px;border-radius:7px;outline:none;cursor:pointer;}
 
-/* ROI button on card hero */
-.roi-trigger-btn{display:inline-flex;align-items:center;gap:6px;font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:1.5px;color:var(--green);background:rgba(0,232,122,0.08);border:1px solid rgba(0,232,122,0.25);padding:7px 14px;border-radius:7px;cursor:pointer;transition:all 0.15s;white-space:nowrap;margin-top:8px;}
-.roi-trigger-btn:hover{background:rgba(0,232,122,0.15);border-color:rgba(0,232,122,0.4);}
+/* ━━━ PAGE: PRICER ━━━ */
+.offer-bar{background:linear-gradient(135deg,rgba(255,107,53,0.08),rgba(255,107,53,0.04));border:1px solid rgba(255,107,53,0.25);border-radius:13px;padding:16px 18px;margin-bottom:14px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+.ob-item{display:flex;flex-direction:column;gap:3px;}
+.ob-label{font-family:var(--mono);font-size:8px;letter-spacing:2.5px;color:var(--muted);text-transform:uppercase;}
+.ob-val{font-family:var(--display);font-size:26px;letter-spacing:0.5px;line-height:1;}
+.ob-val.market{color:var(--text);}
+.ob-val.offer{color:var(--orange);}
+.ob-val.count{color:var(--muted);}
+.offer-slider-card{background:var(--s1);border:1px solid var(--b2);border-radius:11px;padding:14px 16px;margin-bottom:13px;}
+.slider-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.slider-title{font-family:var(--display);font-size:14px;letter-spacing:1.5px;}
+.slider-pct{font-family:var(--display);font-size:26px;color:var(--orange);letter-spacing:0.5px;}
+.offer-slider{width:100%;-webkit-appearance:none;appearance:none;height:4px;background:var(--b2);border-radius:2px;outline:none;margin-bottom:9px;}
+.offer-slider::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--orange);cursor:pointer;box-shadow:0 0 7px rgba(255,107,53,0.4);}
+.offer-slider::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:var(--orange);cursor:pointer;border:none;}
+.offer-presets{display:flex;gap:5px;flex-wrap:wrap;}
+.offer-preset{font-family:var(--mono);font-size:10px;letter-spacing:1px;padding:5px 11px;border-radius:20px;border:1px solid var(--b2);background:transparent;color:var(--muted);cursor:pointer;transition:all 0.15s;}
+.offer-preset:hover{border-color:var(--orange);color:var(--orange);}
+.offer-preset.active{background:rgba(255,107,53,0.1);border-color:var(--orange);color:var(--orange);}
+/* Pricer add card section */
+.pricer-add{background:var(--s1);border:1px solid var(--b2);border-radius:11px;padding:14px 16px;margin-bottom:13px;}
+.pricer-add-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;flex-wrap:wrap;gap:8px;}
+.pricer-add-title{font-family:var(--display);font-size:14px;letter-spacing:1.5px;}
+.pricer-add-sub{font-size:11px;color:var(--muted);margin-bottom:10px;line-height:1.5;}
+.psearch-btn{background:var(--orange);color:#fff;border:none;font-family:var(--display);font-size:14px;letter-spacing:1.5px;padding:9px 18px;border-radius:8px;cursor:pointer;white-space:nowrap;transition:all 0.15s;display:flex;align-items:center;gap:6px;}
+.psearch-btn:hover{background:#ff8555;}
+/* Selected card row */
+.pricer-sel{display:none;background:var(--s2);border:1px solid rgba(255,107,53,0.2);border-radius:9px;padding:11px 13px;margin-top:10px;animation:fadeUp 0.2s ease both;}
+.pricer-sel.visible{display:flex;align-items:center;gap:11px;flex-wrap:wrap;}
+.psel-img{width:34px;height:48px;border-radius:4px;object-fit:contain;border:1px solid var(--b2);flex-shrink:0;}
+.psel-img-ph{width:34px;height:48px;border-radius:4px;background:var(--s2);border:1px solid var(--b2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:15px;opacity:0.3;}
+.psel-info{flex:1;min-width:100px;}
+.psel-name{font-size:13px;font-weight:600;color:var(--text);margin-bottom:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.psel-meta{font-family:var(--mono);font-size:9px;color:var(--muted);}
+.psel-controls{display:flex;align-items:flex-end;gap:6px;flex-wrap:wrap;}
+.psel-field{display:flex;flex-direction:column;gap:3px;}
+.psel-flabel{font-family:var(--mono);font-size:7px;letter-spacing:1.5px;color:var(--muted2);text-transform:uppercase;}
+.psel-select{background:var(--bg);border:1px solid var(--b2);color:var(--text);font-family:var(--font);font-size:11px;padding:6px 8px;border-radius:6px;outline:none;cursor:pointer;min-width:95px;}
+.psel-input{background:var(--bg);border:1px solid var(--b2);color:var(--text);font-family:var(--mono);font-size:12px;padding:6px 7px;border-radius:6px;outline:none;width:48px;}
+.psel-price{font-family:var(--display);font-size:19px;color:var(--green);letter-spacing:0.5px;align-self:flex-end;}
+.padd-btn{background:var(--orange);color:#fff;border:none;font-family:var(--display);font-size:14px;letter-spacing:1.5px;padding:8px 14px;border-radius:7px;cursor:pointer;align-self:flex-end;white-space:nowrap;transition:all 0.15s;}
+.padd-btn:hover{background:#ff8555;}
+.psel-clear{background:none;border:1px solid var(--b2);color:var(--muted);font-size:12px;padding:7px 9px;border-radius:6px;cursor:pointer;align-self:flex-end;transition:all 0.15s;}
+.psel-clear:hover{border-color:var(--red);color:var(--red);}
+/* Bulk section */
+.bulk-card{background:var(--s1);border:1px solid var(--b2);border-radius:11px;padding:14px 16px;margin-bottom:13px;}
+.bulk-title{font-family:var(--display);font-size:14px;letter-spacing:1.5px;margin-bottom:3px;}
+.bulk-sub{font-size:11px;color:var(--muted);margin-bottom:10px;}
+.bulk-row{display:flex;gap:7px;align-items:flex-end;flex-wrap:wrap;}
+.bulk-field{display:flex;flex-direction:column;gap:4px;flex:1;min-width:90px;}
+.bulk-field label{font-family:var(--mono);font-size:8px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;}
+.bulk-input{background:var(--bg);border:1px solid var(--b2);color:var(--text);font-family:var(--mono);font-size:13px;padding:9px 11px;border-radius:7px;outline:none;width:100%;}
+.bulk-input:focus{border-color:var(--orange);}
+.bulk-add-btn{background:var(--s2);color:var(--text);border:1px solid var(--b2);font-family:var(--display);font-size:13px;letter-spacing:1.5px;padding:9px 16px;border-radius:7px;cursor:pointer;white-space:nowrap;transition:all 0.15s;align-self:flex-end;}
+.bulk-add-btn:hover{border-color:var(--orange);color:var(--orange);}
+.bulk-total{font-family:var(--mono);font-size:11px;color:var(--green);align-self:flex-end;padding-bottom:9px;}
+/* Pricer actions */
+.pricer-actions{display:flex;gap:7px;margin-bottom:13px;flex-wrap:wrap;}
+.p-action-btn{display:flex;align-items:center;gap:6px;font-family:var(--display);font-size:13px;letter-spacing:1.5px;padding:10px 18px;border-radius:8px;cursor:pointer;transition:all 0.15s;border:1px solid var(--b2);background:var(--s1);color:var(--text);}
+.p-action-btn:hover{border-color:var(--orange);color:var(--orange);}
+.p-action-btn.primary{background:var(--orange);color:#fff;border-color:var(--orange);}
+.p-action-btn.primary:hover{background:#ff8555;}
+/* Pricer items */
+.pricer-items{background:var(--s1);border:1px solid var(--b2);border-radius:11px;overflow:hidden;}
+.pricer-items-head{display:flex;align-items:center;justify-content:space-between;padding:11px 15px;border-bottom:1px solid var(--b1);}
+.pricer-item{display:grid;grid-template-columns:38px 1fr auto auto auto;gap:8px;align-items:center;padding:10px 15px;border-bottom:1px solid rgba(30,39,48,0.5);transition:background 0.12s;}
+.pricer-item:hover{background:var(--s2);}
+.pricer-item:last-child{border-bottom:none;}
+.pricer-item-img{width:36px;height:50px;border-radius:4px;object-fit:contain;border:1px solid var(--b2);}
+.pricer-item-img-ph{width:36px;height:50px;border-radius:4px;background:var(--s2);border:1px solid var(--b2);display:flex;align-items:center;justify-content:center;font-size:14px;opacity:0.3;}
+.pricer-item-info{min-width:0;}
+.pricer-item-name{font-size:12px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.pricer-item-meta{font-family:var(--mono);font-size:8px;color:var(--muted);margin-top:1px;}
+.pricer-item-qty{font-family:var(--mono);font-size:10px;color:var(--muted);white-space:nowrap;}
+.pricer-item-market{font-family:var(--display);font-size:17px;color:var(--text);letter-spacing:0.5px;white-space:nowrap;}
+.pricer-item-offer{font-family:var(--display);font-size:17px;color:var(--orange);letter-spacing:0.5px;white-space:nowrap;}
+.pricer-item-remove{background:none;border:none;color:var(--muted2);cursor:pointer;font-size:13px;padding:4px;transition:color 0.15s;flex-shrink:0;}
+.pricer-item-remove:hover{color:var(--red);}
+.pricer-empty{text-align:center;padding:36px 20px;color:var(--muted);font-size:13px;}
 
+/* ━━━ PRICER SEARCH MODAL ━━━ */
+.psm{position:fixed;inset:0;background:rgba(0,0,0,0.88);backdrop-filter:blur(14px);z-index:600;display:flex;flex-direction:column;}
+.psm.hidden{display:none;}
+.psm-header{padding:14px 18px;border-bottom:1px solid var(--b1);display:flex;align-items:center;gap:9px;flex-shrink:0;background:var(--s1);}
+.psm-title{font-family:var(--display);font-size:17px;letter-spacing:2px;color:var(--orange);flex-shrink:0;}
+.psm-input{flex:1;background:var(--bg);border:1px solid var(--b2);color:var(--text);font-family:var(--font);font-size:14px;padding:9px 13px;border-radius:8px;outline:none;}
+.psm-input:focus{border-color:rgba(255,107,53,0.5);}
+.psm-input::placeholder{color:var(--muted2);}
+.psm-btn{background:var(--orange);color:#fff;border:none;font-family:var(--display);font-size:15px;letter-spacing:1.5px;padding:9px 18px;border-radius:8px;cursor:pointer;white-space:nowrap;transition:all 0.15s;flex-shrink:0;}
+.psm-btn:hover{background:#ff8555;}
+.psm-btn:disabled{background:var(--muted2);cursor:not-allowed;}
+.psm-close{background:none;border:1px solid var(--b2);color:var(--muted);font-size:16px;width:36px;height:36px;border-radius:7px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all 0.15s;}
+.psm-close:hover{border-color:var(--red);color:var(--red);}
+.psm-filters{padding:9px 18px;border-bottom:1px solid var(--b1);background:var(--s1);flex-shrink:0;display:flex;flex-direction:column;gap:7px;}
+.psm-tips{font-size:11px;color:var(--muted);line-height:1.6;margin-bottom:2px;}
+.psm-filter-row{display:flex;gap:7px;flex-wrap:wrap;align-items:flex-end;}
+.psm-filter-field{display:flex;flex-direction:column;gap:3px;}
+.psm-filter-label{font-family:var(--mono);font-size:8px;letter-spacing:2px;color:var(--muted2);text-transform:uppercase;}
+.psm-filter-input{background:var(--bg);border:1px solid var(--b2);color:var(--text);font-family:var(--font);font-size:12px;padding:6px 10px;border-radius:7px;outline:none;}
+.psm-filter-input:focus{border-color:rgba(255,107,53,0.4);}
+.psm-filter-input::placeholder{color:var(--muted2);}
+.psm-game-chips{display:flex;gap:4px;flex-wrap:wrap;}
+.psm-chip{font-family:var(--mono);font-size:9px;padding:4px 10px;border-radius:20px;border:1px solid var(--b2);background:transparent;color:var(--muted);cursor:pointer;transition:all 0.15s;white-space:nowrap;}
+.psm-chip:hover{border-color:var(--orange);color:var(--orange);}
+.psm-chip.active{background:rgba(255,107,53,0.1);border-color:var(--orange);color:var(--orange);}
+.psm-results{flex:1;overflow-y:auto;padding:12px 18px;}
+.psm-results-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px;}
+.psm-results-count{font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:1px;}
+.psm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:9px;margin-bottom:14px;}
+.psm-card{background:var(--s1);border:1px solid var(--b2);border-radius:9px;overflow:hidden;cursor:pointer;transition:all 0.15s;}
+.psm-card:hover{border-color:var(--orange);transform:translateY(-2px);}
+.psm-img-wrap{position:relative;padding-bottom:140%;background:var(--s2);}
+.psm-img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;padding:4px;}
+.psm-img-ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:28px;opacity:0.15;}
+.psm-card-info{padding:7px 9px;}
+.psm-card-name{font-size:11px;font-weight:600;color:var(--text);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.psm-card-set{font-family:var(--mono);font-size:8px;color:var(--muted);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.psm-card-price{font-family:var(--display);font-size:15px;color:var(--orange);letter-spacing:0.5px;}
+.psm-card-no-price{font-family:var(--mono);font-size:8px;color:var(--muted2);}
+.psm-pagination{display:flex;align-items:center;justify-content:center;gap:7px;padding:8px 0;}
+.psm-pg-btn{font-family:var(--mono);font-size:10px;letter-spacing:1px;padding:7px 13px;border-radius:7px;border:1px solid var(--b2);background:var(--s1);color:var(--muted);cursor:pointer;transition:all 0.15s;}
+.psm-pg-btn:hover:not(:disabled){border-color:var(--orange);color:var(--orange);}
+.psm-pg-btn:disabled{opacity:0.3;cursor:not-allowed;}
+.psm-pg-btn.active{background:rgba(255,107,53,0.1);border-color:var(--orange);color:var(--orange);}
+
+/* Print styles */
+@media print{body>*:not(#printSheet){display:none!important;}#printSheet{display:block!important;position:fixed;inset:0;background:#fff;color:#000;z-index:99999;padding:32px;font-family:'Helvetica Neue',Arial,sans-serif;}}
+#printSheet{display:none;}
+
+/* ── UTILITIES ── */
+.hidden{display:none!important;}
+@media(max-width:480px){
+  .price-grid{grid-template-columns:1fr 1fr;}
+  .fgrid{grid-template-columns:1fr;}
+  .roi-grid{grid-template-columns:1fr;}
+  .gt-head,.gt-row{grid-template-columns:78px 1fr 1fr;}
+  .gt-head .gth:last-child,.gt-row>:last-child{display:none;}
+  .snap-bar{flex-direction:column;align-items:flex-start;}
+  .pro-bar{flex-direction:column;align-items:flex-start;}
+  .offer-bar{grid-template-columns:1fr 1fr;}
+  .pricer-item{grid-template-columns:36px 1fr auto auto;}
+  .pricer-item-offer{display:none;}
+  .port-grid{grid-template-columns:1fr;}
+  .coll-stats{grid-template-columns:1fr 1fr;}
+  .psm-grid{grid-template-columns:repeat(auto-fill,minmax(120px,1fr));}
+}
 </style>
 </head>
 <body>
 
-<!-- TOP HEADER -->
+<!-- ══ PRINT SHEET ══ -->
+<div id="printSheet"></div>
+
+<!-- ══ TOP HEADER ══ -->
 <header>
   <div class="logo" onclick="goHome()">CARD<span>COMP</span></div>
-  <div class="header-actions">
-    <button class="hdr-btn hidden" id="currencyToggleBtn" onclick="toggleCurrency()" title="Toggle currency" style="font-family:'Instrument Mono',monospace;font-size:10px;letter-spacing:1px;border-color:rgba(255,215,0,0.3);color:var(--gold);">CA$ CAD</button>
+  <div class="hdr-right">
+    <button class="hdr-btn hidden" id="currencyToggleBtn" onclick="toggleCurrency()" style="border-color:rgba(255,215,0,0.3);color:var(--gold);">CA$ CAD</button>
     <button class="hdr-btn gold" onclick="openCountryModal()" id="countryBtn">
       <span id="countryFlag">🇨🇦</span>
       <span id="countryLabel">Canada · ON</span>
     </button>
-    <button class="hdr-btn" onclick="openFeedbackModal()" style="border-color:rgba(255,107,53,0.3);color:var(--accent2);">💬</button>
+    <button class="hdr-btn orange" onclick="openFeedbackModal()">💬</button>
     <button class="hdr-btn" id="apiBtnEl" style="cursor:default;">
-      <span class="status-dot" id="statusDot"></span>
-      <span id="apiBtnLabel">API</span>
+      <span class="status-dot live" id="statusDot"></span>
+      <span id="apiBtnLabel">Live</span>
     </button>
   </div>
 </header>
 
-<!-- BOTTOM NAV -->
-<nav class="bottom-nav">
-  <button class="bnav-tab active" id="bnavComps" onclick="switchPage('comps')">
-    <span class="bnav-icon">🔍</span>
-    <span class="bnav-label">Comps</span>
-  </button>
-  <button class="bnav-tab port" id="bnavPortfolio" onclick="switchPage('portfolio')">
-    <span class="bnav-icon-wrap">
-      <span class="bnav-icon">📦</span>
+<!-- ══ BOTTOM NAV ══ -->
+<nav class="bnav">
+  <button class="bnav-tab t-collection active" id="bnavCollection" onclick="switchPage('collection')">
+    <span class="bnav-icon">📦
       <span class="bnav-badge hidden" id="portBadge">0</span>
     </span>
-    <span class="bnav-label">Portfolio</span>
+    <span class="bnav-label">Collection</span>
   </button>
-  <button class="bnav-tab" id="bnavPricer" onclick="switchPage('pricer')" style="color:var(--muted);">
-    <span class="bnav-icon-wrap">
-      <span class="bnav-icon">🧾</span>
-      <span class="bnav-badge hidden" id="pricerBadge" style="background:var(--accent2);">0</span>
+  <button class="bnav-tab" id="bnavSearch" onclick="switchPage('search')">
+    <span class="bnav-icon">🔍</span>
+    <span class="bnav-label">Search</span>
+  </button>
+  <button class="bnav-tab t-pricer" id="bnavPricer" onclick="switchPage('pricer')">
+    <span class="bnav-icon">🧾
+      <span class="bnav-badge orange hidden" id="pricerBadge">0</span>
     </span>
     <span class="bnav-label">Pricer</span>
   </button>
 </nav>
 
-<!-- ══ WELCOME MODAL ══ -->
+<!-- ══ MODALS ══ -->
+
+<!-- Welcome -->
 <div class="modal-overlay hidden" id="welcomeModal">
   <div class="modal">
-    <div class="modal-drag"></div>
-    <div style="font-size:36px;margin-bottom:10px;">🃏</div>
-    <div class="modal-title cyan">Welcome to CardComp</div>
-    <p class="modal-desc">The comps tool built for serious collectors and flippers.</p>
-    <div style="margin-bottom:18px;">
-      <div class="welcome-feat"><div class="welcome-feat-icon">🔍</div><div class="welcome-feat-text"><strong>Search any TCG card</strong> — Pokémon, MTG, Yu-Gi-Oh!, Lorcana and more</div></div>
-      <div class="welcome-feat"><div class="welcome-feat-icon">📊</div><div class="welcome-feat-text"><strong>Live eBay sold averages</strong> — 7-day and 30-day, every condition</div></div>
-      <div class="welcome-feat"><div class="welcome-feat-icon">🏅</div><div class="welcome-feat-text"><strong>PSA / BGS / CGC graded prices</strong> — with vs-raw premium breakdown</div></div>
-      <div class="welcome-feat"><div class="welcome-feat-icon">🧮</div><div class="welcome-feat-text"><strong>Grade ROI Calculator</strong> — know if grading is worth it before you submit</div></div>
-      <div class="welcome-feat"><div class="welcome-feat-icon">🌍</div><div class="welcome-feat-text"><strong>Accurate seller fees</strong> — all Canadian provinces and all 50 US states</div></div>
-      <div class="welcome-feat"><div class="welcome-feat-icon">📦</div><div class="welcome-feat-text"><strong>Portfolio tracker</strong> — real market value and after-fee liquidation value</div></div>
-    </div>
-    <button class="btn-primary cyan" style="width:100%;font-size:18px;padding:15px;" onclick="dismissWelcome()">LET'S GO →</button>
-    <div class="modal-note cyan" style="margin-top:12px;text-align:center;">This is a beta — your feedback shapes what gets built next 🇨🇦</div>
-  </div>
-</div>
-
-<!-- ══ API KEY MODAL ══ -->
-<div class="modal-overlay hidden" id="apiModal">
-  <div class="modal">
-    <div class="modal-drag"></div>
-    <div class="modal-title cyan">Connect API Key</div>
-    <p class="modal-desc">Get a free key at <a href="https://tcgpricelookup.com/tcg-api" target="_blank">tcgpricelookup.com/tcg-api</a> — 200 calls/day free, no card. eBay sold + graded data requires Trader plan ($14.99/mo).</p>
-    <label class="field-label">Your API Key</label>
-    <input class="modal-input" type="password" id="apiKeyInput" placeholder="tcg_live_...">
-    <div class="modal-btns">
-      <button class="btn-primary cyan" onclick="saveApiKey()">Save & Connect</button>
-      <button class="btn-ghost" onclick="closeApiModal()">Cancel</button>
-    </div>
-    <div class="modal-note cyan"><strong>🔒 Private:</strong> Stored only in your browser. Never shared except directly to TCG Price Lookup API.</div>
-  </div>
-</div>
-
-<!-- ══ COUNTRY MODAL ══ -->
-<div class="modal-overlay hidden" id="countryModal">
-  <div class="modal">
-    <div class="modal-drag"></div>
-    <div class="modal-title gold">Seller Location</div>
-    <p class="modal-desc">Sets eBay fee rates and GST/HST/sales tax on your seller fees. Affects all ROI and take-home calculations.</p>
-    <label class="field-label">Country</label>
-    <select class="modal-select" id="countrySelect" onchange="onCountryChange()">
-      <option value="CA">🇨🇦 Canada</option>
-      <option value="US">🇺🇸 United States</option>
-      <option value="UK">🇬🇧 United Kingdom</option>
-      <option value="AU">🇦🇺 Australia</option>
-    </select>
-    <div class="province-row" id="provinceRow">
-      <label class="field-label" id="provinceLabel">Province / Territory</label>
-      <select class="modal-select" id="provinceSelect" onchange="onProvinceChange()"></select>
-    </div>
-    <div class="tax-strip" id="taxInfoStrip">
-      <div class="tax-strip-label">Tax on your eBay seller fees</div>
-      <div class="tax-strip-val" id="taxInfoValue">13% HST</div>
-    </div>
-    <div class="modal-btns">
-      <button class="btn-primary gold" onclick="saveCountry()">Save Location</button>
-      <button class="btn-ghost" onclick="closeCountryModal()">Cancel</button>
-    </div>
-    <div class="modal-note gold"><strong>How it works:</strong> eBay charges GST/HST on your seller fees based on your province or state. For example in Ontario, a $13.25 fee on a $100 sale becomes $14.97 after 13% HST. CardComp accounts for this automatically.</div>
-  </div>
-</div>
-
-<!-- ══ ADD CARD MODAL ══ -->
-<div class="modal-overlay hidden" id="addCardModal">
-  <div class="modal">
-    <div class="modal-drag"></div>
-    <div class="modal-title green">Add to Portfolio</div>
-    <p class="modal-desc">Track raw and graded cards. CardComp shows live market value vs what you paid.</p>
-    <div class="form-grid">
-      <div class="form-field">
-        <label class="field-label">Card Name *</label>
-        <input class="modal-input" style="margin-bottom:0;" type="text" id="pcName" placeholder="e.g. Charizard">
+    <div class="drag"></div>
+    <div class="modal-body">
+      <div style="font-size:32px;margin-bottom:10px;">🃏</div>
+      <h2 class="cyan">Welcome to CardComp</h2>
+      <p>The comps and collection tool built for serious TCG collectors and flippers.</p>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:18px;">
+        <div style="display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--b1);"><span style="font-size:16px;flex-shrink:0;">📦</span><div style="font-size:13px;color:var(--muted);line-height:1.5;"><strong style="color:var(--text);">Collection</strong> — Track your cards with live market values and real after-fee liquidation prices</div></div>
+        <div style="display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--b1);"><span style="font-size:16px;flex-shrink:0;">🔍</span><div style="font-size:13px;color:var(--muted);line-height:1.5;"><strong style="color:var(--text);">Search</strong> — Live eBay sold data, PSA/BGS/CGC grades, price history, and Grade ROI calculator</div></div>
+        <div style="display:flex;align-items:flex-start;gap:10px;padding:8px 0;"><span style="font-size:16px;flex-shrink:0;">🧾</span><div style="font-size:13px;color:var(--muted);line-height:1.5;"><strong style="color:var(--text);">Pricer</strong> — Price a collection to make an offer, with a printable offer sheet for the seller</div></div>
       </div>
-      <div class="form-field">
-        <label class="field-label">Set / Series</label>
-        <input class="modal-input" style="margin-bottom:0;" type="text" id="pcSet" placeholder="e.g. Base Set">
-      </div>
-    </div>
-    <div class="form-grid">
-      <div class="form-field">
-        <label class="field-label">Type</label>
-        <select class="modal-select" style="margin-bottom:0;" id="pcType" onchange="toggleGradeFields()">
-          <option value="raw">Raw / Ungraded</option>
-          <option value="graded">Graded Slab</option>
-        </select>
-      </div>
-      <div id="pcConditionWrap" class="form-field">
-        <label class="field-label">Condition</label>
-        <select class="modal-select" style="margin-bottom:0;" id="pcCondition">
-          <option value="near_mint">Near Mint</option>
-          <option value="lightly_played">Lightly Played</option>
-          <option value="moderately_played">Moderately Played</option>
-          <option value="heavily_played">Heavily Played</option>
-          <option value="damaged">Damaged</option>
-        </select>
-      </div>
-      <div id="pcGradeWrap" class="form-field" style="display:none;">
-        <label class="field-label">Grade</label>
-        <select class="modal-select" style="margin-bottom:0;" id="pcGrade">
-          <option value="psa_10">PSA 10</option>
-          <option value="psa_9">PSA 9</option>
-          <option value="psa_8.5">PSA 8.5</option>
-          <option value="psa_8">PSA 8</option>
-          <option value="psa_7">PSA 7</option>
-          <option value="bgs_10">BGS 10</option>
-          <option value="bgs_9.5">BGS 9.5</option>
-          <option value="bgs_9">BGS 9</option>
-          <option value="cgc_10">CGC 10</option>
-          <option value="cgc_9.5">CGC 9.5</option>
-          <option value="cgc_9">CGC 9</option>
-        </select>
-      </div>
-    </div>
-    <div class="form-grid">
-      <div class="form-field">
-        <label class="field-label">Purchase Price ($)</label>
-        <input class="modal-input" style="margin-bottom:0;" type="number" id="pcCost" placeholder="0.00" min="0" step="0.01">
-      </div>
-      <div class="form-field">
-        <label class="field-label">Quantity</label>
-        <input class="modal-input" style="margin-bottom:0;" type="number" id="pcQty" placeholder="1" min="1" value="1">
-      </div>
-    </div>
-    <div class="form-grid" style="margin-bottom:14px;">
-      <div class="form-field">
-        <label class="field-label">Game</label>
-        <select class="modal-select" style="margin-bottom:0;" id="pcGame">
-          <option value="pokemon">Pokémon</option>
-          <option value="mtg">Magic: The Gathering</option>
-          <option value="yugioh">Yu-Gi-Oh!</option>
-          <option value="onepiece">One Piece</option>
-          <option value="lorcana">Disney Lorcana</option>
-          <option value="other">Other</option>
-        </select>
-      </div>
-      <div class="form-field">
-        <label class="field-label">Notes</label>
-        <input class="modal-input" style="margin-bottom:0;" type="text" id="pcNotes" placeholder="e.g. Shadowless">
-      </div>
-    </div>
-    <div class="modal-btns">
-      <button class="btn-primary green" onclick="savePortfolioCard()">ADD TO PORTFOLIO</button>
-      <button class="btn-ghost" onclick="closeAddCardModal()">Cancel</button>
+      <button class="btn cyan" style="width:100%;font-size:17px;padding:14px;" onclick="dismissWelcome()">GET STARTED →</button>
+      <div class="modal-note cyan" style="margin-top:10px;text-align:center;">Beta — your feedback shapes what gets built next 🇨🇦</div>
     </div>
   </div>
 </div>
 
-<!-- ══ FEEDBACK MODAL ══ -->
+<!-- Feedback -->
 <div class="modal-overlay hidden" id="feedbackModal">
   <div class="modal">
-    <div class="modal-drag"></div>
-    <div class="modal-title" style="color:var(--accent2);">Beta Feedback</div>
-
-    <!-- Form state -->
-    <div id="feedbackForm">
-      <p class="modal-desc">What's working? What's missing? What would make you use this every day?</p>
-      <select class="modal-select" id="feedbackType">
-        <option value="general">💬 General feedback</option>
-        <option value="bug">🐛 Something's broken</option>
-        <option value="feature">✨ Feature request</option>
-        <option value="data">📊 Data seems wrong</option>
-        <option value="ux">🤔 Hard to use</option>
-      </select>
-      <textarea class="fb-textarea" id="feedbackText" placeholder="Your honest thoughts — anything goes..."></textarea>
-      <input class="modal-input" type="email" id="feedbackEmail" placeholder="Email (optional — if you want a reply)">
-      <div id="feedbackError" class="hidden" style="font-size:12px;color:var(--red);margin-bottom:10px;padding:8px 12px;background:rgba(255,71,87,0.08);border:1px solid rgba(255,71,87,0.2);border-radius:8px;"></div>
-      <div class="modal-btns">
-        <button class="btn-primary" id="feedbackSendBtn" style="background:var(--accent2);color:#fff;" onclick="submitFeedback()">SEND FEEDBACK</button>
-        <button class="btn-ghost" onclick="closeFeedbackModal()">Cancel</button>
+    <div class="drag"></div>
+    <div class="modal-body">
+      <h2 class="orange">Beta Feedback</h2>
+      <p>What's working? What's missing? What would make you use this every day?</p>
+      <div id="feedbackForm">
+        <select class="fselect" id="feedbackType">
+          <option value="general">💬 General feedback</option>
+          <option value="bug">🐛 Something's broken</option>
+          <option value="feature">✨ Feature request</option>
+          <option value="data">📊 Data seems wrong</option>
+          <option value="ux">🤔 Hard to use</option>
+        </select>
+        <textarea class="finput" id="feedbackText" rows="4" placeholder="Your honest thoughts..." style="resize:vertical;font-family:var(--font);font-size:13px;line-height:1.6;"></textarea>
+        <input class="finput" type="email" id="feedbackEmail" placeholder="Email (optional — if you want a reply)">
+        <div id="feedbackError" class="hidden" style="font-size:12px;color:var(--red);margin-bottom:10px;padding:8px 12px;background:rgba(255,71,87,0.08);border:1px solid rgba(255,71,87,0.2);border-radius:8px;"></div>
+        <div class="modal-btns">
+          <button class="btn orange" id="feedbackSendBtn" onclick="submitFeedback()">SEND FEEDBACK</button>
+          <button class="btn-ghost" onclick="closeFeedbackModal()">Cancel</button>
+        </div>
       </div>
-    </div>
-
-    <!-- Success state -->
-    <div id="feedbackSuccess" class="hidden" style="text-align:center;padding:20px 0;">
-      <div style="font-size:48px;margin-bottom:14px;">🙏</div>
-      <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:1px;color:var(--green);margin-bottom:8px;">Thanks for the feedback!</div>
-      <p style="font-size:13px;color:var(--muted);line-height:1.6;">This goes directly to the builder. Every piece of feedback shapes what gets built next.</p>
+      <div id="feedbackSuccess" class="hidden" style="text-align:center;padding:20px 0;">
+        <div style="font-size:44px;margin-bottom:12px;">🙏</div>
+        <div style="font-family:var(--display);font-size:22px;letter-spacing:1px;color:var(--green);margin-bottom:7px;">Thanks!</div>
+        <p>This goes directly to the builder. Every piece of feedback shapes what gets built next.</p>
+      </div>
     </div>
   </div>
 </div>
 
-
-<!-- ══ ROI CALCULATOR MODAL ══ -->
-<div class="roi-modal-overlay hidden" id="roiModalOverlay">
-  <div class="roi-modal">
-    <div class="roi-modal-drag"></div>
-    <div class="roi-modal-head">
-      <div id="roiModalCardImg"></div>
-      <div class="roi-modal-card-info">
-        <div class="roi-modal-card-name" id="roiModalCardName">Grade ROI Calculator</div>
-        <div class="roi-modal-card-set" id="roiModalCardSet">Should I grade this card?</div>
+<!-- Country / Tax -->
+<div class="modal-overlay hidden" id="countryModal">
+  <div class="modal">
+    <div class="drag"></div>
+    <div class="modal-body">
+      <h2 class="gold">Seller Location</h2>
+      <p>Sets eBay fee rates and tax on your seller fees. Affects all ROI and take-home calculations.</p>
+      <label class="flabel">Country</label>
+      <select class="fselect" id="countrySelect" onchange="onCountryChange()">
+        <option value="CA">🇨🇦 Canada</option>
+        <option value="US">🇺🇸 United States</option>
+        <option value="UK">🇬🇧 United Kingdom</option>
+        <option value="AU">🇦🇺 Australia</option>
+      </select>
+      <div id="provinceRow" style="display:none;flex-direction:column;margin-bottom:10px;">
+        <label class="flabel" id="provinceLabel">Province / Territory</label>
+        <select class="fselect" id="provinceSelect" onchange="onProvinceChange()" style="margin-bottom:0;"></select>
       </div>
-      <button class="roi-modal-close" onclick="closeRoiModal()">✕</button>
-    </div>
-
-    <!-- Big verdict banner -->
-    <div class="roi-verdict-banner empty" id="roiModalVerdict">
-      <div class="rvb-left">
-        <div class="rvb-badge" id="roiModalBadge">ENTER DETAILS</div>
-        <div class="rvb-msg" id="roiModalMsg">Fill in what you paid and expected sale price to see if grading is worth it.</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;background:var(--s2);border:1px solid var(--b2);border-radius:8px;padding:10px 13px;margin-bottom:12px;">
+        <div style="font-size:12px;color:var(--muted);">Tax on your eBay seller fees</div>
+        <div style="font-family:var(--display);font-size:19px;color:var(--gold);" id="taxInfoValue">13% HST</div>
       </div>
-      <div class="rvb-pct" id="roiModalPct">—</div>
+      <div class="modal-btns">
+        <button class="btn gold" onclick="saveCountry()">Save Location</button>
+        <button class="btn-ghost" onclick="closeCountryModal()">Cancel</button>
+      </div>
     </div>
+  </div>
+</div>
 
-    <div class="roi-modal-body">
-
-      <!-- Grade selector strip with live prices -->
-      <div class="roi-modal-section-title">Select Expected Grade</div>
-      <div class="grade-comp-strip" id="roiGradeStrip"></div>
-
-      <!-- Inputs -->
-      <div class="roi-modal-section-title">Your Numbers</div>
-      <div class="roi-modal-grid">
-        <div class="roi-modal-field">
-          <label>Raw Card Cost ($) *</label>
-          <input class="roi-modal-input" type="number" id="roiModalCost" placeholder="What you paid" min="0" step="0.01" oninput="calcRoiModal()">
+<!-- Add Card to Collection -->
+<div class="modal-overlay hidden" id="addCardModal">
+  <div class="modal">
+    <div class="drag"></div>
+    <div class="modal-body">
+      <h2 class="green">Add to Collection</h2>
+      <p>Track raw and graded cards. CardComp shows live market value vs what you paid.</p>
+      <div class="fgrid">
+        <div class="ffield"><label class="flabel">Card Name *</label><input class="finput" style="margin-bottom:0;" type="text" id="pcName" placeholder="e.g. Charizard"></div>
+        <div class="ffield"><label class="flabel">Set / Series</label><input class="finput" style="margin-bottom:0;" type="text" id="pcSet" placeholder="e.g. Base Set"></div>
+      </div>
+      <div class="fgrid">
+        <div class="ffield"><label class="flabel">Type</label>
+          <select class="fselect" style="margin-bottom:0;" id="pcType" onchange="toggleGradeFields()">
+            <option value="raw">Raw / Ungraded</option>
+            <option value="graded">Graded Slab</option>
+          </select>
         </div>
-        <div class="roi-modal-field">
-          <label>Grading Company</label>
-          <select class="roi-modal-select" id="roiModalGrader" onchange="calcRoiModal()">
+        <div id="pcConditionWrap" class="ffield"><label class="flabel">Condition</label>
+          <select class="fselect" style="margin-bottom:0;" id="pcCondition">
+            <option value="near_mint">Near Mint</option>
+            <option value="lightly_played">Lightly Played</option>
+            <option value="moderately_played">Moderately Played</option>
+            <option value="heavily_played">Heavily Played</option>
+            <option value="damaged">Damaged</option>
+          </select>
+        </div>
+        <div id="pcGradeWrap" class="ffield" style="display:none;"><label class="flabel">Grade</label>
+          <select class="fselect" style="margin-bottom:0;" id="pcGrade">
+            <option value="psa_10">PSA 10</option><option value="psa_9">PSA 9</option>
+            <option value="psa_8.5">PSA 8.5</option><option value="psa_8">PSA 8</option>
+            <option value="psa_7">PSA 7</option><option value="bgs_10">BGS 10</option>
+            <option value="bgs_9.5">BGS 9.5</option><option value="bgs_9">BGS 9</option>
+            <option value="cgc_10">CGC 10</option><option value="cgc_9.5">CGC 9.5</option>
+            <option value="cgc_9">CGC 9</option>
+          </select>
+        </div>
+      </div>
+      <div class="fgrid" style="margin-bottom:14px;">
+        <div class="ffield"><label class="flabel">Purchase Price ($)</label><input class="finput" style="margin-bottom:0;" type="number" id="pcCost" placeholder="0.00" min="0" step="0.01"></div>
+        <div class="ffield"><label class="flabel">Quantity</label><input class="finput" style="margin-bottom:0;" type="number" id="pcQty" placeholder="1" min="1" value="1"></div>
+        <div class="ffield"><label class="flabel">Game</label>
+          <select class="fselect" style="margin-bottom:0;" id="pcGame">
+            <option value="pokemon">Pokémon</option><option value="mtg">Magic: The Gathering</option>
+            <option value="yugioh">Yu-Gi-Oh!</option><option value="onepiece">One Piece</option>
+            <option value="lorcana">Disney Lorcana</option><option value="other">Other</option>
+          </select>
+        </div>
+        <div class="ffield"><label class="flabel">Notes</label><input class="finput" style="margin-bottom:0;" type="text" id="pcNotes" placeholder="e.g. Shadowless"></div>
+      </div>
+      <div class="modal-btns">
+        <button class="btn green" onclick="savePortfolioCard()">ADD TO COLLECTION</button>
+        <button class="btn-ghost" onclick="closeAddCardModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ROI Calculator Modal -->
+<div class="modal-overlay hidden" id="roiModalOverlay">
+  <div class="modal">
+    <div class="drag"></div>
+    <div class="roi-m-head">
+      <div id="roiModalCardImg"></div>
+      <div class="roi-m-info">
+        <div class="roi-m-name" id="roiModalCardName">Grade ROI</div>
+        <div class="roi-m-set" id="roiModalCardSet">Should I grade this card?</div>
+      </div>
+      <button class="roi-m-close" onclick="closeRoiModal()">✕</button>
+    </div>
+    <div class="verdict-banner empty" id="roiModalVerdict">
+      <div><div class="vb-badge" id="roiModalBadge">ENTER DETAILS</div><div class="vb-msg" id="roiModalMsg">Fill in what you paid and expected sale price.</div></div>
+      <div class="vb-pct" id="roiModalPct">—</div>
+    </div>
+    <div class="modal-body" style="padding-top:4px;">
+      <div class="roi-m-section">Select Expected Grade</div>
+      <div class="grade-strip" id="roiGradeStrip"></div>
+      <div class="roi-m-section">Your Numbers</div>
+      <div class="roi-grid">
+        <div class="roi-field"><label>Raw Cost ($)</label><input class="roi-input" type="number" id="roiModalCost" placeholder="What you paid" min="0" step="0.01" oninput="calcRoiModal()"></div>
+        <div class="roi-field"><label>Grading Company</label>
+          <select class="roi-select" id="roiModalGrader" onchange="calcRoiModal()">
             <option value="psa_economy">PSA Economy ($18)</option>
             <option value="psa_value" selected>PSA Value ($32.99)</option>
             <option value="psa_regular">PSA Regular ($75)</option>
@@ -990,128 +784,164 @@ header{position:sticky;top:0;z-index:200;background:rgba(8,11,15,0.95);backdrop-
             <option value="cgc_standard">CGC Standard ($35)</option>
           </select>
         </div>
-        <div class="roi-modal-field">
-          <label>Shipping to Grader ($)</label>
-          <input class="roi-modal-input" type="number" id="roiModalShipping" value="12" min="0" step="0.01" oninput="calcRoiModal()">
-        </div>
-        <div class="roi-modal-field">
-          <label>Expected Sale Price ($)</label>
-          <input class="roi-modal-input" type="number" id="roiModalSale" placeholder="Tap a grade above" min="0" step="0.01" oninput="calcRoiModal()">
-        </div>
-        <div class="roi-modal-field">
-          <label>Promoted Listing (%)</label>
-          <input class="roi-modal-input" type="number" id="roiModalPromo" value="0" min="0" max="100" step="0.1" oninput="calcRoiModal()">
-        </div>
+        <div class="roi-field"><label>Shipping ($)</label><input class="roi-input" type="number" id="roiModalShipping" value="12" min="0" step="0.01" oninput="calcRoiModal()"></div>
+        <div class="roi-field"><label>Expected Sale Price ($)</label><input class="roi-input" type="number" id="roiModalSale" placeholder="Tap a grade above" min="0" step="0.01" oninput="calcRoiModal()"></div>
+        <div class="roi-field"><label>Promoted Listing (%)</label><input class="roi-input" type="number" id="roiModalPromo" value="0" min="0" max="100" oninput="calcRoiModal()"></div>
       </div>
-
-      <!-- Stats row -->
-      <div class="roi-stats-row">
+      <div class="roi-stats">
         <div class="roi-stat"><div class="roi-stat-label">Net Profit</div><div class="roi-stat-val" id="roiModalProfit">—</div></div>
         <div class="roi-stat"><div class="roi-stat-label">Total Costs</div><div class="roi-stat-val neutral" id="roiModalCosts">—</div></div>
         <div class="roi-stat"><div class="roi-stat-label">Break Even</div><div class="roi-stat-val neutral" id="roiModalBreak">—</div></div>
       </div>
-
-      <!-- Fee breakdown -->
-      <div class="roi-fee-breakdown" id="roiModalFees">
-        <div class="roi-fee-title">Fee Breakdown</div>
+      <div class="fee-card" id="roiModalFees">
+        <div class="fee-card-title">Fee Breakdown</div>
         <div id="roiModalFeeLines" style="color:var(--muted);font-size:12px;">Enter your numbers above to see the full breakdown.</div>
       </div>
-
     </div>
   </div>
 </div>
 
-<!-- ══ COMPS PAGE ══ -->
-<div class="page active" id="pageComps">
-  <!-- Search hero -->
-  <div class="search-hero">
-    <div class="search-eyebrow">// Live eBay Sold · PSA · BGS · CGC · ROI</div>
-    <h1 class="search-title"><div>REAL</div><div class="hl">COMPS.</div><div class="gh">REAL PROFIT.</div></h1>
-    <p class="search-sub">Live eBay sold data, graded prices, and Grade ROI for Pokémon, MTG, Yu-Gi-Oh! and more.</p>
+<!-- Pricer Search Modal -->
+<div class="psm hidden" id="psmOverlay">
+  <div class="psm-header">
+    <div class="psm-title">Find Card</div>
+    <input class="psm-input" type="text" id="psmInput" placeholder="Card name..." autocomplete="off" onkeydown="if(event.key==='Enter')runPsmSearch()" oninput="onPsmInput(this.value)">
+    <button class="psm-btn" id="psmSearchBtn" onclick="runPsmSearch()">SEARCH</button>
+    <button class="psm-close" onclick="closePsm()">✕</button>
+  </div>
+  <div class="psm-filters">
+    <div class="psm-tips">💡 Search name only first. Use filters to narrow down. For variants try "Shadowless" or "1st Edition" in Set Name.</div>
+    <div class="psm-game-chips" id="psmGameChips">
+      <button class="psm-chip active" data-game="" onclick="selectPsmGame(this)">All</button>
+      <button class="psm-chip" data-game="pokemon" onclick="selectPsmGame(this)">Pokémon</button>
+      <button class="psm-chip" data-game="pokemon-japan" onclick="selectPsmGame(this)">JP Pokémon</button>
+      <button class="psm-chip" data-game="mtg" onclick="selectPsmGame(this)">MTG</button>
+      <button class="psm-chip" data-game="yugioh" onclick="selectPsmGame(this)">Yu-Gi-Oh!</button>
+      <button class="psm-chip" data-game="onepiece" onclick="selectPsmGame(this)">One Piece</button>
+      <button class="psm-chip" data-game="lorcana" onclick="selectPsmGame(this)">Lorcana</button>
+    </div>
+    <div class="psm-filter-row">
+      <div class="psm-filter-field"><div class="psm-filter-label">Set Name</div><input class="psm-filter-input" type="text" id="psmSetFilter" placeholder="e.g. Shadowless, Base Set" style="width:165px;"></div>
+      <div class="psm-filter-field"><div class="psm-filter-label">Card Number</div><input class="psm-filter-input" type="text" id="psmNumberFilter" placeholder="e.g. 059/102" style="width:120px;"></div>
+      <div class="psm-filter-field"><div class="psm-filter-label">Rarity</div><input class="psm-filter-input" type="text" id="psmRarityFilter" placeholder="e.g. Holo Rare" style="width:120px;"></div>
+    </div>
+  </div>
+  <div class="psm-results" id="psmResults"><div style="text-align:center;padding:48px 20px;color:var(--muted);">Enter a card name and hit Search</div></div>
+</div>
+
+<!-- ══ PAGE: COLLECTION ══ -->
+<div class="page active" id="pageCollection">
+  <div class="wrap">
+    <!-- Hero (shown when cards exist) -->
+    <div id="collHero" class="coll-hero hidden">
+      <div class="coll-hero-label">Total Collection Value</div>
+      <div class="coll-hero-value" id="heroMarket">$0.00</div>
+      <div class="coll-hero-sub" id="heroSub">0 cards in collection</div>
+      <div class="coll-stats">
+        <div class="coll-stat"><div class="coll-stat-label">Cost Basis</div><div class="coll-stat-val neutral" id="heroCost">—</div></div>
+        <div class="coll-stat"><div class="coll-stat-label">After-Fee Value</div><div class="coll-stat-val blue" id="heroAfterFee">—</div></div>
+        <div class="coll-stat"><div class="coll-stat-label">Unrealized P&L</div><div class="coll-stat-val" id="heroPnl">—</div></div>
+      </div>
+    </div>
+    <!-- Onboarding (no cards yet) -->
+    <div id="collOnboard" class="onboard">
+      <div class="onboard-icon">📦</div>
+      <div class="onboard-title">Start Your Collection</div>
+      <p class="onboard-sub">Add your first card to track its value, see real after-fee liquidation prices, and monitor your P&L over time.</p>
+      <button class="onboard-btn" onclick="openAddCardModal()">+ ADD YOUR FIRST CARD</button>
+    </div>
+    <!-- Toolbar (shown when cards exist) -->
+    <div id="collToolbar" class="coll-toolbar hidden">
+      <div class="section-title">My Collection</div>
+      <div class="coll-toolbar-right">
+        <select class="sel" id="portFilter" onchange="renderPortfolio()">
+          <option value="all">All Games</option>
+          <option value="pokemon">Pokémon</option>
+          <option value="mtg">MTG</option>
+          <option value="yugioh">Yu-Gi-Oh!</option>
+          <option value="other">Other</option>
+        </select>
+        <select class="sel" id="portSort" onchange="renderPortfolio()">
+          <option value="added">Recently Added</option>
+          <option value="value_desc">Value: High → Low</option>
+          <option value="pnl_desc">Best P&L First</option>
+          <option value="pnl_asc">Worst P&L First</option>
+          <option value="name">Name A–Z</option>
+        </select>
+        <button class="add-btn" onclick="openAddCardModal()">+ ADD CARD</button>
+      </div>
+    </div>
+    <div id="portGrid" class="port-grid hidden"></div>
+    <div id="portProBanner" class="pro-bar hidden">
+      <div><h3>CardComp Pro <span class="pro-chip">COMING SOON</span></h3><p>Price alerts · Daily auto-refresh · CSV export · Cross-device sync</p></div>
+      <button class="pro-btn" onclick="alert('Waitlist coming soon!')">JOIN WAITLIST</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PAGE: SEARCH ══ -->
+<div class="page" id="pageSearch">
+  <div class="search-page-header">
     <div class="search-box">
-      <div class="search-wrap" id="searchWrap">
-        <div class="search-row">
-          <input class="search-input" type="text" id="searchInput"
-            placeholder="Search by card name, set, or number..."
-            autocomplete="off"
-            onkeydown="onSearchKeyDown(event)"
-            oninput="onSearchInput(this.value)">
-          <button class="search-clear" id="searchClear" onclick="clearSearch()" title="Clear">✕</button>
-          <button class="search-btn" id="searchBtn" onclick="doSearch()">SEARCH</button>
-        </div>
-        <div class="suggestions hidden" id="suggestions"></div>
+      <div class="search-row">
+        <input class="search-input" type="text" id="searchInput" placeholder="Search any card — name, set, or number..." autocomplete="off" onkeydown="onSearchKeyDown(event)" oninput="onSearchInput(this.value)">
+        <button class="search-clear" id="searchClear" onclick="clearSearch()">✕</button>
+        <button class="search-btn" id="searchBtn" onclick="doSearch()">SEARCH</button>
       </div>
       <div class="game-chips" id="gameChips">
-        <button class="game-chip active" data-game="" onclick="selectGame(this)">All</button>
-        <button class="game-chip" data-game="pokemon" onclick="selectGame(this)">Pokémon</button>
-        <button class="game-chip" data-game="pokemon-japan" onclick="selectGame(this)">JP Pokémon</button>
-        <button class="game-chip" data-game="mtg" onclick="selectGame(this)">MTG</button>
-        <button class="game-chip" data-game="yugioh" onclick="selectGame(this)">Yu-Gi-Oh!</button>
-        <button class="game-chip" data-game="onepiece" onclick="selectGame(this)">One Piece</button>
-        <button class="game-chip" data-game="lorcana" onclick="selectGame(this)">Lorcana</button>
+        <button class="chip active" data-game="" onclick="selectGame(this)">All</button>
+        <button class="chip" data-game="pokemon" onclick="selectGame(this)">Pokémon</button>
+        <button class="chip" data-game="pokemon-japan" onclick="selectGame(this)">JP Pokémon</button>
+        <button class="chip" data-game="mtg" onclick="selectGame(this)">MTG</button>
+        <button class="chip" data-game="yugioh" onclick="selectGame(this)">Yu-Gi-Oh!</button>
+        <button class="chip" data-game="onepiece" onclick="selectGame(this)">One Piece</button>
+        <button class="chip" data-game="lorcana" onclick="selectGame(this)">Lorcana</button>
       </div>
-      <div id="recentSearchesWrap" class="recent-searches hidden">
+      <div id="recentSearchesWrap" class="recent-wrap hidden">
         <div class="recent-label">Recent</div>
         <div class="recent-chips" id="recentChips"></div>
       </div>
+      <div class="search-wrap" style="position:relative;">
+        <div class="suggestions hidden" id="suggestions"></div>
+      </div>
     </div>
   </div>
-
-  <!-- Results -->
-  <div class="results-wrap">
+  <div class="wrap" style="padding-top:0;">
     <div id="emptyState" class="empty-state">
-      <div class="empty-icon">🃏</div>
-      <div class="empty-title">Search Any Card Above</div>
-      <p class="empty-sub">eBay sold averages · All conditions · PSA/BGS/CGC · Grade ROI</p>
+      <div class="empty-icon">🔍</div>
+      <div class="empty-title">Search Any Card</div>
+      <p class="empty-sub">eBay sold data · All conditions · PSA/BGS/CGC grades · Price history</p>
     </div>
     <div id="loadingState" class="loader-wrap hidden"><div class="loader"></div><div class="loader-label">Pulling comps...</div></div>
     <div id="errorBox" class="error-bar hidden">⚠️ <span id="errorMsg"></span></div>
-
-    <!-- Search results -->
-    <div id="searchSection" class="hidden">
-      <div class="card-list" id="searchList"></div>
-    </div>
-
-    <!-- Card detail -->
+    <div id="searchSection" class="hidden"><div class="card-list" id="searchList"></div></div>
     <div id="detailSection" class="hidden">
-      <div class="detail-back" onclick="goBack()">← Back to results</div>
+      <div class="back-btn" onclick="goBack()">← Back to results</div>
       <div id="upgradeBar" class="upgrade-bar hidden">🔒 eBay sold & graded data requires <a href="https://tcgpricelookup.com/pricing" target="_blank">Trader plan ($14.99/mo)</a></div>
-
-      <!-- Big card hero -->
       <div class="card-hero" id="cardHero"></div>
-
-      <!-- Quick add -->
+      <!-- Quick add to collection -->
       <div class="quick-add" id="quickAdd">
-        <span class="qa-label">+ Portfolio</span>
+        <span class="qa-label">+ Collection</span>
         <div class="qa-context" id="qaContext">—</div>
         <div class="qa-inputs">
-          <div class="qa-field">
-            <div class="qa-field-label">I Paid ($)</div>
-            <input class="qa-input" type="number" id="qaCost" placeholder="optional" min="0" step="0.01">
-          </div>
-          <div class="qa-field">
-            <div class="qa-field-label">Qty</div>
-            <input class="qa-input qa-qty" type="number" id="qaQty" value="1" min="1">
-          </div>
+          <div class="qa-field"><div class="qa-flabel">I Paid ($)</div><input class="qa-input" type="number" id="qaCost" placeholder="optional" min="0" step="0.01"></div>
+          <div class="qa-field"><div class="qa-flabel">Qty</div><input class="qa-input qa-qty" type="number" id="qaQty" value="1" min="1"></div>
           <button class="qa-btn" onclick="quickAddToPortfolio()">+ ADD</button>
         </div>
       </div>
-
       <!-- Source tabs -->
-      <div class="source-tabs">
+      <div class="stabs">
         <button class="stab tcg active" onclick="switchTab('tcg',this)">TCGPlayer</button>
         <button class="stab ebay" onclick="switchTab('ebay',this)">eBay Sold</button>
         <button class="stab graded" onclick="switchTab('graded',this)">Graded</button>
-        <!-- ROI moved to dedicated modal -->
       </div>
-
       <!-- TCG Panel -->
       <div class="price-panel active" id="panel-tcg">
         <div class="cond-chips" id="tcgCondChips"></div>
         <div class="price-grid" id="tcgPriceGrid"></div>
         <div class="chart-card">
           <div class="chart-head">
-            <div class="chart-title">Price History</div>
+            <div class="section-title" style="font-size:14px;margin-bottom:0;">Price History</div>
             <div class="period-chips">
               <button class="period-chip active" onclick="switchPeriod('7d',this)">7D</button>
               <button class="period-chip" onclick="switchPeriod('30d',this)">30D</button>
@@ -1122,148 +952,125 @@ header{position:sticky;top:0;z-index:200;background:rgba(8,11,15,0.95);backdrop-
           <div class="chart-wrap" id="chartWrap"><canvas id="priceChart"></canvas></div>
         </div>
       </div>
-
       <!-- eBay Panel -->
       <div class="price-panel" id="panel-ebay">
         <div class="cond-chips" id="ebayCondChips"></div>
         <div class="price-grid" id="ebayPriceGrid"></div>
         <div id="ebayFeeCard"></div>
       </div>
-
       <!-- Graded Panel -->
       <div class="price-panel" id="panel-graded">
         <div class="grader-chips" id="graderChips"></div>
         <div class="grade-table" id="gradeTable"></div>
       </div>
-
-      <!-- ROI Panel (legacy — kept for calcROI references) -->
-      <div class="price-panel hidden" id="panel-roi" style="display:none!important;">
-        <div class="roi-wrap">
-          <div class="roi-head">
-            <div class="roi-head-title">🧮 Grade ROI Calculator</div>
-            <div class="roi-head-loc" id="roiLocBadge">🇨🇦 ON · 13% HST</div>
-          </div>
-          <div class="roi-body">
-            <div class="roi-inputs">
-              <div class="roi-field"><label>Raw Cost Paid ($)</label><input class="roi-input" type="number" id="roiRawCost" placeholder="e.g. 45.00" oninput="calcROI()"></div>
-              <div class="roi-field"><label>Grading Company</label>
-                <select class="roi-select" id="roiGrader" onchange="calcROI()">
-                  <option value="psa_economy">PSA Economy ($18)</option>
-                  <option value="psa_value" selected>PSA Value ($32.99)</option>
-                  <option value="psa_regular">PSA Regular ($75)</option>
-                  <option value="bgs_economy">BGS Economy ($22)</option>
-                  <option value="bgs_standard">BGS Standard ($75)</option>
-                  <option value="cgc_economy">CGC Economy ($18)</option>
-                  <option value="cgc_standard">CGC Standard ($35)</option>
-                </select>
-              </div>
-              <div class="roi-field"><label>Expected Grade</label>
-                <select class="roi-select" id="roiGrade" onchange="calcROI()">
-                  <option value="10">10 / Gem Mint</option>
-                  <option value="9.5">9.5</option>
-                  <option value="9" selected>9 / Mint</option>
-                  <option value="8.5">8.5</option>
-                  <option value="8">8 / NM-MT</option>
-                  <option value="7">7</option>
-                </select>
-              </div>
-              <div class="roi-field"><label>Shipping to Grader ($)</label><input class="roi-input" type="number" id="roiShipping" value="12" oninput="calcROI()"></div>
-              <div class="roi-field"><label>Expected Sale Price ($)</label><input class="roi-input" type="number" id="roiSalePrice" placeholder="Auto from comps" oninput="calcROI()"></div>
-              <div class="roi-field"><label>Promoted Listing (%)</label><input class="roi-input" type="number" id="roiPromo" value="0" min="0" max="100" oninput="calcROI()"></div>
-            </div>
-            <div class="roi-results" id="roiResults">
-              <div class="verdict-box" id="roiVerdict">
-                <div><div class="verdict-badge" id="verdictBadge">—</div><div class="verdict-msg" id="verdictMsg"></div></div>
-                <div class="verdict-pct" id="verdictRoi">—</div>
-              </div>
-              <div class="roi-grid" style="margin-bottom:12px;">
-                <div class="roi-gc"><div class="roi-gc-label">Net Profit</div><div class="roi-gc-val" id="roiNetProfit">—</div></div>
-                <div class="roi-gc"><div class="roi-gc-label">Total Costs</div><div class="roi-gc-val neutral" id="roiTotalCosts">—</div></div>
-                <div class="roi-gc"><div class="roi-gc-label">Break Even</div><div class="roi-gc-val neutral" id="roiBreakEven">—</div></div>
-              </div>
-              <div class="fee-card"><div class="fee-card-title">Fee Breakdown</div><div id="roiFeeLines"></div></div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Snap + Pro -->
+      <!-- Legacy ROI panel (hidden — functionality moved to modal) -->
+      <div class="price-panel hidden" id="panel-roi" style="display:none!important;"></div>
+      <!-- Snap -->
       <div class="snap-bar">
-        <div class="snap-info"><strong>Copy Comp Snapshot</strong><br>Paste into Discord, DMs, or group chats instantly.</div>
+        <div class="snap-info"><strong>Copy Comp Snapshot</strong><br>Paste into Discord, DMs, or group chats.</div>
         <button class="snap-btn" id="copyBtn" onclick="copySnap()">📋 COPY</button>
       </div>
       <div class="pro-bar">
-        <div class="pro-bar-info">
-          <h3>CardComp Pro <span class="pro-chip">COMING SOON</span></h3>
-          <p>Price alerts · Portfolio sync · CSV export · Sports cards · Pop report data</p>
-        </div>
+        <div><h3>CardComp Pro <span class="pro-chip">COMING SOON</span></h3><p>Price alerts · Portfolio sync · CSV export · Sports cards</p></div>
         <button class="pro-btn" onclick="alert('Waitlist coming soon!')">JOIN WAITLIST</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ══ PORTFOLIO PAGE ══ -->
-<div class="page" id="pagePortfolio">
-  <div class="page-inner">
-    <!-- Portfolio hero (shown when cards exist) -->
-    <div id="portHero" class="port-hero hidden">
-      <div class="port-hero-label">Total Collection Value</div>
-      <div class="port-hero-value" id="heroMarket">$0.00</div>
-      <div class="port-hero-sub" id="heroSub">— cards in collection</div>
-      <div class="port-hero-row">
-        <div class="port-hero-stat"><div class="port-hero-stat-label">Cost Basis</div><div class="port-hero-stat-val neutral" id="heroCost">—</div></div>
-        <div class="port-hero-stat"><div class="port-hero-stat-label">After-Fee Value</div><div class="port-hero-stat-val blue" id="heroAfterFee">—</div></div>
-        <div class="port-hero-stat"><div class="port-hero-stat-label">Unrealized P&L</div><div class="port-hero-stat-val" id="heroPnl">—</div></div>
+<!-- ══ PAGE: PRICER ══ -->
+<div class="page" id="pagePricer">
+  <div class="wrap">
+    <div class="offer-bar">
+      <div class="ob-item"><div class="ob-label">Market Value</div><div class="ob-val market" id="pricerTotalMarket">$0.00</div></div>
+      <div class="ob-item"><div class="ob-label">Your Offer</div><div class="ob-val offer" id="pricerTotalOffer">$0.00</div></div>
+      <div class="ob-item"><div class="ob-label">Cards</div><div class="ob-val count" id="pricerCardCount">0</div></div>
+    </div>
+    <div class="offer-slider-card">
+      <div class="slider-head">
+        <div class="slider-title">Offer Percentage</div>
+        <div class="slider-pct"><span id="offerPctDisplay">70</span>%</div>
+      </div>
+      <input class="offer-slider" type="range" id="offerSlider" min="30" max="90" step="5" value="70" oninput="onOfferSliderChange(this.value)">
+      <div class="offer-presets">
+        <button class="offer-preset" onclick="setOfferPct(50)">50%</button>
+        <button class="offer-preset" onclick="setOfferPct(60)">60%</button>
+        <button class="offer-preset active" onclick="setOfferPct(70)">70%</button>
+        <button class="offer-preset" onclick="setOfferPct(75)">75%</button>
+        <button class="offer-preset" onclick="setOfferPct(80)">80%</button>
       </div>
     </div>
-
-    <!-- Toolbar -->
-    <div class="port-toolbar">
-      <div class="port-toolbar-title">My Collection</div>
-      <div class="port-toolbar-right">
-        <select class="port-select" id="portFilter" onchange="renderPortfolio()">
-          <option value="all">All Games</option>
-          <option value="pokemon">Pokémon</option>
-          <option value="mtg">MTG</option>
-          <option value="yugioh">Yu-Gi-Oh!</option>
-          <option value="other">Other</option>
-        </select>
-        <select class="port-select" id="portSort" onchange="renderPortfolio()">
-          <option value="added">Recently Added</option>
-          <option value="value_desc">Value: High → Low</option>
-          <option value="pnl_desc">Best P&L First</option>
-          <option value="pnl_asc">Worst P&L First</option>
-          <option value="name">Name A–Z</option>
-        </select>
-        <button class="add-card-btn" onclick="openAddCardModal()">+ ADD CARD</button>
+    <div class="pricer-add">
+      <div class="pricer-add-header">
+        <div>
+          <div class="pricer-add-title">Add a Card</div>
+          <div class="pricer-add-sub">Search by name, set, or number — including 1st edition, shadowless, variants</div>
+        </div>
+        <button class="psearch-btn" onclick="openPsm()">🔍 SEARCH CARDS</button>
+      </div>
+      <div class="pricer-sel" id="pricerSelected">
+        <div id="pricerSelImg"></div>
+        <div class="psel-info"><div class="psel-name" id="pricerSelName">—</div><div class="psel-meta" id="pricerSelMeta">—</div></div>
+        <div class="psel-controls">
+          <div class="psel-field"><div class="psel-flabel">Type</div>
+            <select class="psel-select" id="pricerSelType" onchange="onPricerTypeChange()">
+              <option value="raw">Raw</option><option value="graded">Graded</option>
+            </select>
+          </div>
+          <div id="pricerCondWrap" class="psel-field"><div class="psel-flabel">Condition</div>
+            <select class="psel-select" id="pricerSelCond" onchange="updatePricerSelPrice()">
+              <option value="near_mint">Near Mint</option>
+              <option value="lightly_played">Lightly Played</option>
+              <option value="moderately_played">Moderately Played</option>
+              <option value="heavily_played">Heavily Played</option>
+              <option value="damaged">Damaged</option>
+            </select>
+          </div>
+          <div id="pricerGradeWrap" class="psel-field hidden"><div class="psel-flabel">Grade</div>
+            <select class="psel-select" id="pricerSelGrade" onchange="updatePricerSelPrice()">
+              <option value="psa_10">PSA 10</option><option value="psa_9">PSA 9</option>
+              <option value="psa_8.5">PSA 8.5</option><option value="psa_8">PSA 8</option>
+              <option value="psa_7">PSA 7</option><option value="bgs_10">BGS 10</option>
+              <option value="bgs_9.5">BGS 9.5</option><option value="bgs_9">BGS 9</option>
+              <option value="cgc_10">CGC 10</option><option value="cgc_9.5">CGC 9.5</option>
+              <option value="cgc_9">CGC 9</option>
+            </select>
+          </div>
+          <div class="psel-field"><div class="psel-flabel">Qty</div><input class="psel-input" type="number" id="pricerSelQty" value="1" min="1" oninput="updatePricerSelPrice()"></div>
+          <div class="psel-price" id="pricerSelPrice">—</div>
+          <button class="padd-btn" onclick="addPricerCard()">+ ADD</button>
+          <button class="psel-clear" onclick="clearPricerSelected()" title="Change card">✕</button>
+        </div>
       </div>
     </div>
-
-    <!-- Empty state -->
-    <div id="portEmpty" class="port-empty">
-      <div class="port-empty-icon">📦</div>
-      <div class="port-empty-title">Portfolio is Empty</div>
-      <p class="port-empty-sub">Add your first card to start tracking value and P&L.</p>
-      <button class="add-card-btn" onclick="openAddCardModal()">+ ADD YOUR FIRST CARD</button>
-    </div>
-
-    <!-- Grid -->
-    <div id="portGrid" class="port-grid hidden"></div>
-
-    <!-- Pro upsell -->
-    <div id="portProBanner" class="pro-bar hidden" style="margin-top:14px;">
-      <div class="pro-bar-info">
-        <h3>CardComp Pro <span class="pro-chip">COMING SOON</span></h3>
-        <p>Price alerts · Daily auto-refresh · CSV export · Cross-device sync</p>
+    <div class="bulk-card">
+      <div class="bulk-title">Bulk / Commons</div>
+      <div class="bulk-sub">Add a flat-rate count for commons, bulk lots, or unsorted cards.</div>
+      <div class="bulk-row">
+        <div class="bulk-field"><label>Count</label><input class="bulk-input" type="number" id="bulkCount" placeholder="e.g. 500" min="0"></div>
+        <div class="bulk-field"><label>Price Each ($)</label><input class="bulk-input" type="number" id="bulkPriceEach" placeholder="e.g. 0.10" min="0" step="0.01"></div>
+        <div class="bulk-field"><label>Label</label><input class="bulk-input" type="text" id="bulkLabel" placeholder="e.g. Commons" style="font-family:var(--font);"></div>
+        <button class="bulk-add-btn" onclick="addBulkLine()">+ ADD</button>
+        <div class="bulk-total" id="bulkPreviewTotal"></div>
       </div>
-      <button class="pro-btn" onclick="alert('Waitlist coming soon!')">JOIN WAITLIST</button>
+    </div>
+    <div class="pricer-actions">
+      <button class="p-action-btn primary" onclick="printOffer()">🖨️ PRINT / SAVE PDF</button>
+      <button class="p-action-btn" onclick="copyOfferText()">📋 COPY OFFER</button>
+      <button class="p-action-btn" onclick="clearPricerSession()">🗑️ CLEAR</button>
+    </div>
+    <div class="pricer-items">
+      <div class="pricer-items-head">
+        <div class="section-title" style="font-size:14px;margin-bottom:0;">Collection Items</div>
+        <div id="pricerItemCount" style="font-family:var(--mono);font-size:10px;color:var(--muted);">0 items</div>
+      </div>
+      <div id="pricerItemsList"><div class="pricer-empty">No cards added yet — search above to start pricing.</div></div>
     </div>
   </div>
 </div>
 
+<script src="https://unpkg.com/@formspree/ajax@1" defer></script>
 <script>
-
 let selectedGame = '';
 
 // ─── RECENT SEARCHES ─────────────────────────────────
@@ -1638,8 +1445,8 @@ function saveCountry() {
   fetchFxRate().then(() => {
     if (currentCard) renderDetail(currentCard);
     renderPortfolio();
+    renderPricerItems();
   });
-  calcROI();
 }
 
 // ─── API KEY ─────────────────────────────────────────
@@ -1775,7 +1582,6 @@ function renderDetail(card) {
   renderTcgPanel(card);
   renderEbayPanel(card);
   renderGradedPanel(card);
-  prefillROI(card);
   buildSnapshot(card);
   updateQuickAddBar(card);
   show('detailSection', true);
@@ -1792,7 +1598,7 @@ function renderHeader(card) {
     ? `<img class="card-hero-img" src="${esc(card.image_url)}" onerror="this.outerHTML='<div class=card-hero-img-ph>🃏</div>'">`
     : `<div class="card-hero-img-ph">🃏</div>`;
   document.getElementById('cardHero').innerHTML = `
-    <div class="card-hero-img-wrap">${img}</div>
+    ${img}
     <div class="card-hero-info">
       <div class="card-hero-game">${esc(card.game?.name||'')}</div>
       <div class="card-hero-name">${esc(card.name)}</div>
@@ -1801,13 +1607,13 @@ function renderHeader(card) {
         ${card.rarity?`<span class="ctag ctag-rarity">${esc(card.rarity)}</span>`:''}
         ${card.variant&&card.variant!=='Standard'?`<span class="ctag ctag-variant">${esc(card.variant)}</span>`:''}
       </div>
-      <div class="card-price-hero">
-        ${tcgPrice?`<div class="cph-item"><div class="cph-label">TCGPlayer</div><div class="cph-value tcg">${fmt(tcgPrice)}</div></div>`:''}
-        ${ebayPrice?`<div class="cph-item"><div class="cph-label">eBay 7D</div><div class="cph-value ebay">${fmt(ebayPrice)}</div></div>`:''}
-        ${psa10?`<div class="cph-item"><div class="cph-label">PSA 10</div><div class="cph-value psa10">${fmt(psa10)}</div></div>`:''}
+      <div class="card-price-row">
+        ${tcgPrice?`<div class="cpr"><div class="cpr-label">TCGPlayer</div><div class="cpr-val orange">${fmt(tcgPrice)}</div></div>`:''}
+        ${ebayPrice?`<div class="cpr"><div class="cpr-label">eBay 7D</div><div class="cpr-val purple">${fmt(ebayPrice)}</div></div>`:''}
+        ${psa10?`<div class="cpr"><div class="cpr-label">PSA 10</div><div class="cpr-val green">${fmt(psa10)}</div></div>`:''}
       </div>
       ${updated?`<div class="updated-line"><span class="live-dot"></span>Updated ${updated}</div>`:''}
-      <button class="roi-trigger-btn" onclick="openRoiModal()">🧮 GRADE ROI CALCULATOR</button>
+      <button class="roi-trigger" onclick="openRoiModal()">🧮 GRADE ROI CALCULATOR</button>
     </div>`;
 }
 
@@ -1984,15 +1790,15 @@ function prefillROI(card) {
     document.getElementById('roiGrade').value = '10';
   }
   document.getElementById('roiResults').classList.remove('visible');
-  calcROI();
 }
 
 function calcROI() {
-  const rawCost = parseFloat(document.getElementById('roiRawCost').value) || 0;
+  const fx = fxRate || 1;
+  const rawCost = (parseFloat(document.getElementById('roiRawCost').value) || 0) / fx;
   const graderKey = document.getElementById('roiGrader').value;
   const gradingFee = GRADING_FEES[graderKey] || 32.99;
-  const shipping = parseFloat(document.getElementById('roiShipping').value) || 0;
-  const salePrice = parseFloat(document.getElementById('roiSalePrice').value) || 0;
+  const shipping = (parseFloat(document.getElementById('roiShipping').value) || 0) / fx;
+  const salePrice = (parseFloat(document.getElementById('roiSalePrice').value) || 0) / fx;
   const promoRate = parseFloat(document.getElementById('roiPromo').value) || 0;
 
   if (!salePrice && !rawCost) { document.getElementById('roiResults').classList.remove('visible'); return; }
@@ -2105,7 +1911,7 @@ function copySnap() {
 }
 
 // ─── UTILS ───────────────────────────────────────────
-function esc2(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function fmt(v) {
   if(!v && v!==0) return '—';
   const converted = v * (fxRate || 1);
@@ -2114,18 +1920,13 @@ function fmt(v) {
 }
 function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function show(id,v) { document.getElementById(id)?.classList.toggle('hidden',!v); }
-function setLoading(v) { show('loadingState',v); document.getElementById('searchBtn').disabled=v; }
+function setLoading(v) { show('loadingState',v); const sb=document.getElementById('searchBtn'); if(sb) sb.disabled=v; }
 function showError(msg) { const el=document.getElementById('errorBox'); document.getElementById('errorMsg').textContent=msg; el.classList.remove('hidden'); }
 function hideError() { document.getElementById('errorBox').classList.add('hidden'); }
 
 // ─── HOME / NAVIGATION ───────────────────────────────
 function goHome() {
-  show('detailSection', false);
-  show('searchSection', false);
-  show('emptyState', true);
-  show('errorBox', false);
-  switchPage('comps');
-  history.pushState({ view: 'home' }, '', window.location.pathname);
+  switchPage('collection');
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -2160,7 +1961,7 @@ function updateQuickAddBar(card) {
   }
 
   document.getElementById('qaContext').innerHTML =
-    `<strong>${esc2(card.name||'—')}</strong> · <span style="color:var(--accent2)">${condDisplay}</span> · ${esc2(card.set?.name||'')}${condPrice ? ` · <span style="color:var(--green);font-family:sans-serif;font-size:14px;">${fmt(condPrice)}</span>` : ''}`;
+    `<strong>${esc(card.name||'—')}</strong> · <span style="color:var(--accent2)">${condDisplay}</span> · ${esc(card.set?.name||'')}${condPrice ? ` · <span style="color:var(--green);font-family:sans-serif;font-size:14px;">${fmt(condPrice)}</span>` : ''}`;
 
   // Store context for when user hits + ADD
   document._qaContext = { type, condition, grade };
@@ -2245,17 +2046,26 @@ function mapGame(gameName) {
 
 // ─── PAGE SWITCHING ──────────────────────────────────
 function switchPage(page) {
-  ['comps','portfolio','pricer'].forEach(p => {
-    const pageEl = document.getElementById('page' + p.charAt(0).toUpperCase() + p.slice(1));
-    const navEl = document.getElementById('bnav' + p.charAt(0).toUpperCase() + p.slice(1));
-    if (pageEl) pageEl.classList.toggle('active', p === page);
-    if (navEl) navEl.classList.toggle('active', p === page);
+  const pages = {
+    collection: 'pageCollection',
+    search: 'pageSearch',
+    pricer: 'pagePricer'
+  };
+  const navs = {
+    collection: 'bnavCollection',
+    search: 'bnavSearch',
+    pricer: 'bnavPricer'
+  };
+  Object.entries(pages).forEach(([p, id]) => {
+    const el = document.getElementById(id);
+    if (el) el.classList.toggle('active', p === page);
   });
-  // Active colour for pricer tab
-  const pt = document.getElementById('bnavPricer');
-  if (pt) pt.classList.toggle('pricer', page === 'pricer');
+  Object.entries(navs).forEach(([p, id]) => {
+    const el = document.getElementById(id);
+    if (el) el.classList.toggle('active', p === page);
+  });
   updatePortCount();
-  if (page === 'portfolio') renderPortfolio();
+  if (page === 'collection') renderPortfolio();
   if (page === 'pricer') renderPricerItems();
 }
 
@@ -2266,8 +2076,11 @@ function updatePortCount() {
     el.textContent = count;
     el.classList.toggle('hidden', count === 0);
   }
-  const portTab = document.getElementById('bnavPortfolio');
-  if (portTab) portTab.style.borderColor = count > 0 ? 'var(--green)' : '';
+  // Show/hide onboarding vs toolbar+grid
+  const hasCards = count > 0;
+  show('collOnboard', !hasCards);
+  show('collHero', hasCards);
+  show('collToolbar', hasCards);
 }
 
 // ─── PORTFOLIO DATA ───────────────────────────────────
@@ -2384,11 +2197,11 @@ function renderPortfolio() {
   const proBanner = document.getElementById('portProBanner');
 
   if (!portfolio.length) {
-    show('portGrid', false); show('portEmpty', true); show('portProBanner', false);
-    show('portHero', false);
+    show('portGrid', false);
+    show('portProBanner', false);
     return;
   }
-  show('portEmpty', false); show('portGrid', true);
+  show('portGrid', true);
   show('portProBanner', all.length >= 5);
 
   grid.innerHTML = '';
@@ -2410,9 +2223,9 @@ function updateSummary(portfolio) {
   const totalAfterFee = portfolio.reduce((s,c) => s + (c.afterFeeValue||0), 0);
   const pnl = totalMarket ? (totalMarket - totalCost) : 0;
   const hasMv = portfolio.some(c => c.marketValue);
-  const hero = document.getElementById('portHero');
-  if (!portfolio.length) { hero.classList.add('hidden'); return; }
-  hero.classList.remove('hidden');
+  const hero = document.getElementById('collHero');
+  if (!portfolio.length) { if(hero) hero.classList.add('hidden'); return; }
+  if(hero) hero.classList.remove('hidden');
   document.getElementById('heroMarket').textContent = hasMv ? fmt(totalMarket) : '—';
   document.getElementById('heroSub').textContent = `${totalCards} card${totalCards!==1?'s':''} in collection`;
   document.getElementById('heroCost').textContent = fmt(totalCost);
@@ -2462,15 +2275,15 @@ function buildCardEl(card) {
         <div class="pc-card-meta">${esc(card.set||'—')} · <span style="color:var(--accent2)">${esc(card.game||'')}</span></div>
       </div>
       <div class="pc-prices">
-        <div class="pcd-item"><div class="pcd-label">Cost</div><div class="pcd-val neutral">${fmt(totalCost)}</div></div>
-        <div class="pcd-item"><div class="pcd-label">Market</div><div class="pcd-val green">${mv?fmt(mv):'—'}</div></div>
-        <div class="pcd-item"><div class="pcd-label">After Fees</div><div class="pcd-val blue">${afv?fmt(afv):'—'}</div></div>
+        <div class="pcp"><div class="pcp-label">Cost</div><div class="pcp-val neutral">${fmt(totalCost)}</div></div>
+        <div class="pcp"><div class="pcp-label">Market</div><div class="pcp-val green">${mv?fmt(mv):'—'}</div></div>
+        <div class="pcp"><div class="pcp-label">After Fees</div><div class="pcp-val blue">${afv?fmt(afv):'—'}</div></div>
       </div>
       <div class="pc-pnl">
         <div class="pc-pnl-label">Unrealized P&L</div>
         <div class="pc-pnl-val ${pnl===null?'neutral':pnl>=0?'profit':'loss'}">${pnl===null?'—':(pnl>=0?'+':'')+fmt(pnl)+(pnlPct?` <span style="font-size:11px;font-family:monospace;">(${pnlPct}%)</span>`:'')}</div>
       </div>
-      <div class="pc-refresh-line">${card.lastRefreshed?'↻ '+new Date(card.lastRefreshed).toLocaleDateString('en-US',{month:'short',day:'numeric'}):'Not refreshed yet'}</div>
+      <div class="pc-refresh">${card.lastRefreshed?'↻ '+new Date(card.lastRefreshed).toLocaleDateString('en-US',{month:'short',day:'numeric'}):'Not refreshed yet'}</div>
       <div class="pc-actions">
         <button class="pc-action comp" onclick="searchCardComp('${esc(card.name)}','${esc(card.game)}')">🔍 COMPS</button>
         <button class="pc-action" onclick="refreshCardValue('${card.id}')">↻ REFRESH</button>
@@ -2570,7 +2383,7 @@ function removePortfolioCard(cardId) {
 
 // ─── JUMP TO COMPS ────────────────────────────────────
 function searchCardComp(name, game) {
-  switchPage('comps');
+  switchPage('search');
   document.getElementById('searchInput').value = name;
   // selectedGame set via chip — reset chips to All
   selectGame(document.querySelector('.game-chip[data-game=""]'));
@@ -2579,7 +2392,7 @@ function searchCardComp(name, game) {
 
 // ─── WELCOME + FEEDBACK ──────────────────────────────
 function dismissWelcome() {
-  localStorage.setItem('cc_welcomed', '1');
+  sessionStorage.setItem('cc_welcomed', '1');
   document.getElementById('welcomeModal').classList.add('hidden');
 }
 function openFeedbackModal() {
@@ -2681,13 +2494,18 @@ function toggleCurrency() {
   const code = CURRENCY_INFO[sellerCountry]?.code || 'USD';
   if (code === 'USD') return; // no toggle needed for US
   if (showingLocalCurrency) {
-    fetchFxRate().then(() => { if (currentCard) renderDetail(currentCard); renderPortfolio(); });
+    fetchFxRate().then(() => {
+      if (currentCard) renderDetail(currentCard);
+      renderPortfolio();
+      renderPricerItems();
+    });
   } else {
     fxRate = 1.0;
     currencySymbol = 'US$';
     updateCurrencyBtn();
     if (currentCard) renderDetail(currentCard);
     renderPortfolio();
+    renderPricerItems();
   }
 }
 
@@ -2913,6 +2731,15 @@ function showPricerSelected(card) {
   if (psi) psi.value = card.name;
 }
 
+
+function clearPricerSelected() {
+  pricerSelectedCard = null;
+  document.getElementById('pricerSelected').classList.remove('visible');
+  document.getElementById('pricerSelPrice').textContent = '—';
+  document.getElementById('pricerSelQty').value = '1';
+  document.getElementById('pricerSelType').value = 'raw';
+  onPricerTypeChange();
+}
 function onPricerTypeChange() {
   const isGraded = document.getElementById('pricerSelType').value === 'graded';
   document.getElementById('pricerCondWrap').classList.toggle('hidden', isGraded);
@@ -3340,12 +3167,19 @@ function resetRoiVerdict() {
 }
 
 function calcRoiModal() {
-  const rawCost = parseFloat(document.getElementById('roiModalCost').value) || 0;
+  const fx = fxRate || 1; // current display currency rate vs USD
+  // User types in display currency (e.g. CA$) — convert to USD for math
+  const rawCostDisplay = parseFloat(document.getElementById('roiModalCost').value) || 0;
+  const salePriceDisplay = parseFloat(document.getElementById('roiModalSale').value) || 0;
+  const shippingDisplay = parseFloat(document.getElementById('roiModalShipping').value) || 0;
   const graderKey = document.getElementById('roiModalGrader').value;
-  const gradingFee = GRADING_FEES[graderKey] || 32.99;
-  const shipping = parseFloat(document.getElementById('roiModalShipping').value) || 0;
-  const salePrice = parseFloat(document.getElementById('roiModalSale').value) || 0;
   const promoRate = parseFloat(document.getElementById('roiModalPromo').value) || 0;
+
+  // Convert inputs to USD for internal math
+  const rawCost = rawCostDisplay / fx;
+  const salePrice = salePriceDisplay / fx;
+  const shipping = shippingDisplay / fx;
+  const gradingFee = GRADING_FEES[graderKey] || 32.99; // grading fees are always USD
 
   if (!salePrice) { resetRoiVerdict(); return; }
 
@@ -3453,201 +3287,5 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 </script>
-
-<!-- ══ PRINT SHEET ══ -->
-<div id="printSheet"></div>
-
-
-<!-- ══ PRICER SEARCH MODAL ══ -->
-<div class="psm-overlay hidden" id="psmOverlay">
-  <!-- Header with search -->
-  <div class="psm-header">
-    <div class="psm-title">Find Card</div>
-    <input class="psm-search-input" type="text" id="psmInput"
-      placeholder="Card name... (press Enter or click Search)"
-      autocomplete="off"
-      onkeydown="if(event.key==='Enter')runPsmSearch()"
-      oninput="onPsmInput(this.value)">
-    <button class="psm-search-btn" id="psmSearchBtn" onclick="runPsmSearch()">SEARCH</button>
-    <button class="psm-close" onclick="closePsm()" title="Close">✕</button>
-  </div>
-
-  <!-- Filters -->
-  <div class="psm-filters">
-    <div class="psm-game-chips" id="psmGameChips">
-      <button class="psm-chip active" data-game="" onclick="selectPsmGame(this)">All</button>
-      <button class="psm-chip" data-game="pokemon" onclick="selectPsmGame(this)">Pokémon</button>
-      <button class="psm-chip" data-game="pokemon-japan" onclick="selectPsmGame(this)">JP Pokémon</button>
-      <button class="psm-chip" data-game="mtg" onclick="selectPsmGame(this)">MTG</button>
-      <button class="psm-chip" data-game="yugioh" onclick="selectPsmGame(this)">Yu-Gi-Oh!</button>
-      <button class="psm-chip" data-game="onepiece" onclick="selectPsmGame(this)">One Piece</button>
-      <button class="psm-chip" data-game="lorcana" onclick="selectPsmGame(this)">Lorcana</button>
-    </div>
-    <div class="psm-filter-row">
-      <div class="psm-filter-field">
-        <div class="psm-filter-label">Set Name (optional)</div>
-        <input class="psm-filter-input" type="text" id="psmSetFilter" placeholder="e.g. Base Set, Shadowless" style="width:180px;">
-      </div>
-      <div class="psm-filter-field">
-        <div class="psm-filter-label">Card Number (optional)</div>
-        <input class="psm-filter-input" type="text" id="psmNumberFilter" placeholder="e.g. 059/102" style="width:130px;">
-      </div>
-      <div class="psm-filter-field">
-        <div class="psm-filter-label">Rarity (optional)</div>
-        <input class="psm-filter-input" type="text" id="psmRarityFilter" placeholder="e.g. Holo Rare" style="width:130px;">
-      </div>
-    </div>
-  </div>
-
-  <!-- Results -->
-  <div class="psm-results" id="psmResults">
-    <div class="psm-empty">Enter a card name above and hit Search</div>
-  </div>
-</div>
-
-<!-- ══ COLLECTION PRICER PAGE ══ -->
-<div class="page" id="pagePricer">
-  <div class="pricer-wrap">
-
-    <!-- Offer summary bar -->
-    <div class="offer-bar">
-      <div class="offer-bar-item">
-        <div class="offer-bar-label">Market Value</div>
-        <div class="offer-bar-val market" id="pricerTotalMarket">CA$0.00</div>
-      </div>
-      <div class="offer-bar-item">
-        <div class="offer-bar-label">Your Offer</div>
-        <div class="offer-bar-val offer" id="pricerTotalOffer">CA$0.00</div>
-      </div>
-      <div class="offer-bar-item">
-        <div class="offer-bar-label">Cards</div>
-        <div class="offer-bar-val count" id="pricerCardCount">0</div>
-      </div>
-    </div>
-
-    <!-- Offer % slider -->
-    <div class="offer-slider-section">
-      <div class="offer-slider-head">
-        <div class="offer-slider-title">Offer Percentage</div>
-        <div class="offer-pct-display"><span id="offerPctDisplay">70</span>%</div>
-      </div>
-      <input class="offer-slider" type="range" id="offerSlider" min="30" max="90" step="5" value="70" oninput="onOfferSliderChange(this.value)">
-      <div class="offer-presets">
-        <button class="offer-preset" onclick="setOfferPct(50)">50%</button>
-        <button class="offer-preset" onclick="setOfferPct(60)">60%</button>
-        <button class="offer-preset active" onclick="setOfferPct(70)">70%</button>
-        <button class="offer-preset" onclick="setOfferPct(75)">75%</button>
-        <button class="offer-preset" onclick="setOfferPct(80)">80%</button>
-      </div>
-    </div>
-
-    <!-- Add card -->
-    <div class="pricer-add-section">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
-        <div>
-          <div class="pricer-add-title">Add a Card</div>
-          <div style="font-size:11px;color:var(--muted);margin-top:2px;">Search by name, set, or number — including 1st edition, shadowless, variants</div>
-        </div>
-        <button class="pricer-search-btn" onclick="openPsm()" style="display:flex;align-items:center;gap:7px;font-size:15px;">
-          🔍 SEARCH CARDS
-        </button>
-      </div>
-
-      <!-- Selected card quick-add row -->
-      <div class="pricer-selected" id="pricerSelected">
-        <div id="pricerSelImg"></div>
-        <div class="pricer-sel-info">
-          <div class="pricer-sel-name" id="pricerSelName">—</div>
-          <div class="pricer-sel-meta" id="pricerSelMeta">—</div>
-        </div>
-        <div class="pricer-sel-controls">
-          <div class="pricer-sel-field">
-            <div class="pricer-sel-label">Type</div>
-            <select class="pricer-sel-select" id="pricerSelType" onchange="onPricerTypeChange()">
-              <option value="raw">Raw</option>
-              <option value="graded">Graded</option>
-            </select>
-          </div>
-          <div class="pricer-sel-field" id="pricerCondWrap">
-            <div class="pricer-sel-label">Condition</div>
-            <select class="pricer-sel-select" id="pricerSelCond" onchange="updatePricerSelPrice()">
-              <option value="near_mint">Near Mint</option>
-              <option value="lightly_played">Lightly Played</option>
-              <option value="moderately_played">Moderately Played</option>
-              <option value="heavily_played">Heavily Played</option>
-              <option value="damaged">Damaged</option>
-            </select>
-          </div>
-          <div class="pricer-sel-field hidden" id="pricerGradeWrap">
-            <div class="pricer-sel-label">Grade</div>
-            <select class="pricer-sel-select" id="pricerSelGrade" onchange="updatePricerSelPrice()">
-              <option value="psa_10">PSA 10</option>
-              <option value="psa_9">PSA 9</option>
-              <option value="psa_8">PSA 8</option>
-              <option value="psa_7">PSA 7</option>
-              <option value="bgs_10">BGS 10</option>
-              <option value="bgs_9.5">BGS 9.5</option>
-              <option value="bgs_9">BGS 9</option>
-              <option value="cgc_10">CGC 10</option>
-              <option value="cgc_9.5">CGC 9.5</option>
-              <option value="cgc_9">CGC 9</option>
-            </select>
-          </div>
-          <div class="pricer-sel-field">
-            <div class="pricer-sel-label">Qty</div>
-            <input class="pricer-sel-input" type="number" id="pricerSelQty" value="1" min="1" style="width:56px;" oninput="updatePricerSelPrice()">
-          </div>
-          <div class="pricer-sel-price" id="pricerSelPrice">—</div>
-          <button class="pricer-add-btn" onclick="addPricerCard()">+ ADD</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Bulk cards section -->
-    <div class="bulk-section">
-      <div class="bulk-title">Bulk / Commons</div>
-      <div class="bulk-sub">Add a flat-rate count for common cards, bulk lots, or unsorted cards.</div>
-      <div class="bulk-row">
-        <div class="bulk-field">
-          <label>Card Count</label>
-          <input class="bulk-input" type="number" id="bulkCount" placeholder="e.g. 500" min="0">
-        </div>
-        <div class="bulk-field">
-          <label>Price Per Card ($)</label>
-          <input class="bulk-input" type="number" id="bulkPriceEach" placeholder="e.g. 0.10" min="0" step="0.01">
-        </div>
-        <div class="bulk-field">
-          <label>Label</label>
-          <input class="bulk-input" type="text" id="bulkLabel" placeholder="e.g. Commons" style="font-family:'Instrument Sans',sans-serif;">
-        </div>
-        <button class="bulk-add-btn" onclick="addBulkLine()">+ ADD</button>
-        <div class="bulk-total" id="bulkPreviewTotal"></div>
-      </div>
-    </div>
-
-    <!-- Action buttons -->
-    <div class="pricer-actions">
-      <button class="pricer-action-btn primary" onclick="printOffer()">🖨️ PRINT / SAVE PDF</button>
-      <button class="pricer-action-btn" onclick="copyOfferText()">📋 COPY OFFER</button>
-      <button class="pricer-action-btn" onclick="clearPricerSession()">🗑️ CLEAR SESSION</button>
-    </div>
-
-    <!-- Items list -->
-    <div class="pricer-items-section">
-      <div class="pricer-items-head">
-        <div class="pricer-items-title">Collection Items</div>
-        <div style="display:flex;align-items:center;gap:8px;">
-          <div id="pricerItemCount" style="font-family:'Instrument Mono',monospace;font-size:10px;color:var(--muted);">0 items</div>
-        </div>
-      </div>
-      <div id="pricerItemsList">
-        <div class="pricer-empty">No cards added yet — search above to start pricing a collection.</div>
-      </div>
-    </div>
-
-  </div>
-</div>
-
-<script src="https://unpkg.com/@formspree/ajax@1" defer></script>
 </body>
 </html>
