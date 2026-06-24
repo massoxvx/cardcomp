@@ -560,16 +560,24 @@ header{position:sticky;top:0;z-index:200;background:rgba(8,11,15,0.95);backdrop-
 .psm-empty{text-align:center;padding:40px 20px;font-size:13px;color:var(--muted);line-height:1.7;}
 
 /* ━━━ SHOW MODE ━━━ */
+.show-mode-banner{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--s1);border:1px solid var(--b2);border-radius:12px;padding:12px 16px;margin-bottom:14px;}
+.smb-left{display:flex;align-items:center;gap:11px;}
+.smb-icon{font-size:22px;flex-shrink:0;}
+.smb-title{font-family:var(--display);font-size:14px;letter-spacing:1.5px;margin-bottom:1px;}
+.smb-sub{font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:0.5px;}
+.smb-btn{font-family:var(--display);font-size:13px;letter-spacing:1.5px;padding:9px 18px;border-radius:8px;border:1px solid var(--b2);background:var(--s2);color:var(--text);cursor:pointer;transition:all 0.15s;white-space:nowrap;flex-shrink:0;}
+.smb-btn:hover{border-color:var(--orange);color:var(--orange);}
+body.show-mode .show-mode-banner{background:rgba(255,107,53,0.06);border-color:rgba(255,107,53,0.35);}
+body.show-mode .smb-btn{background:var(--orange);color:#fff;border-color:var(--orange);}
+body.show-mode .smb-sub::after{content:' — ACTIVE';}
 body.show-mode .ob-val{font-size:36px;}
 body.show-mode .pricer-item-market,body.show-mode .pricer-item-offer{font-size:22px;}
 body.show-mode .pricer-item-name{font-size:15px;}
-body.show-mode .pricerTotalOffer-wrap{font-size:36px;}
 body.show-mode #offerSlider{height:8px;}
 body.show-mode #offerSlider::-webkit-slider-thumb{width:28px;height:28px;}
 body.show-mode .offer-preset{font-size:14px;padding:9px 18px;}
 body.show-mode .psm-card-name{font-size:14px;}
 body.show-mode .psm-card-price{font-size:19px;}
-body.show-mode #showModeBtn{border-color:var(--orange);color:var(--orange);background:rgba(255,107,53,0.08);}
 .show-mode-toast{position:fixed;bottom:calc(var(--bnav) + 16px);left:50%;transform:translateX(-50%);background:var(--orange);color:#fff;font-family:var(--mono);font-size:11px;letter-spacing:2px;padding:9px 18px;border-radius:20px;z-index:9999;opacity:0;transition:opacity 0.3s;pointer-events:none;white-space:nowrap;}
 .show-mode-toast.visible{opacity:1;}
 /* Stale price badge */
@@ -612,7 +620,6 @@ body.show-mode #showModeBtn{border-color:var(--orange);color:var(--orange);backg
       <span id="countryFlag">🇨🇦</span>
       <span id="countryLabel">Canada · ON</span>
     </button>
-    <button class="hdr-btn" id="showModeBtn" onclick="toggleShowMode()" title="Card Show Mode — keeps screen on and enlarges text">🏪 SHOW</button>
     <button class="hdr-btn orange" onclick="openFeedbackModal()">💬</button>
     <button class="hdr-btn" id="apiBtnEl" style="cursor:default;">
       <span class="status-dot live" id="statusDot"></span>
@@ -1012,6 +1019,17 @@ body.show-mode #showModeBtn{border-color:var(--orange);color:var(--orange);backg
 <!-- ══ PAGE: PRICER ══ -->
 <div class="page" id="pagePricer">
   <div class="wrap">
+    <!-- Show Mode Banner -->
+    <div id="showModeBanner" class="show-mode-banner">
+      <div class="smb-left">
+        <span class="smb-icon">🏪</span>
+        <div>
+          <div class="smb-title">Card Show Mode</div>
+          <div class="smb-sub">Bigger numbers · Screen stays on · Perfect for the table</div>
+        </div>
+      </div>
+      <button class="smb-btn" id="showModeBtn" onclick="toggleShowMode()">ENABLE</button>
+    </div>
     <div class="offer-bar">
       <div class="ob-item"><div class="ob-label">Market Value</div><div class="ob-val market" id="pricerTotalMarket">$0.00</div></div>
       <div class="ob-item"><div class="ob-label">Your Offer</div><div class="ob-val offer" id="pricerTotalOffer">$0.00</div></div>
@@ -2799,8 +2817,8 @@ function showPricerSelected(card) {
   // Image
   const imgWrap = document.getElementById('pricerSelImg');
   imgWrap.innerHTML = card.image_url
-    ? `<img class="pricer-sel-img" src="${esc(card.image_url)}" onerror="this.outerHTML='<div class=pricer-sel-ph>🃏</div>'">`
-    : `<div class="pricer-sel-ph">🃏</div>`;
+    ? `<img class="psel-img" src="${esc(card.image_url)}" onerror="this.outerHTML='<div class=psel-img-ph>🃏</div>'">`
+    : `<div class="psel-img-ph">🃏</div>`;
   document.getElementById('pricerSelName').textContent = card.name;
   document.getElementById('pricerSelMeta').textContent =
     `${card.set?.name || ''} · ${card.game?.name || ''}${card.number ? ' · #' + card.number : ''}`;
@@ -2904,14 +2922,6 @@ function addPricerCard() {
 }
 
 // ── Bulk section ──────────────────────────────────
-document.addEventListener('input', (e) => {
-  if (e.target.id === 'bulkCount' || e.target.id === 'bulkPriceEach') {
-    const count = parseInt(document.getElementById('bulkCount').value) || 0;
-    const each = parseFloat(document.getElementById('bulkPriceEach').value) || 0;
-    const total = count * each;
-    document.getElementById('bulkPreviewTotal').textContent = total > 0 ? `= ${fmt(total)}` : '';
-  }
-});
 
 function addBulkLine() {
   const count = parseInt(document.getElementById('bulkCount').value) || 0;
@@ -3412,16 +3422,16 @@ async function toggleShowMode() {
   showModeActive = !showModeActive;
   document.body.classList.toggle('show-mode', showModeActive);
 
+  const btn = document.getElementById('showModeBtn');
+  if (btn) btn.textContent = showModeActive ? 'DISABLE' : 'ENABLE';
+
   if (showModeActive) {
-    // Keep screen on using Wake Lock API (supported on Chrome/Android/iOS 16.4+)
     try {
       if ('wakeLock' in navigator) {
         wakeLock = await navigator.wakeLock.request('screen');
       }
-    } catch(e) { /* silently fail on unsupported browsers */ }
-    // Switch to pricer tab — most useful at a show
-    switchPage('pricer');
-    showToast('🏪 SHOW MODE ON — Screen will stay awake');
+    } catch(e) {}
+    showToast('🏪 Show Mode on — screen will stay awake');
   } else {
     if (wakeLock) { wakeLock.release(); wakeLock = null; }
     showToast('Show Mode off');
