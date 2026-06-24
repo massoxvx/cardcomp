@@ -1547,7 +1547,7 @@ function saveApiKey() {
   refreshApiStatus(); closeApiModal();
 }
 document.getElementById('countryModal').addEventListener('click', e => { if(e.target===document.getElementById('countryModal')) closeCountryModal(); });
-document.getElementById('apiModal').addEventListener('click', e => { if(e.target===document.getElementById('apiModal')) closeApiModal(); });
+document.getElementById('apiModal')?.addEventListener('click', e => { if(e.target===document.getElementById('apiModal')) closeApiModal(); });
 
 // ─── SEARCH ──────────────────────────────────────────
 async function doSearch() {
