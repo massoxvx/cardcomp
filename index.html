@@ -544,6 +544,36 @@ header{position:sticky;top:0;z-index:200;background:rgba(8,11,15,0.95);backdrop-
 .psm-pg-btn:hover:not(:disabled){border-color:var(--orange);color:var(--orange);}
 .psm-pg-btn:disabled{opacity:0.3;cursor:not-allowed;}
 .psm-pg-btn.active{background:rgba(255,107,53,0.1);border-color:var(--orange);color:var(--orange);}
+/* Fix: psm-page-btn alias (used in renderPsmResults JS) */
+.psm-page-btn{font-family:var(--mono);font-size:10px;letter-spacing:1px;padding:7px 13px;border-radius:7px;border:1px solid var(--b2);background:var(--s1);color:var(--muted);cursor:pointer;transition:all 0.15s;}
+.psm-page-btn:hover:not([disabled]){border-color:var(--orange);color:var(--orange);}
+.psm-page-btn[disabled]{opacity:0.3;cursor:not-allowed;}
+.psm-page-btn.active{background:rgba(255,107,53,0.1);border-color:var(--orange);color:var(--orange);}
+.psm-page-info{font-family:var(--mono);font-size:9px;color:var(--muted);padding:0 3px;}
+/* Fix: psm-card-img-wrap / psm-card-img / psm-card-img-ph (JS uses these, CSS had psm-img-wrap etc.) */
+.psm-card-img-wrap{position:relative;padding-bottom:140%;background:var(--s2);}
+.psm-card-img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;padding:4px;}
+.psm-card-img-ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:28px;opacity:0.15;}
+/* Fix: psm-loader for search loading state */
+.psm-loader{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:56px 20px;gap:10px;}
+/* Fix: psm-empty for no-results state */
+.psm-empty{text-align:center;padding:40px 20px;font-size:13px;color:var(--muted);line-height:1.7;}
+
+/* ━━━ SHOW MODE ━━━ */
+body.show-mode .ob-val{font-size:36px;}
+body.show-mode .pricer-item-market,body.show-mode .pricer-item-offer{font-size:22px;}
+body.show-mode .pricer-item-name{font-size:15px;}
+body.show-mode .pricerTotalOffer-wrap{font-size:36px;}
+body.show-mode #offerSlider{height:8px;}
+body.show-mode #offerSlider::-webkit-slider-thumb{width:28px;height:28px;}
+body.show-mode .offer-preset{font-size:14px;padding:9px 18px;}
+body.show-mode .psm-card-name{font-size:14px;}
+body.show-mode .psm-card-price{font-size:19px;}
+body.show-mode #showModeBtn{border-color:var(--orange);color:var(--orange);background:rgba(255,107,53,0.08);}
+.show-mode-toast{position:fixed;bottom:calc(var(--bnav) + 16px);left:50%;transform:translateX(-50%);background:var(--orange);color:#fff;font-family:var(--mono);font-size:11px;letter-spacing:2px;padding:9px 18px;border-radius:20px;z-index:9999;opacity:0;transition:opacity 0.3s;pointer-events:none;white-space:nowrap;}
+.show-mode-toast.visible{opacity:1;}
+/* Stale price badge */
+.stale-badge{display:inline-block;font-family:var(--mono);font-size:7px;letter-spacing:1px;padding:1px 5px;border-radius:3px;background:rgba(255,215,0,0.1);border:1px solid rgba(255,215,0,0.25);color:var(--gold);margin-left:4px;vertical-align:middle;}
 
 /* Print styles */
 @media print{body>*:not(#printSheet){display:none!important;}#printSheet{display:block!important;position:fixed;inset:0;background:#fff;color:#000;z-index:99999;padding:32px;font-family:'Helvetica Neue',Arial,sans-serif;}}
@@ -582,6 +612,7 @@ header{position:sticky;top:0;z-index:200;background:rgba(8,11,15,0.95);backdrop-
       <span id="countryFlag">🇨🇦</span>
       <span id="countryLabel">Canada · ON</span>
     </button>
+    <button class="hdr-btn" id="showModeBtn" onclick="toggleShowMode()" title="Card Show Mode — keeps screen on and enlarges text">🏪 SHOW</button>
     <button class="hdr-btn orange" onclick="openFeedbackModal()">💬</button>
     <button class="hdr-btn" id="apiBtnEl" style="cursor:default;">
       <span class="status-dot live" id="statusDot"></span>
@@ -1047,16 +1078,48 @@ header{position:sticky;top:0;z-index:200;background:rgba(8,11,15,0.95);backdrop-
       <div class="bulk-title">Bulk / Commons</div>
       <div class="bulk-sub">Add a flat-rate count for commons, bulk lots, or unsorted cards.</div>
       <div class="bulk-row">
-        <div class="bulk-field"><label>Count</label><input class="bulk-input" type="number" id="bulkCount" placeholder="e.g. 500" min="0"></div>
-        <div class="bulk-field"><label>Price Each ($)</label><input class="bulk-input" type="number" id="bulkPriceEach" placeholder="e.g. 0.10" min="0" step="0.01"></div>
+        <div class="bulk-field"><label>Count</label><input class="bulk-input" type="number" id="bulkCount" placeholder="e.g. 500" min="0" oninput="updateBulkPreview()"></div>
+        <div class="bulk-field"><label>Price Each ($)</label><input class="bulk-input" type="number" id="bulkPriceEach" placeholder="e.g. 0.10" min="0" step="0.01" oninput="updateBulkPreview()"></div>
+        <div class="bulk-field"><label>Target Margin %</label><input class="bulk-input" type="number" id="bulkMargin" placeholder="e.g. 40" min="1" max="99" step="1" oninput="updateBulkPreview()" title="Your target buy margin — max offer = market × (1 - margin%)"></div>
         <div class="bulk-field"><label>Label</label><input class="bulk-input" type="text" id="bulkLabel" placeholder="e.g. Commons" style="font-family:var(--font);"></div>
         <button class="bulk-add-btn" onclick="addBulkLine()">+ ADD</button>
         <div class="bulk-total" id="bulkPreviewTotal"></div>
       </div>
+      <div id="bulkMarginHint" style="font-family:var(--mono);font-size:10px;color:var(--gold);margin-top:8px;display:none;"></div>
+    </div>
+    <!-- Sports Card Manual Entry -->
+    <div class="bulk-card" id="sportsEntryCard">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:3px;">
+        <div class="bulk-title">Sports / Manual Entry</div>
+        <span style="font-family:var(--mono);font-size:8px;letter-spacing:1px;color:var(--muted);background:var(--s2);border:1px solid var(--b2);padding:2px 7px;border-radius:3px;">NO API NEEDED</span>
+      </div>
+      <div class="bulk-sub">Add sports cards or any card not in the TCG database. Enter your own price from eBay comps.</div>
+      <div class="bulk-row" style="flex-wrap:wrap;">
+        <div class="bulk-field" style="flex:2;min-width:140px;"><label>Card Name</label><input class="bulk-input" type="text" id="manualCardName" placeholder="e.g. Patrick Mahomes 2020 Prizm" style="font-family:var(--font);"></div>
+        <div class="bulk-field" style="min-width:100px;"><label>Set / Year</label><input class="bulk-input" type="text" id="manualCardSet" placeholder="e.g. Panini" style="font-family:var(--font);"></div>
+        <div class="bulk-field" style="min-width:90px;"><label>Condition</label>
+          <select class="bulk-input" id="manualCardCond" style="font-family:var(--font);">
+            <option value="Near Mint">Near Mint</option>
+            <option value="Lightly Played">Lightly Played</option>
+            <option value="Moderately Played">Mod. Played</option>
+            <option value="Heavily Played">Heavily Played</option>
+            <option value="Raw">Raw (ungraded)</option>
+            <option value="PSA 10">PSA 10</option>
+            <option value="PSA 9">PSA 9</option>
+            <option value="PSA 8">PSA 8</option>
+            <option value="BGS 9.5">BGS 9.5</option>
+            <option value="BGS 9">BGS 9</option>
+          </select>
+        </div>
+        <div class="bulk-field" style="min-width:70px;"><label>Price ($)</label><input class="bulk-input" type="number" id="manualCardPrice" placeholder="0.00" min="0" step="0.01"></div>
+        <div class="bulk-field" style="min-width:55px;"><label>Qty</label><input class="bulk-input" type="number" id="manualCardQty" placeholder="1" min="1" value="1"></div>
+        <button class="bulk-add-btn" onclick="addManualCard()" style="align-self:flex-end;">+ ADD</button>
+      </div>
     </div>
     <div class="pricer-actions">
       <button class="p-action-btn primary" onclick="printOffer()">🖨️ PRINT / SAVE PDF</button>
-      <button class="p-action-btn" onclick="copyOfferText()">📋 COPY OFFER</button>
+      <button class="p-action-btn" onclick="shareOfferText()">📤 SHARE</button>
+      <button class="p-action-btn" onclick="copyOfferText()">📋 COPY</button>
       <button class="p-action-btn" onclick="clearPricerSession()">🗑️ CLEAR</button>
     </div>
     <div class="pricer-items">
@@ -1557,9 +1620,28 @@ function goToPage(page) {
 async function loadCard(id) {
   show('searchSection',false); setLoading(true); hideError();
   try {
-    const res = await fetch(`${WORKER_URL}/v1/cards/${id}`);
-    if (!res.ok) throw new Error(`Could not load card (${res.status})`);
-    currentCard = await res.json();
+    let card = null;
+    let fromCache = false;
+    let cacheAge = 0;
+    try {
+      const res = await fetch(`${WORKER_URL}/v1/cards/${id}`);
+      if (!res.ok) throw new Error(`API ${res.status}`);
+      card = await res.json();
+      cacheCardPrice(id, card); // save to offline cache
+    } catch(fetchErr) {
+      // Offline or API error — try the local cache
+      const cached = getCachedCard(id);
+      if (cached) {
+        card = cached.data;
+        fromCache = true;
+        cacheAge = cached.age;
+      } else {
+        throw new Error('Could not load card and no cached data available. Check your connection.');
+      }
+    }
+    currentCard = card;
+    currentCard._fromCache = fromCache;
+    currentCard._cacheAge = cacheAge;
     historyCache = {};
     history.pushState({ view: 'detail', cardId: id, cardName: currentCard.name }, '', `#card`);
     renderDetail(currentCard);
@@ -1612,7 +1694,7 @@ function renderHeader(card) {
         ${ebayPrice?`<div class="cpr"><div class="cpr-label">eBay 7D</div><div class="cpr-val purple">${fmt(ebayPrice)}</div></div>`:''}
         ${psa10?`<div class="cpr"><div class="cpr-label">PSA 10</div><div class="cpr-val green">${fmt(psa10)}</div></div>`:''}
       </div>
-      ${updated?`<div class="updated-line"><span class="live-dot"></span>Updated ${updated}</div>`:''}
+      ${updated?`<div class="updated-line"><span class="live-dot"></span>Updated ${updated}${card._fromCache?`<span class="stale-badge">CACHED · ${formatAge(card._cacheAge)}</span>`:''}</div>`:''}
       <button class="roi-trigger" onclick="openRoiModal()">🧮 GRADE ROI CALCULATOR</button>
     </div>`;
 }
@@ -1911,14 +1993,14 @@ function copySnap() {
 }
 
 // ─── UTILS ───────────────────────────────────────────
-function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function fmt(v) {
-  if(!v && v!==0) return '—';
+  if (!v && v !== 0) return '—';
   const converted = v * (fxRate || 1);
   const sym = currencySymbol || 'US$';
-  return sym + converted.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  const abs = Math.abs(converted).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return converted < 0 ? `-${sym}${abs}` : `${sym}${abs}`;
 }
-function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function show(id,v) { document.getElementById(id)?.classList.toggle('hidden',!v); }
 function setLoading(v) { show('loadingState',v); const sb=document.getElementById('searchBtn'); if(sb) sb.disabled=v; }
 function showError(msg) { const el=document.getElementById('errorBox'); document.getElementById('errorMsg').textContent=msg; el.classList.remove('hidden'); }
@@ -2030,8 +2112,8 @@ function quickAddToPortfolio() {
     }, 2500);
   }
 
-  // Switch to portfolio so user can see it immediately
-  switchPage('portfolio');
+  // Switch to collection so user can see it immediately
+  switchPage('collection');
 }
 
 function mapGame(gameName) {
@@ -2167,7 +2249,7 @@ function savePortfolioCard() {
     }, 2500);
   }
 
-  switchPage('portfolio');
+  switchPage('collection');
   if (card.apiId) {
     refreshCardValue(card.id);
   }
@@ -2355,7 +2437,6 @@ async function refreshCardValue(cardId) {
     card.afterFeeValue = afterFeeValue;
     card.lastRefreshed = new Date().toISOString();
     if (detail.image_url) card.image = detail.image_url;
-    if (topResult.id) card.apiId = topResult.id;
 
     savePortfolioData(portfolio);
     renderPortfolio();
@@ -2428,7 +2509,7 @@ async function submitFeedback() {
         message: text,
         feedback_type: type,
         email: email || 'not provided',
-        app_version: 'CardComp Beta v5',
+        app_version: 'CardComp v7',
         country: sellerCountry + (sellerProvince ? ' · ' + sellerProvince : ''),
         submitted_at: new Date().toISOString(),
       })
@@ -2577,7 +2658,9 @@ function closePsm() {
   document.getElementById('psmOverlay').classList.add('hidden');
 }
 document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') closePsm();
+  if (e.key === 'Escape') {
+    if (!document.getElementById('psmOverlay').classList.contains('hidden')) { closePsm(); return; }
+  }
 });
 function selectPsmGame(el) {
   document.querySelectorAll('.psm-chip').forEach(c => c.classList.remove('active'));
@@ -3048,7 +3131,82 @@ Prices from TCGPlayer/eBay via CardComp`;
   });
 }
 
-// Pricer search now uses modal — no outside click handler needed
+// ── Bulk margin preview ───────────────────────────
+function updateBulkPreview() {
+  const count = parseInt(document.getElementById('bulkCount').value) || 0;
+  const price = parseFloat(document.getElementById('bulkPriceEach').value) || 0;
+  const margin = parseFloat(document.getElementById('bulkMargin').value);
+  const totalMarket = count * price;
+  const hint = document.getElementById('bulkMarginHint');
+  const tot = document.getElementById('bulkPreviewTotal');
+  if (totalMarket > 0) {
+    tot.textContent = `Market: ${fmt(totalMarket)}`;
+  } else {
+    tot.textContent = '';
+  }
+  if (totalMarket > 0 && margin > 0 && margin < 100) {
+    const maxOffer = totalMarket * (1 - margin / 100);
+    hint.textContent = `At ${margin}% margin → max offer: ${fmt(maxOffer)} (${fmt(maxOffer / count)} per card)`;
+    hint.style.display = 'block';
+  } else {
+    hint.style.display = 'none';
+  }
+}
+
+// ── Manual sports/other card entry ───────────────
+function addManualCard() {
+  const name = document.getElementById('manualCardName').value.trim();
+  const set = document.getElementById('manualCardSet').value.trim();
+  const cond = document.getElementById('manualCardCond').value;
+  const price = parseFloat(document.getElementById('manualCardPrice').value) || 0;
+  const qty = parseInt(document.getElementById('manualCardQty').value) || 1;
+  if (!name) { document.getElementById('manualCardName').focus(); return; }
+  if (!price) { document.getElementById('manualCardPrice').focus(); return; }
+
+  const session = loadPricerSession();
+  session.push({
+    id: 'manual_' + Date.now(),
+    name,
+    set: set || '—',
+    number: '',
+    condLabel: cond,
+    type: 'manual',
+    unitPrice: price,
+    totalPrice: price * qty,
+    qty,
+    image: null,
+    source: '🔍 manual',
+  });
+  savePricerSession(session);
+  renderPricerItems();
+  // Clear fields
+  document.getElementById('manualCardName').value = '';
+  document.getElementById('manualCardSet').value = '';
+  document.getElementById('manualCardPrice').value = '';
+  document.getElementById('manualCardQty').value = '1';
+  showToast('✓ Card added to session');
+}
+
+// ── Share offer as text (Web Share API → clipboard fallback) ──
+function shareOfferText() {
+  const session = loadPricerSession();
+  if (!session.length) { alert('Add some cards first.'); return; }
+  const totalMarket = session.reduce((s, i) => s + (i.totalPrice || 0), 0);
+  const totalOffer = totalMarket * (offerPct / 100);
+  const date = new Date().toLocaleDateString('en-CA');
+  const lines = session.map(i => {
+    const offerAmt = (i.totalPrice||0) * (offerPct/100);
+    return `${i.name}${i.set?' ('+i.set+')':''} · ${i.condLabel} ×${i.qty} · Market: ${fmt(i.totalPrice)} · Offer: ${fmt(offerAmt)}`;
+  });
+  const text = `CARDCOMP — Collection Offer (${date})\n${'─'.repeat(44)}\n${lines.join('\n')}\n${'─'.repeat(44)}\nTotal Market: ${fmt(totalMarket)}\nMy Offer (${offerPct}%): ${fmt(totalOffer)}\n\nPrices from TCGPlayer/eBay via CardComp`;
+
+  if (navigator.share) {
+    navigator.share({ title: 'CardComp Offer', text }).catch(() => {});
+  } else {
+    navigator.clipboard.writeText(text).then(() => showToast('📋 Copied to clipboard!'));
+  }
+}
+
 
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -3105,7 +3263,9 @@ function closeRoiModal() {
   document.getElementById('roiModalOverlay').classList.add('hidden');
 }
 document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') closeRoiModal();
+  if (e.key === 'Escape') {
+    if (!document.getElementById('roiModalOverlay').classList.contains('hidden')) { closeRoiModal(); return; }
+  }
 });
 document.getElementById('roiModalOverlay').addEventListener('click', (e) => {
   if (e.target === document.getElementById('roiModalOverlay')) closeRoiModal();
@@ -3242,6 +3402,89 @@ function calcRoiModal() {
     <div class="fee-row total"><span class="fee-row-label">Net Profit</span><span class="fee-row-val">${fmt(netProfit)}</span></div>`;
 }
 
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// SHOW MODE — Card show/convention display optimizations
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+let showModeActive = false;
+let wakeLock = null;
+
+async function toggleShowMode() {
+  showModeActive = !showModeActive;
+  document.body.classList.toggle('show-mode', showModeActive);
+
+  if (showModeActive) {
+    // Keep screen on using Wake Lock API (supported on Chrome/Android/iOS 16.4+)
+    try {
+      if ('wakeLock' in navigator) {
+        wakeLock = await navigator.wakeLock.request('screen');
+      }
+    } catch(e) { /* silently fail on unsupported browsers */ }
+    // Switch to pricer tab — most useful at a show
+    switchPage('pricer');
+    showToast('🏪 SHOW MODE ON — Screen will stay awake');
+  } else {
+    if (wakeLock) { wakeLock.release(); wakeLock = null; }
+    showToast('Show Mode off');
+  }
+}
+
+// Re-acquire wake lock if page becomes visible again (e.g. switching apps)
+document.addEventListener('visibilitychange', async () => {
+  if (showModeActive && document.visibilityState === 'visible') {
+    try {
+      if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen');
+    } catch(e) {}
+  }
+});
+
+function showToast(msg) {
+  let t = document.getElementById('showModeToast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'showModeToast';
+    t.className = 'show-mode-toast';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.classList.add('visible');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('visible'), 2500);
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// OFFLINE PRICE CACHE — show stale prices when offline
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+const PRICE_CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
+
+function cacheCardPrice(cardId, data) {
+  try {
+    const cache = JSON.parse(localStorage.getItem('cc_price_cache') || '{}');
+    cache[cardId] = { data, ts: Date.now() };
+    // Keep cache lean — max 200 cards
+    const keys = Object.keys(cache);
+    if (keys.length > 200) {
+      keys.sort((a, b) => cache[a].ts - cache[b].ts).slice(0, 50).forEach(k => delete cache[k]);
+    }
+    localStorage.setItem('cc_price_cache', JSON.stringify(cache));
+  } catch(e) {}
+}
+
+function getCachedCard(cardId) {
+  try {
+    const cache = JSON.parse(localStorage.getItem('cc_price_cache') || '{}');
+    const entry = cache[cardId];
+    if (!entry) return null;
+    return { data: entry.data, stale: (Date.now() - entry.ts) > PRICE_CACHE_TTL, age: Date.now() - entry.ts };
+  } catch(e) { return null; }
+}
+
+function formatAge(ms) {
+  const h = Math.floor(ms / 3600000);
+  if (h < 1) return '<1h ago';
+  if (h < 24) return `${h}h ago`;
+  return `${Math.floor(h/24)}d ago`;
+}
+
 // ─── INIT ─────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   refreshApiStatus();
@@ -3287,5 +3530,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 </script>
+<div id="showModeToast" class="show-mode-toast"></div>
 </body>
 </html>
