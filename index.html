@@ -241,19 +241,28 @@ header{position:sticky;top:0;z-index:200;background:rgba(8,11,15,0.95);backdrop-
 .sug-loader{width:12px;height:12px;border:1.5px solid var(--b2);border-top-color:var(--cyan);border-radius:50%;animation:spin 0.65s linear infinite;}
 /* Search results list */
 .card-list{background:var(--s1);border:1px solid var(--b2);border-radius:12px;overflow:hidden;margin-bottom:14px;}
-.card-list-head{display:flex;align-items:center;justify-content:space-between;padding:11px 15px;border-bottom:1px solid var(--b1);}
+.card-list-head{display:flex;align-items:center;justify-content:space-between;padding:11px 15px 13px;}
 .card-list-title{font-family:var(--display);font-size:14px;letter-spacing:2px;}
 .card-list-badge{font-family:var(--mono);font-size:10px;color:var(--muted);background:var(--s2);border:1px solid var(--b2);padding:2px 7px;border-radius:4px;}
 .cli{display:flex;align-items:center;gap:12px;padding:11px 15px;border-bottom:1px solid var(--b1);cursor:pointer;transition:background 0.12s;}
 .cli:hover{background:var(--s2);}
 .cli:last-child{border-bottom:none;}
-.cli-img{width:38px;height:54px;border-radius:5px;object-fit:contain;background:var(--s2);border:1px solid var(--b2);flex-shrink:0;}
-.cli-img-ph{width:38px;height:54px;border-radius:5px;background:var(--s2);border:1px solid var(--b2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:16px;opacity:0.3;}
-.cli-info{flex:1;min-width:0;}
-.cli-name{font-size:13px;font-weight:500;color:var(--text);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.cli-meta{font-family:var(--mono);font-size:9px;color:var(--muted);}
-.cli-price{font-family:var(--display);font-size:19px;color:var(--cyan);flex-shrink:0;}
-.cli-arrow{color:var(--muted2);font-size:14px;flex-shrink:0;}
+.search-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;padding:0 4px 16px;}
+.search-card{background:var(--s1);border:1px solid var(--b2);border-radius:11px;overflow:hidden;cursor:pointer;transition:all 0.15s;position:relative;}
+.search-card:hover{border-color:var(--cyan);transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,0.35);}
+.search-card:active{transform:translateY(0);}
+.search-card-img-wrap{position:relative;padding-bottom:140%;background:var(--s2);}
+.search-card-img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;padding:6px;}
+.search-card-img-ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:36px;opacity:0.12;}
+.search-card-info{padding:8px 10px 10px;}
+.search-card-name{font-size:11px;font-weight:600;color:var(--text);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.search-card-meta{font-family:var(--mono);font-size:8px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.search-price-badge{position:absolute;bottom:0;left:0;right:0;padding:18px 10px 9px;background:linear-gradient(to top,rgba(0,0,0,0.82) 0%,transparent 100%);display:flex;align-items:flex-end;justify-content:space-between;gap:4px;pointer-events:none;}
+.search-price-badge-label{font-family:var(--mono);font-size:7px;color:rgba(255,255,255,0.55);letter-spacing:1px;margin-bottom:2px;}
+.search-price-badge-val{font-family:var(--display);font-size:16px;color:#fff;letter-spacing:0.5px;text-shadow:0 1px 4px rgba(0,0,0,0.6);}
+.search-no-price{position:absolute;bottom:7px;right:8px;font-family:var(--mono);font-size:7px;color:rgba(255,255,255,0.3);letter-spacing:1px;pointer-events:none;}
+/* keep old cli- classes for anything that may still ref them */
+.cli-img{display:none;}.cli-img-ph{display:none;}.cli-info{display:none;}.cli-price{display:none;}.cli-arrow{display:none;}
 .pagination{display:flex;align-items:center;justify-content:center;gap:6px;padding:12px;}
 .pg-btn{font-family:var(--mono);font-size:10px;letter-spacing:1px;padding:7px 13px;border-radius:7px;border:1px solid var(--b2);background:var(--s1);color:var(--muted);cursor:pointer;transition:all 0.15s;}
 .pg-btn:hover:not(:disabled){border-color:var(--cyan);color:var(--cyan);}
@@ -616,6 +625,7 @@ body.show-mode .psm-card-price{font-size:19px;}
   .port-grid{grid-template-columns:1fr;}
   .coll-stats{grid-template-columns:1fr 1fr;}
   .psm-grid{grid-template-columns:repeat(2,1fr);gap:8px;}
+  .search-grid{grid-template-columns:repeat(2,1fr);gap:8px;}
 }
 </style>
 </head>
@@ -1600,46 +1610,50 @@ function renderSearchList(cards, page) {
   const list = document.getElementById('searchList');
   const totalPages = Math.ceil(cards.length / PAGE_SIZE);
   const start = (page - 1) * PAGE_SIZE;
-  const end = start + PAGE_SIZE;
-  const pageCards = cards.slice(start, end);
+  const pageCards = cards.slice(start, start + PAGE_SIZE);
 
-  list.innerHTML = `<div class="card-list-head">
+  let html = `<div class="card-list-head">
     <div class="card-list-title">SELECT A CARD</div>
     <div style="display:flex;align-items:center;gap:8px;">
-      <div class="results-count">${cards.length} results</div>
+      <div class="results-count">${cards.length} result${cards.length!==1?'s':''}</div>
       ${totalPages > 1 ? `<div class="card-list-badge">Page ${page} of ${totalPages}</div>` : ''}
     </div>
-  </div>`;
+  </div><div class="search-grid">`;
 
   pageCards.forEach(c => {
-    const el = document.createElement('div'); el.className = 'card-list-item';
-    el.onclick = () => loadCard(c.id);
-    const nm = c.prices?.raw?.near_mint?.tcgplayer?.market;
-    const thumb = c.image_url ? `<img class="cli-img" src="${esc(c.image_url)}" onerror="this.outerHTML='<div class=cli-img-ph>🃏</div>'">` : `<div class="cli-img-ph">🃏</div>`;
-    el.innerHTML = `${thumb}<div class="cli-info"><div class="cli-name">${esc(c.name)}</div><div class="cli-meta">${esc(c.set?.name||'')} · ${esc(c.game?.name||'')}${c.number?' · #'+esc(c.number):''}</div></div>${nm?`<div class="cli-price">${fmt(nm)}</div>`:''}<div class="cli-arrow">›</div>`;
-    list.appendChild(el);
+    const nm = c.prices?.raw?.near_mint?.tcgplayer?.market || c.prices?.raw?.near_mint?.ebay?.avg_7d;
+    const imgHtml = c.image_url
+      ? `<img class="search-card-img" src="${esc(c.image_url)}" loading="lazy" onerror="this.outerHTML='<div class=search-card-img-ph>🃏</div>'">`
+      : '<div class="search-card-img-ph">🃏</div>';
+    const priceBadge = nm
+      ? `<div class="search-price-badge"><div><div class="search-price-badge-label">MARKET</div><div class="search-price-badge-val">${fmt(nm)}</div></div></div>`
+      : `<div class="search-no-price">NO PRICE</div>`;
+    const setMeta = [c.set?.name, c.game?.name, c.number ? '#'+c.number : ''].filter(Boolean).join(' · ');
+    html += `<div class="search-card" onclick="loadCard('${esc(c.id)}')">
+      <div class="search-card-img-wrap">${imgHtml}${priceBadge}</div>
+      <div class="search-card-info">
+        <div class="search-card-name">${esc(c.name)}</div>
+        <div class="search-card-meta">${esc(setMeta)}</div>
+      </div>
+    </div>`;
   });
 
-  // Pagination controls
+  html += '</div>';
+
   if (totalPages > 1) {
-    const pag = document.createElement('div');
-    pag.className = 'pagination';
-    pag.innerHTML = `
-      <button class="page-btn" onclick="goToPage(${page - 1})" ${page <= 1 ? 'disabled' : ''}>← Prev</button>
-      ${Array.from({length: Math.min(totalPages, 5)}, (_, i) => {
-        // Show pages around current
-        let p;
-        if (totalPages <= 5) p = i + 1;
-        else if (page <= 3) p = i + 1;
-        else if (page >= totalPages - 2) p = totalPages - 4 + i;
-        else p = page - 2 + i;
-        return `<button class="page-btn ${p === page ? 'active' : ''}" onclick="goToPage(${p})">${p}</button>`;
-      }).join('')}
-      <button class="page-btn" onclick="goToPage(${page + 1})" ${page >= totalPages ? 'disabled' : ''}>Next →</button>
-    `;
-    list.appendChild(pag);
+    const pages = [];
+    if (totalPages <= 7) { for(let i=1;i<=totalPages;i++) pages.push(i); }
+    else if (page <= 4) pages.push(1,2,3,4,5,'…',totalPages);
+    else if (page >= totalPages-3) pages.push(1,'…',totalPages-4,totalPages-3,totalPages-2,totalPages-1,totalPages);
+    else pages.push(1,'…',page-1,page,page+1,'…',totalPages);
+    html += `<div class="pagination" style="padding:0 4px 16px;">
+      <button class="page-btn" onclick="goToPage(${page-1})" ${page<=1?'disabled':''}>← Prev</button>
+      ${pages.map(p => p==='…' ? '<span style="color:var(--muted);padding:0 4px;">…</span>' : `<button class="page-btn ${p===page?'active':''}" onclick="goToPage(${p})">${p}</button>`).join('')}
+      <button class="page-btn" onclick="goToPage(${page+1})" ${page>=totalPages?'disabled':''}>Next →</button>
+    </div>`;
   }
 
+  list.innerHTML = html;
   show('searchSection', true);
 }
 
@@ -2238,9 +2252,14 @@ function toggleGradeFields() {
 
 function savePortfolioCard() {
   const name = document.getElementById('pcName').value.trim();
-  const cost = parseFloat(document.getElementById('pcCost').value);
-  if (!name) { document.getElementById('pcName').focus(); return; }
-  if (!cost && cost !== 0) { document.getElementById('pcCost').focus(); return; }
+  if (!name) {
+    document.getElementById('pcName').focus();
+    document.getElementById('pcName').style.borderColor = 'var(--orange)';
+    setTimeout(() => document.getElementById('pcName').style.borderColor = '', 1500);
+    return;
+  }
+  const costRaw = document.getElementById('pcCost').value;
+  const cost = costRaw === '' ? 0 : parseFloat(costRaw);
   const isGraded = document.getElementById('pcType').value === 'graded';
   const card = {
     id: Date.now().toString(),
@@ -2250,7 +2269,7 @@ function savePortfolioCard() {
     type: document.getElementById('pcType').value,
     condition: isGraded ? null : document.getElementById('pcCondition').value,
     grade: isGraded ? document.getElementById('pcGrade').value : null,
-    cost: cost,
+    cost: isNaN(cost) ? 0 : cost,
     qty: parseInt(document.getElementById('pcQty').value) || 1,
     notes: document.getElementById('pcNotes').value.trim(),
     addedAt: new Date().toISOString(),
@@ -2316,16 +2335,15 @@ function renderPortfolio() {
   updateSummary(all);
 
   const grid = document.getElementById('portGrid');
-  const empty = document.getElementById('portEmpty');
   const proBanner = document.getElementById('portProBanner');
 
   if (!portfolio.length) {
     show('portGrid', false);
-    show('portProBanner', false);
+    if (proBanner) show('portProBanner', false);
     return;
   }
   show('portGrid', true);
-  show('portProBanner', all.length >= 5);
+  if (proBanner) show('portProBanner', all.length >= 5);
 
   grid.innerHTML = '';
   portfolio.forEach(card => {
