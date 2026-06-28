@@ -1643,17 +1643,26 @@ function renderSearchList(cards, page) {
   if (totalPages > 1) {
     const pages = [];
     if (totalPages <= 7) { for(let i=1;i<=totalPages;i++) pages.push(i); }
-    else if (page <= 4) pages.push(1,2,3,4,5,'…',totalPages);
-    else if (page >= totalPages-3) pages.push(1,'…',totalPages-4,totalPages-3,totalPages-2,totalPages-1,totalPages);
-    else pages.push(1,'…',page-1,page,page+1,'…',totalPages);
-    html += `<div class="pagination" style="padding:0 4px 16px;">
-      <button class="page-btn" onclick="goToPage(${page-1})" ${page<=1?'disabled':''}>← Prev</button>
-      ${pages.map(p => p==='…' ? '<span style="color:var(--muted);padding:0 4px;">…</span>' : `<button class="page-btn ${p===page?'active':''}" onclick="goToPage(${p})">${p}</button>`).join('')}
-      <button class="page-btn" onclick="goToPage(${page+1})" ${page>=totalPages?'disabled':''}>Next →</button>
-    </div>`;
+    else if (page <= 4) pages.push(1,2,3,4,5,'e',totalPages);
+    else if (page >= totalPages-3) pages.push(1,'e',totalPages-4,totalPages-3,totalPages-2,totalPages-1,totalPages);
+    else pages.push(1,'e',page-1,page,page+1,'e',totalPages);
+
+    let pgHtml = '<div class="pagination" style="padding:0 4px 16px;">';
+    pgHtml += '<button class="page-btn" onclick="goToPage(' + (page-1) + ')"' + (page<=1?' disabled':'') + '>← Prev</button>';
+    pages.forEach(function(p) {
+      if (p === 'e') {
+        pgHtml += '<span style="color:var(--muted);padding:0 4px;">…</span>';
+      } else {
+        pgHtml += '<button class="page-btn' + (p===page?' active':'') + '" onclick="goToPage(' + p + ')">' + p + '</button>';
+      }
+    });
+    pgHtml += '<button class="page-btn" onclick="goToPage(' + (page+1) + ')"' + (page>=totalPages?' disabled':'') + '>Next →</button>';
+    pgHtml += '</div>';
+    html += pgHtml;
   }
 
   list.innerHTML = html;
+  list.scrollIntoView({ behavior: 'smooth', block: 'start' });
   show('searchSection', true);
 }
 
