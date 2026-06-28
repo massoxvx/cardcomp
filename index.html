@@ -264,6 +264,10 @@ header{position:sticky;top:0;z-index:200;background:rgba(8,11,15,0.95);backdrop-
 /* keep old cli- classes for anything that may still ref them */
 .cli-img{display:none;}.cli-img-ph{display:none;}.cli-info{display:none;}.cli-price{display:none;}.cli-arrow{display:none;}
 .pagination{display:flex;align-items:center;justify-content:center;gap:6px;padding:12px;}
+.page-btn{font-family:var(--mono);font-size:10px;letter-spacing:1px;padding:7px 13px;border-radius:7px;border:1px solid var(--b2);background:var(--s1);color:var(--muted);cursor:pointer;transition:all 0.15s;}
+.page-btn:hover:not([disabled]){border-color:var(--cyan);color:var(--cyan);}
+.page-btn[disabled]{opacity:0.3;cursor:not-allowed;}
+.page-btn.active{background:rgba(0,212,255,0.1);border-color:var(--cyan);color:var(--cyan);}
 .pg-btn{font-family:var(--mono);font-size:10px;letter-spacing:1px;padding:7px 13px;border-radius:7px;border:1px solid var(--b2);background:var(--s1);color:var(--muted);cursor:pointer;transition:all 0.15s;}
 .pg-btn:hover:not(:disabled){border-color:var(--cyan);color:var(--cyan);}
 .pg-btn:disabled{opacity:0.3;cursor:not-allowed;}
