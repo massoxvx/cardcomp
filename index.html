@@ -1183,24 +1183,96 @@ body.show-mode .psm-card-price{font-size:19px;}
 
 <script src="https://unpkg.com/@formspree/ajax@1" defer></script>
 <script>
+// ══════════════════════════════════════════════════════
+// SECTION 1: SAFE STORAGE HELPERS
+// Wraps localStorage/sessionStorage so the app never throws
+// or crashes if storage is unavailable (private browsing,
+// quota exceeded, disabled cookies, etc). Every storage read
+// or write in the app should go through these.
+// ══════════════════════════════════════════════════════
+function safeGet(key, fallback = null) {
+  try {
+    const v = localStorage.getItem(key);
+    return v === null ? fallback : v;
+  } catch (e) {
+    console.warn('[storage] safeGet failed for', key, e);
+    return fallback;
+  }
+}
+function safeSet(key, value) {
+  try {
+    localStorage.setItem(key, value);
+    return true;
+  } catch (e) {
+    console.warn('[storage] safeSet failed for', key, e);
+    return false;
+  }
+}
+function safeRemove(key) {
+  try {
+    localStorage.removeItem(key);
+    return true;
+  } catch (e) {
+    console.warn('[storage] safeRemove failed for', key, e);
+    return false;
+  }
+}
+function loadJSON(key, fallback) {
+  const raw = safeGet(key, null);
+  if (raw === null) return fallback;
+  try {
+    return JSON.parse(raw);
+  } catch (e) {
+    console.warn('[storage] loadJSON parse failed for', key, e);
+    return fallback;
+  }
+}
+function saveJSON(key, value) {
+  try {
+    return safeSet(key, JSON.stringify(value));
+  } catch (e) {
+    console.warn('[storage] saveJSON stringify failed for', key, e);
+    return false;
+  }
+}
+// Session storage variants (used for one-time-per-tab flags like the welcome modal)
+function safeSessionGet(key, fallback = null) {
+  try {
+    const v = sessionStorage.getItem(key);
+    return v === null ? fallback : v;
+  } catch (e) {
+    return fallback;
+  }
+}
+function safeSessionSet(key, value) {
+  try {
+    sessionStorage.setItem(key, value);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+// ══════════════════════════════════════════════════════
+// SECTION 2: CONSTANTS AND STATE
+// ══════════════════════════════════════════════════════
 let selectedGame = '';
 
 // ─── RECENT SEARCHES ─────────────────────────────────
 const MAX_RECENT = 8;
 
 function loadRecentSearches() {
-  try { return JSON.parse(localStorage.getItem('cc_recent') || '[]'); }
-  catch(e) { return []; }
+  return loadJSON('cc_recent', []);
 }
 function saveRecentSearch(q) {
   let recent = loadRecentSearches().filter(r => r.toLowerCase() !== q.toLowerCase());
   recent.unshift(q);
   if (recent.length > MAX_RECENT) recent = recent.slice(0, MAX_RECENT);
-  localStorage.setItem('cc_recent', JSON.stringify(recent));
+  saveJSON('cc_recent', recent);
 }
 function removeRecentSearch(q) {
   const recent = loadRecentSearches().filter(r => r !== q);
-  localStorage.setItem('cc_recent', JSON.stringify(recent));
+  saveJSON('cc_recent', recent);
   renderRecentSearches();
 }
 function renderRecentSearches() {
@@ -1436,8 +1508,8 @@ const GRADING_FEES = {
 // API key lives in Cloudflare Worker — never exposed in frontend
 const WORKER_URL = 'https://cardcomp-api.romantinimassimo.workers.dev';
 let apiKey = 'connected'; // auth handled by Worker
-let sellerCountry = localStorage.getItem('cc_country') || 'CA';
-let sellerProvince = localStorage.getItem('cc_province') || 'ON';
+let sellerCountry = safeGet('cc_country', 'CA');
+let sellerProvince = safeGet('cc_province', 'ON');
 let fxRate = 1.0; // USD to local currency rate
 let currencySymbol = 'US$';
 let showingLocalCurrency = sellerCountry === 'CA'; // default CAD on for Canadian users
@@ -1548,8 +1620,8 @@ function onProvinceChange() {
 function saveCountry() {
   sellerCountry = document.getElementById('countrySelect').value;
   sellerProvince = document.getElementById('provinceSelect').value;
-  localStorage.setItem('cc_country', sellerCountry);
-  localStorage.setItem('cc_province', sellerProvince);
+  safeSet('cc_country', sellerCountry);
+  safeSet('cc_province', sellerProvince);
   // Reset currency to local when country changes
   showingLocalCurrency = sellerCountry !== 'US';
   refreshCountryUI();
@@ -1574,7 +1646,7 @@ function closeApiModal() { document.getElementById('apiModal').classList.add('hi
 function saveApiKey() {
   const v = document.getElementById('apiKeyInput').value.trim();
   if (!v) return;
-  apiKey = v; localStorage.setItem('cc_api_key', v);
+  apiKey = v; safeSet('cc_api_key', v);
   refreshApiStatus(); closeApiModal();
 }
 document.getElementById('countryModal').addEventListener('click', e => { if(e.target===document.getElementById('countryModal')) closeCountryModal(); });
@@ -1732,7 +1804,7 @@ function renderDetail(card) {
 }
 
 function renderHeader(card) {
-  const updated = card.updated_at ? new Date(card.updated_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : null;
+  const updated = card.updated_at ? formatDate(card.updated_at, {month:'short',day:'numeric',year:'numeric'}) : null;
   // Get dominant price for hero display
   const nm = card.prices?.raw?.near_mint;
   const tcgPrice = nm?.tcgplayer?.market;
@@ -2054,15 +2126,61 @@ function copySnap() {
   });
 }
 
-// ─── UTILS ───────────────────────────────────────────
+// ══════════════════════════════════════════════════════
+// SECTION 3: CENTRALIZED FORMATTING + PRICING HELPERS
+// ══════════════════════════════════════════════════════
 function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-function fmt(v) {
+
+// formatMoney is the canonical name (per style guide); fmt() is kept as
+// a short alias since it's used ~80 times throughout the app already.
+function formatMoney(v) {
   if (!v && v !== 0) return '—';
   const converted = v * (fxRate || 1);
   const sym = currencySymbol || 'US$';
   const abs = Math.abs(converted).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   return converted < 0 ? `-${sym}${abs}` : `${sym}${abs}`;
 }
+function fmt(v) { return formatMoney(v); }
+
+function formatPercent(v, decimals = 1) {
+  if (v === null || v === undefined || isNaN(v)) return '—';
+  return `${Number(v).toFixed(decimals)}%`;
+}
+
+// Standard short date, e.g. "Jul 9, 2026" — used for card/refresh timestamps
+function formatDate(value, opts) {
+  if (!value) return '—';
+  const d = value instanceof Date ? value : new Date(value);
+  if (isNaN(d.getTime())) return '—';
+  return d.toLocaleDateString('en-US', opts || { month: 'short', day: 'numeric' });
+}
+// Longer date for printed offer sheets, e.g. "July 9, 2026"
+function formatDateLong(value) {
+  return formatDate(value, { year: 'numeric', month: 'long', day: 'numeric' });
+}
+// Offer sheet / share-text date stamps use en-CA locale (existing behavior, unchanged)
+function formatOfferDate(long = false) {
+  return long
+    ? new Date().toLocaleDateString('en-CA', { year: 'numeric', month: 'long', day: 'numeric' })
+    : new Date().toLocaleDateString('en-CA');
+}
+
+const CONDITION_LABELS = {
+  near_mint: 'NM',
+  lightly_played: 'LP',
+  moderately_played: 'MP',
+  heavily_played: 'HP',
+  damaged: 'DMG',
+};
+function formatConditionLabel(condition) {
+  if (!condition) return 'NM';
+  return CONDITION_LABELS[condition] || condition.replace(/_/g, ' ').toUpperCase();
+}
+function formatGradeLabel(grade) {
+  if (!grade) return null;
+  return String(grade).replace(/_/g, ' ').toUpperCase();
+}
+
 function show(id,v) { document.getElementById(id)?.classList.toggle('hidden',!v); }
 function setLoading(v) { show('loadingState',v); const sb=document.getElementById('searchBtn'); if(sb) sb.disabled=v; }
 function showError(msg) { const el=document.getElementById('errorBox'); document.getElementById('errorMsg').textContent=msg; el.classList.remove('hidden'); }
@@ -2077,7 +2195,6 @@ function goHome() {
 // ─── QUICK ADD TO PORTFOLIO ──────────────────────────
 function updateQuickAddBar(card) {
   const isGraded = currentTab === 'graded';
-  const condLabel = {near_mint:'NM',lightly_played:'LP',moderately_played:'MP',heavily_played:'HP',damaged:'DMG'};
   const graderLabels = {psa:'PSA',bgs:'BGS',cgc:'CGC'};
 
   // Use the condition relevant to whichever tab is active
@@ -2094,7 +2211,7 @@ function updateQuickAddBar(card) {
     condDisplay = `${graderLabels[currentGrader] || 'PSA'} 10`;
   } else {
     condition = activeCond;
-    condDisplay = condLabel[activeCond] || 'NM';
+    condDisplay = formatConditionLabel(activeCond);
   }
 
   // Get the relevant price for this condition to show in quick-add
@@ -2229,10 +2346,10 @@ function updatePortCount() {
 
 // ─── PORTFOLIO DATA ───────────────────────────────────
 function loadPortfolio() {
-  try { return JSON.parse(localStorage.getItem('cc_portfolio') || '[]'); } catch(e) { return []; }
+  return loadJSON('cc_portfolio', []);
 }
 function savePortfolioData(data) {
-  localStorage.setItem('cc_portfolio', JSON.stringify(data));
+  saveJSON('cc_portfolio', data);
 }
 
 // ─── ADD CARD MODAL ───────────────────────────────────
@@ -2403,14 +2520,13 @@ function buildCardEl(card) {
   const pnl = mv ? mv - totalCost : null;
   const pnlPct = mv && totalCost ? ((mv-totalCost)/totalCost*100).toFixed(1) : null;
 
-  const gradeLabel = card.grade ? card.grade.replace('_',' ').toUpperCase() : null;
-  const condLabels = {near_mint:'NM',lightly_played:'LP',moderately_played:'MP',heavily_played:'HP',damaged:'DMG'};
-  const condLabel = card.condition ? condLabels[card.condition] : null;
+  const gradeLabel = formatGradeLabel(card.grade);
+  const condLabel = card.condition ? formatConditionLabel(card.condition) : null;
 
   // img now handled inline in new card template
 
   const refreshed = card.lastRefreshed
-    ? `<span style="font-family:monospace;font-size:9px;color:var(--muted2);">↻ ${new Date(card.lastRefreshed).toLocaleDateString('en-US',{month:'short',day:'numeric'})}</span>`
+    ? `<span style="font-family:monospace;font-size:9px;color:var(--muted2);">↻ ${formatDate(card.lastRefreshed)}</span>`
     : `<span style="font-family:'Instrument Mono',monospace;font-size:9px;color:var(--muted2);">Not yet refreshed</span>`;
 
   const imgHtml = card.image
@@ -2437,7 +2553,7 @@ function buildCardEl(card) {
         <div class="pc-pnl-label">Unrealized P&L</div>
         <div class="pc-pnl-val ${pnl===null?'neutral':pnl>=0?'profit':'loss'}">${pnl===null?'—':(pnl>=0?'+':'')+fmt(pnl)+(pnlPct?` <span style="font-size:11px;font-family:monospace;">(${pnlPct}%)</span>`:'')}</div>
       </div>
-      <div class="pc-refresh">${card.lastRefreshed?'↻ '+new Date(card.lastRefreshed).toLocaleDateString('en-US',{month:'short',day:'numeric'}):'Not refreshed yet'}</div>
+      <div class="pc-refresh">${card.lastRefreshed?'↻ '+formatDate(card.lastRefreshed):'Not refreshed yet'}</div>
       <div class="pc-actions">
         <button class="pc-action comp" onclick="searchCardComp('${esc(card.name)}','${esc(card.game)}')">🔍 COMPS</button>
         <button class="pc-action" onclick="refreshCardValue('${card.id}')">↻ REFRESH</button>
@@ -2546,7 +2662,7 @@ function searchCardComp(name, game) {
 
 // ─── WELCOME + FEEDBACK ──────────────────────────────
 function dismissWelcome() {
-  sessionStorage.setItem('cc_welcomed', '1');
+  safeSessionSet('cc_welcomed', '1');
   document.getElementById('welcomeModal').classList.add('hidden');
 }
 function openFeedbackModal() {
@@ -2684,11 +2800,10 @@ let offerPct = 70;
 let pricerSelectedCard = null; // full card API data for currently selected card
 // ── Load / Save session ───────────────────────────
 function loadPricerSession() {
-  try { return JSON.parse(localStorage.getItem('cc_pricer') || '[]'); }
-  catch(e) { return []; }
+  return loadJSON('cc_pricer', []);
 }
 function savePricerSession(items) {
-  localStorage.setItem('cc_pricer', JSON.stringify(items));
+  saveJSON('cc_pricer', items);
 }
 function clearPricerSession() {
   if (!confirm('Clear this pricing session? This cannot be undone.')) return;
@@ -3008,12 +3123,11 @@ function addPricerCard() {
     const grade = parts.slice(1).join('.');
     price = pricerSelectedCard.prices?.graded?.[grader]?.[grade]?.ebay?.avg_7d
       || pricerSelectedCard.prices?.graded?.[grader]?.[grade]?.tcgplayer?.market;
-    condLabel = gradeVal.replace('_', ' ').toUpperCase();
+    condLabel = formatGradeLabel(gradeVal);
   } else if (cond) {
     price = pricerSelectedCard.prices?.raw?.[cond]?.tcgplayer?.market
       || pricerSelectedCard.prices?.raw?.[cond]?.ebay?.avg_7d;
-    const cl = {near_mint:'NM',lightly_played:'LP',moderately_played:'MP',heavily_played:'HP',damaged:'DMG'};
-    condLabel = cl[cond] || 'NM';
+    condLabel = formatConditionLabel(cond);
   }
 
   const item = {
@@ -3173,7 +3287,7 @@ function printOffer() {
   const totalMarket = session.reduce((s, i) => s + (i.totalPrice || 0), 0);
   const totalOffer = totalMarket * (offerPct / 100);
   const totalCards = session.reduce((s, i) => s + (i.qty || 1), 0);
-  const date = new Date().toLocaleDateString('en-CA', {year:'numeric',month:'long',day:'numeric'});
+  const date = formatOfferDate(true);
 
   const rows = session.map(item => {
     const offerAmt = (item.totalPrice || 0) * (offerPct / 100);
@@ -3237,20 +3351,18 @@ function printOffer() {
   window.print();
 }
 
-// ── Copy offer as text ────────────────────────────
-function copyOfferText() {
+// ── Shared offer summary text builder (used by copy + share) ──
+function buildOfferSummaryText() {
   const session = loadPricerSession();
-  if (!session.length) { alert('Add some cards first.'); return; }
+  if (!session.length) return null;
   const totalMarket = session.reduce((s, i) => s + (i.totalPrice || 0), 0);
   const totalOffer = totalMarket * (offerPct / 100);
-  const date = new Date().toLocaleDateString('en-CA');
-
+  const date = formatOfferDate();
   const lines = session.map(i => {
-    const offerAmt = (i.totalPrice||0) * (offerPct/100);
-    return `${i.name}${i.set?' ('+i.set+')':''} · ${i.condLabel} ×${i.qty} · Market: ${fmt(i.totalPrice)} · Offer: ${fmt(offerAmt)}`;
+    const offerAmt = (i.totalPrice || 0) * (offerPct / 100);
+    return `${i.name}${i.set ? ' (' + i.set + ')' : ''} · ${i.condLabel} ×${i.qty} · Market: ${fmt(i.totalPrice)} · Offer: ${fmt(offerAmt)}`;
   });
-
-  const text = `CARDCOMP — Collection Offer (${date})
+  return `CARDCOMP — Collection Offer (${date})
 ${'─'.repeat(44)}
 ${lines.join('\n')}
 ${'─'.repeat(44)}
@@ -3258,8 +3370,14 @@ Total Market: ${fmt(totalMarket)}
 My Offer (${offerPct}%): ${fmt(totalOffer)}
 
 Prices from TCGPlayer/eBay via CardComp`;
+}
 
+// ── Copy offer as text ────────────────────────────
+function copyOfferText() {
+  const text = buildOfferSummaryText();
+  if (!text) { alert('Add some cards first.'); return; }
   navigator.clipboard.writeText(text).then(() => {
+    showToast('📋 Copied to clipboard!');
     const btn = document.querySelector('.pricer-action-btn:nth-child(2)');
     if (btn) { const orig = btn.innerHTML; btn.innerHTML = '✓ COPIED!'; setTimeout(() => btn.innerHTML = orig, 2000); }
   });
@@ -3323,16 +3441,8 @@ function addManualCard() {
 
 // ── Share offer as text (Web Share API → clipboard fallback) ──
 function shareOfferText() {
-  const session = loadPricerSession();
-  if (!session.length) { alert('Add some cards first.'); return; }
-  const totalMarket = session.reduce((s, i) => s + (i.totalPrice || 0), 0);
-  const totalOffer = totalMarket * (offerPct / 100);
-  const date = new Date().toLocaleDateString('en-CA');
-  const lines = session.map(i => {
-    const offerAmt = (i.totalPrice||0) * (offerPct/100);
-    return `${i.name}${i.set?' ('+i.set+')':''} · ${i.condLabel} ×${i.qty} · Market: ${fmt(i.totalPrice)} · Offer: ${fmt(offerAmt)}`;
-  });
-  const text = `CARDCOMP — Collection Offer (${date})\n${'─'.repeat(44)}\n${lines.join('\n')}\n${'─'.repeat(44)}\nTotal Market: ${fmt(totalMarket)}\nMy Offer (${offerPct}%): ${fmt(totalOffer)}\n\nPrices from TCGPlayer/eBay via CardComp`;
+  const text = buildOfferSummaryText();
+  if (!text) { alert('Add some cards first.'); return; }
 
   if (navigator.share) {
     navigator.share({ title: 'CardComp Offer', text }).catch(() => {});
@@ -3591,25 +3701,21 @@ function showToast(msg) {
 const PRICE_CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
 
 function cacheCardPrice(cardId, data) {
-  try {
-    const cache = JSON.parse(localStorage.getItem('cc_price_cache') || '{}');
-    cache[cardId] = { data, ts: Date.now() };
-    // Keep cache lean — max 200 cards
-    const keys = Object.keys(cache);
-    if (keys.length > 200) {
-      keys.sort((a, b) => cache[a].ts - cache[b].ts).slice(0, 50).forEach(k => delete cache[k]);
-    }
-    localStorage.setItem('cc_price_cache', JSON.stringify(cache));
-  } catch(e) {}
+  const cache = loadJSON('cc_price_cache', {});
+  cache[cardId] = { data, ts: Date.now() };
+  // Keep cache lean — max 200 cards
+  const keys = Object.keys(cache);
+  if (keys.length > 200) {
+    keys.sort((a, b) => cache[a].ts - cache[b].ts).slice(0, 50).forEach(k => delete cache[k]);
+  }
+  saveJSON('cc_price_cache', cache);
 }
 
 function getCachedCard(cardId) {
-  try {
-    const cache = JSON.parse(localStorage.getItem('cc_price_cache') || '{}');
-    const entry = cache[cardId];
-    if (!entry) return null;
-    return { data: entry.data, stale: (Date.now() - entry.ts) > PRICE_CACHE_TTL, age: Date.now() - entry.ts };
-  } catch(e) { return null; }
+  const cache = loadJSON('cc_price_cache', {});
+  const entry = cache[cardId];
+  if (!entry) return null;
+  return { data: entry.data, stale: (Date.now() - entry.ts) > PRICE_CACHE_TTL, age: Date.now() - entry.ts };
 }
 
 function formatAge(ms) {
@@ -3669,8 +3775,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
   // Show welcome screen for first-time visitors only
-  // Show welcome for first-time visitors
-  if (!sessionStorage.getItem('cc_welcomed')) {
+  if (!safeSessionGet('cc_welcomed')) {
     setTimeout(() => document.getElementById('welcomeModal').classList.remove('hidden'), 400);
   }
 });
