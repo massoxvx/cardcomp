@@ -160,17 +160,19 @@ header{position:sticky;top:0;z-index:200;background:rgba(8,11,15,0.95);backdrop-
 /* Portfolio grid */
 .port-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px;}
 .pc{background:var(--s1);border:1px solid var(--b2);border-radius:12px;overflow:hidden;display:flex;flex-direction:row;align-items:stretch;transition:border-color 0.15s;}
-.pc-img-area{flex-shrink:0;width:88px;background:var(--s2);display:flex;align-items:center;justify-content:center;position:relative;}
+.pc-img-area{flex-shrink:0;width:88px;background:var(--s2);display:flex;align-items:center;justify-content:center;position:relative;border-right:1px solid var(--b1);}
 .pc-img{width:100%;height:100%;object-fit:contain;padding:6px;}
 .pc-img-ph{display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-size:32px;opacity:0.2;}
 .pc-badges{position:absolute;top:5px;left:5px;display:flex;flex-direction:column;gap:3px;}
-.pcb{font-family:var(--mono);font-size:7px;padding:2px 5px;border-radius:3px;backdrop-filter:blur(6px);}
-.pcb-raw{background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.85);border:1px solid rgba(255,255,255,0.15);}
-.pcb-graded{background:rgba(0,212,255,0.25);color:var(--cyan);border:1px solid rgba(0,212,255,0.35);}
+.pc-badges-overlay{position:absolute;top:6px;left:6px;display:flex;flex-direction:column;gap:3px;z-index:2;}
+.pcb{font-family:var(--mono);font-size:7px;letter-spacing:0.5px;padding:2px 5px;border-radius:3px;backdrop-filter:blur(6px);white-space:nowrap;}
+.pcb-raw{background:rgba(0,0,0,0.55);color:rgba(255,255,255,0.9);border:1px solid rgba(255,255,255,0.2);}
+.pcb-graded{background:rgba(0,212,255,0.3);color:#fff;border:1px solid rgba(0,212,255,0.5);}
 .pcb-game{background:rgba(255,215,0,0.15);color:var(--gold);border:1px solid rgba(255,215,0,0.25);}
 .pc-data{flex:1;padding:11px 11px 9px;display:flex;flex-direction:column;min-width:0;}
-.pc-name{font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:1px;}
-.pc-meta{font-family:var(--mono);font-size:9px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:7px;}
+.pc-name,.pc-card-name{font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:1px;}
+.pc-meta,.pc-card-meta{font-family:var(--mono);font-size:9px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.pc-card-header{margin-bottom:7px;}
 .pc-prices{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:5px;}
 .pcp{background:var(--s2);border-radius:5px;padding:5px 7px;}
 .pcp-label{font-family:var(--mono);font-size:7px;letter-spacing:1.5px;color:var(--muted2);text-transform:uppercase;margin-bottom:2px;}
@@ -2840,12 +2842,12 @@ let psmDebounce = null;
 let psmMode = 'pricer'; // 'pricer' | 'collection'
 
 function openPsm() {
-  psmMode = 'pricer';
+  appState.psmMode = 'pricer';
   document.getElementById('psmOverlay').classList.remove('hidden');
   setTimeout(() => document.getElementById('psmInput').focus(), 100);
 }
 function openPsmForCollection() {
-  psmMode = 'collection';
+  appState.psmMode = 'collection';
   // Pre-fill search with whatever name is already typed
   const existingName = document.getElementById('pcName').value.trim();
   document.getElementById('psmOverlay').classList.remove('hidden');
@@ -2857,14 +2859,14 @@ function openPsmForCollection() {
     document.querySelectorAll('.psm-chip').forEach(c => {
       c.classList.toggle('active', (c.dataset.game || '') === game);
     });
-    psmGame = game;
+    appState.psmGame = game;
     runPsmSearch();
   }
   setTimeout(() => psmInput.focus(), 100);
 }
 function closePsm() {
   document.getElementById('psmOverlay').classList.add('hidden');
-  psmMode = 'pricer';
+  appState.psmMode = 'pricer';
 }
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
@@ -2967,7 +2969,7 @@ async function psmSelectCard(cardId) {
   const cached = psmAllResults.find(c => c.id === cardId);
   const card = cached || null;
 
-  if (psmMode === 'collection') {
+  if (appState.psmMode === 'collection') {
     // Fill the Add Card modal fields
     const fillCard = card || await fetch(`${WORKER_URL}/v1/cards/${cardId}`).then(r => r.json()).catch(() => null);
     if (!fillCard) return;
@@ -3653,13 +3655,13 @@ let showModeActive = false;
 let wakeLock = null;
 
 async function toggleShowMode() {
-  showModeActive = !showModeActive;
-  document.body.classList.toggle('show-mode', showModeActive);
+  appState.showModeActive = !appState.showModeActive;
+  document.body.classList.toggle('show-mode', appState.showModeActive);
 
   const btn = document.getElementById('showModeBtn');
-  if (btn) btn.textContent = showModeActive ? 'DISABLE' : 'ENABLE';
+  if (btn) btn.textContent = appState.showModeActive ? 'DISABLE' : 'ENABLE';
 
-  if (showModeActive) {
+  if (appState.showModeActive) {
     try {
       if ('wakeLock' in navigator) {
         wakeLock = await navigator.wakeLock.request('screen');
@@ -3674,7 +3676,7 @@ async function toggleShowMode() {
 
 // Re-acquire wake lock if page becomes visible again (e.g. switching apps)
 document.addEventListener('visibilitychange', async () => {
-  if (showModeActive && document.visibilityState === 'visible') {
+  if (appState.showModeActive && document.visibilityState === 'visible') {
     try {
       if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen');
     } catch(e) {}
@@ -3736,6 +3738,64 @@ function normalizeQuery(q) {
     .replace(/\s+/g, ' ')              // collapse whitespace
     .trim();
 }
+
+// ══════════════════════════════════════════════════════
+// SECTION 4: SHARED APP STATE (appState)
+// ──────────────────────────────────────────────────────
+// This is a facade over the app's existing standalone state
+// variables (currentCard, currentTab, sellerCountry, etc).
+// Each property is a getter/setter that reads/writes the
+// SAME underlying variable already used everywhere else in
+// the app — so appState.currentCard and the bare variable
+// currentCard are always in sync; they are literally the
+// same value, not a separate copy.
+//
+// Why a facade instead of a full rename: this app has ~28
+// state variables referenced across 150+ call sites with no
+// automated test suite / real browser available in this
+// environment. A blind rename risks silently breaking a
+// call site that's hard to catch without live testing. The
+// facade gives every future code change a single, clear
+// place to read/write state (appState.x) while guaranteeing
+// zero behavior change today. New code should prefer
+// appState.x going forward.
+// ══════════════════════════════════════════════════════
+const appState = {
+  // Card / search state
+  get currentCard() { return currentCard; }, set currentCard(v) { currentCard = v; },
+  get currentTab() { return currentTab; }, set currentTab(v) { currentTab = v; },
+  get currentTcgCond() { return currentTcgCond; }, set currentTcgCond(v) { currentTcgCond = v; },
+  get currentEbayCond() { return currentEbayCond; }, set currentEbayCond(v) { currentEbayCond = v; },
+  get currentGrader() { return currentGrader; }, set currentGrader(v) { currentGrader = v; },
+  get currentPeriod() { return currentPeriod; }, set currentPeriod(v) { currentPeriod = v; },
+  get selectedGame() { return selectedGame; }, set selectedGame(v) { selectedGame = v; },
+  // Search results pagination (brief calls this currentPageIndex to avoid
+  // colliding with "current page/tab" terminology)
+  get currentPageIndex() { return currentPage; }, set currentPageIndex(v) { currentPage = v; },
+  get searchResults() { return searchResults; }, set searchResults(v) { searchResults = v; },
+  get allSearchResults() { return allSearchResults; }, set allSearchResults(v) { allSearchResults = v; },
+  // Country / currency / tax
+  get sellerCountry() { return sellerCountry; }, set sellerCountry(v) { sellerCountry = v; },
+  get sellerProvince() { return sellerProvince; }, set sellerProvince(v) { sellerProvince = v; },
+  get fxRate() { return fxRate; }, set fxRate(v) { fxRate = v; },
+  get currencySymbol() { return currencySymbol; }, set currencySymbol(v) { currencySymbol = v; },
+  get showingLocalCurrency() { return showingLocalCurrency; }, set showingLocalCurrency(v) { showingLocalCurrency = v; },
+  // Pricer (Search modal + session)
+  get psmGame() { return psmGame; }, set psmGame(v) { psmGame = v; },
+  get psmMode() { return psmMode; }, set psmMode(v) { psmMode = v; },
+  get psmPage() { return psmPage; }, set psmPage(v) { psmPage = v; },
+  get psmAllResults() { return psmAllResults; }, set psmAllResults(v) { psmAllResults = v; },
+  get offerPct() { return offerPct; }, set offerPct(v) { offerPct = v; },
+  get pricerSelectedCard() { return pricerSelectedCard; }, set pricerSelectedCard(v) { pricerSelectedCard = v; },
+  // ROI modal
+  get roiModalGrade() { return roiModalGrade; }, set roiModalGrade(v) { roiModalGrade = v; },
+  get roiModalGrader() { return roiModalGrader; }, set roiModalGrader(v) { roiModalGrader = v; },
+  // Show Mode
+  get showModeActive() { return showModeActive; }, set showModeActive(v) { showModeActive = v; },
+  // History chart
+  get chartInstance() { return chartInstance; }, set chartInstance(v) { chartInstance = v; },
+  get historyCache() { return historyCache; }, set historyCache(v) { historyCache = v; },
+};
 
 document.addEventListener('DOMContentLoaded', () => {
   refreshApiStatus();
