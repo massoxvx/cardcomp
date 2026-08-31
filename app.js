@@ -165,7 +165,8 @@ async function fetchSuggestions(q) {
 
   try {
     const game = selectedGame || '';
-    let url = `${WORKER_URL}/v1/cards/search?q=${encodeURIComponent(normalizeQuery(q))}&limit=6`;
+    const parsedSug = parseSearchQuery(q);
+    let url = `${WORKER_URL}/v1/cards/search?q=${encodeURIComponent(parsedSug.apiQuery)}&limit=8`;
     if (game) url += `&game=${game}`;
     const res = await fetch(url);
     if (!res.ok) { hideSuggestions(); return; }
@@ -340,7 +341,7 @@ let historyCache = {};
 let searchResults = [];
 let allSearchResults = []; // full unfiltered list
 let currentPage = 1;
-const PAGE_SIZE = 12;
+const PAGE_SIZE = 15;
 let snapshotText = '';
 
 const CONDITIONS = [
@@ -479,17 +480,19 @@ async function doSearch() {
   setLoading(true); hideError();
   show('emptyState',false); show('searchSection',false); show('detailSection',false);
   try {
-    let url = `${WORKER_URL}/v1/cards/search?q=${encodeURIComponent(q)}&limit=50`;
+    const parsed = parseSearchQuery(q);
+    let url = `${WORKER_URL}/v1/cards/search?q=${encodeURIComponent(parsed.apiQuery)}&limit=50`;
     if (game) url += `&game=${game}`;
     const res = await fetch(url);
     if (res.status===401) throw new Error('Invalid API key — click the top-right button to update it.');
     if (res.status===429) throw new Error('Rate limit reached. Wait a moment and try again.');
     if (!res.ok) throw new Error(`API error ${res.status}.`);
     const data = await res.json();
-    allSearchResults = data.data || [];
+    const rawResults = data.data || [];
+    allSearchResults = rankSearchResults(rawResults, q);
     searchResults = allSearchResults;
     currentPage = 1;
-    if (!allSearchResults.length) throw new Error(`No cards found for "${q}". Try a broader search.`);
+    if (!allSearchResults.length) throw new Error(`No cards found for "${q}". Try fewer words, check spelling, or pick a game filter.`);
     if (allSearchResults.length === 1) { await loadCard(allSearchResults[0].id); return; }
     history.pushState({ view: 'search', query: q }, '', `#search`);
     renderSearchList(searchResults, currentPage);
@@ -1764,7 +1767,9 @@ async function runPsmSearch() {
     const res = await fetch(url);
     if (!res.ok) throw new Error(`API error ${res.status}`);
     const data = await res.json();
-    psmAllResults = data.data || [];
+    const psmRaw = data.data || [];
+    // Reuse same ranking so the best matches appear first in the pricer modal too
+    psmAllResults = rankSearchResults(psmRaw, q);
     psmPage = 1;
     renderPsmResults();
   } catch(e) {
@@ -2578,16 +2583,108 @@ function formatAge(ms) {
 }
 
 // ─── SEARCH ACCURACY HELPERS ─────────────────────────
-// Strips card number patterns, normalizes special chars, trims whitespace
-// so "Charizard 4/102" → "Charizard", "Farfetch'd" → "Farfetchd"
+// Parse free-text queries so we can send a clean string to the API
+// and rank results client-side (exact name / set / number first).
+const EDITION_KEYWORDS = [
+  '1st edition', '1st ed', 'first edition', 'shadowless', 'unlimited',
+  'holo', 'holofoil', 'reverse holo', 'reverse holofoil', 'full art',
+  'secret rare', 'illustration rare', 'special illustration rare',
+  'alt art', 'alternate art', 'promo', 'staff', 'rainbow rare'
+];
+
 function normalizeQuery(q) {
-  return q
-    .replace(/\d+\/\d+/g, '')          // strip number patterns e.g. 4/102
-    .replace(/[''`]/g, '')              // strip smart quotes and apostrophes
-    .replace(/[^\w\s\-\.]/g, ' ')      // replace special chars with space
-    .replace(/\s+/g, ' ')              // collapse whitespace
+  return String(q || '')
+    .replace(/[''`']/g, '')
+    .replace(/[^\w\s\-\.\/#]/g, ' ')
+    .replace(/\s+/g, ' ')
     .trim();
 }
+
+/** Extract useful signals from the user's typed query. */
+function parseSearchQuery(raw) {
+  const original = String(raw || '').trim();
+  let q = normalizeQuery(original).toLowerCase();
+
+  let number = null;
+  const numSlash = q.match(/\b(\d{1,4})\s*\/\s*(\d{1,4})\b/);
+  if (numSlash) {
+    number = numSlash[1];
+    q = q.replace(numSlash[0], ' ').trim();
+  } else {
+    const hashNum = q.match(/#\s*(\d{1,4}[a-z]?)\b/);
+    if (hashNum) {
+      number = hashNum[1];
+      q = q.replace(hashNum[0], ' ').trim();
+    }
+  }
+
+  const editions = [];
+  for (const kw of EDITION_KEYWORDS) {
+    if (q.includes(kw)) {
+      editions.push(kw);
+      q = q.replace(kw, ' ');
+    }
+  }
+  q = q.replace(/\s+/g, ' ').trim();
+
+  const apiQuery = q || normalizeQuery(original);
+
+  return {
+    original,
+    apiQuery,
+    number,
+    editions,
+    tokens: apiQuery.split(/\s+/).filter(Boolean),
+  };
+}
+
+/** Score a result against the parsed query (higher = better match). */
+function scoreSearchResult(card, parsed) {
+  if (!card) return 0;
+  const name = (card.name || '').toLowerCase();
+  const setName = (card.set && card.set.name ? card.set.name : '').toLowerCase();
+  const num = String(card.number || '').toLowerCase();
+  const game = (card.game && card.game.name ? card.game.name : '').toLowerCase();
+  let score = 0;
+
+  if (name === parsed.apiQuery) score += 100;
+  else if (name.startsWith(parsed.apiQuery)) score += 70;
+  else if (name.includes(parsed.apiQuery)) score += 40;
+
+  for (const t of parsed.tokens) {
+    if (name.includes(t)) score += 12;
+    if (setName.includes(t)) score += 6;
+  }
+
+  if (parsed.number) {
+    if (num === parsed.number || num.startsWith(parsed.number + '/') || num.includes('/' + parsed.number)) {
+      score += 50;
+    } else if (num.includes(parsed.number)) {
+      score += 20;
+    }
+  }
+
+  for (const ed of parsed.editions) {
+    if (name.includes(ed) || setName.includes(ed)) score += 25;
+  }
+
+  const hasPrice = (card.prices && card.prices.raw && card.prices.raw.near_mint &&
+    (card.prices.raw.near_mint.tcgplayer && card.prices.raw.near_mint.tcgplayer.market ||
+     card.prices.raw.near_mint.ebay && card.prices.raw.near_mint.ebay.avg_7d));
+  if (hasPrice) score += 5;
+
+  if (selectedGame && game.includes(selectedGame.replace('-', ' '))) score += 3;
+
+  return score;
+}
+
+function rankSearchResults(cards, rawQuery) {
+  const parsed = parseSearchQuery(rawQuery);
+  return cards.slice().sort(function(a, b) {
+    return scoreSearchResult(b, parsed) - scoreSearchResult(a, parsed);
+  });
+}
+
 
 // ══════════════════════════════════════════════════════
 // SECTION 4: SHARED APP STATE (appState)
